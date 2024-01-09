@@ -1,0 +1,17 @@
+<Application
+	x:Class="KairosoftGameManager.App"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>
+	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<XamlControlsResources />
+				<ResourceDictionary Source="/Style.xaml" />
+				<ResourceDictionary Source="/Control/FluentIconGlyph.xaml" />
+				<ResourceDictionary Source="/Control/Divider.xaml" />
+				<ResourceDictionary Source="/Control/SettingItem.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>

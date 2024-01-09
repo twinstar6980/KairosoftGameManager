@@ -1,0 +1,138 @@
+<Page
+	x:Class="KairosoftGameManager.View.SettingPage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:community="using:CommunityToolkit.WinUI"
+	xmlns:communityControls="using:CommunityToolkit.WinUI.Controls"
+	xmlns:local="using:KairosoftGameManager"
+	xmlns:localView="using:KairosoftGameManager.View"
+	xmlns:my="using:KairosoftGameManager.Control"
+	mc:Ignorable="d"
+	x:DefaultBindMode="OneWay"
+	NavigationCacheMode="Disabled"
+>
+	<my:Stack
+		Padding="0,0"
+		Orientation="Vertical" Spacing="0"
+	>
+		<my:Stack
+			Padding="20,12"
+			HorizontalAlignment="Stretch"
+			Orientation="Horizontal" Spacing="8"
+		>
+			<TextBlock
+				my:Stack.Weight="1" HorizontalAlignment="Stretch"
+				VerticalAlignment="Center"
+				Style="{StaticResource SubtitleTextBlockStyle}"
+				Text="{x:Bind Controller.uVersion_Text}"
+			/>
+			<Button
+				VerticalAlignment="Center"
+				Click="{x:Bind Controller.uSource_Click}"
+			>
+				<my:Stack
+					Padding="0,0"
+					Orientation="Horizontal" Spacing="8"
+				>
+					<FontIcon
+						VerticalAlignment="Center"
+						FontSize="{StaticResource SmallIconSize}"
+						Glyph="{StaticResource FluentIconGlyph.Link}"
+					/>
+					<TextBlock
+						VerticalAlignment="Center"
+						TextWrapping="NoWrap"
+						Text="Source"
+					/>
+				</my:Stack>
+			</Button>
+		</my:Stack>
+		<my:Divider Height="{StaticResource DividerThickness}" />
+		<ScrollViewer
+			Padding="0,0"
+			my:Stack.Weight="1" HorizontalAlignment="Stretch"
+			VerticalAlignment="Stretch"
+			VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible"
+			IsTabStop="True"
+		>
+			<my:Stack
+				Padding="20,12"
+				HorizontalAlignment="Stretch"
+				Orientation="Vertical" Spacing="4"
+			>
+				<communityControls:SettingsCard
+					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.KnowledgeArticle}}"
+					Header="Setting File"
+					IsClickEnabled="True"
+					Click="{x:Bind Controller.uSettingFile_Click}"
+				/>
+				<communityControls:SettingsCard
+					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.BlueLight}}"
+					Header="Theme Mode"
+				>
+					<ComboBox
+						Width="120"
+						ItemsSource="{x:Bind Controller.uThemeMode_ItemsSource}"
+						SelectedIndex="{x:Bind Controller.uThemeMode_SelectedIndex}"
+						SelectionChanged="{x:Bind Controller.uThemeMode_SelectionChanged}"
+					/>
+				</communityControls:SettingsCard>
+				<communityControls:SettingsCard
+					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.FileExplorer}}"
+					Header="Repository Directory"
+				>
+					<TextBox
+						Width="232"
+						Text="{x:Bind Controller.uRepositoryDirectory_Text}"
+						LostFocus="{x:Bind Controller.uRepositoryDirectory_LostFocus}"
+					/>
+				</communityControls:SettingsCard>
+				<communityControls:SettingsCard
+					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.OpenFile}}"
+					Header="Program File Of Il2CppDumper"
+				>
+					<TextBox
+						Width="232"
+						Text="{x:Bind Controller.uProgramFileOfIl2CppDumper_Text}"
+						LostFocus="{x:Bind Controller.uProgramFileOfIl2CppDumper_LostFocus}"
+					/>
+				</communityControls:SettingsCard>
+				<communityControls:SettingsExpander
+					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.BulletedList}}"
+					Header="Tested Game"
+				>
+					<Button
+						Content="Reset"
+						Click="{x:Bind Controller.uTestedGameReset_Click}"
+					/>
+					<communityControls:SettingsExpander.Items>
+						<communityControls:SettingsCard
+							HorizontalContentAlignment="Stretch"
+							ContentAlignment="Left"
+						>
+							<TextBlock
+								VerticalAlignment="Center"
+								TextWrapping="NoWrap"
+								Text="{x:Bind Controller.uTestedGameText_Text}"
+							/>
+						</communityControls:SettingsCard>
+					</communityControls:SettingsExpander.Items>
+				</communityControls:SettingsExpander>
+				<TextBlock
+					Margin="8,12"
+					HorizontalAlignment="Stretch"
+					Style="{StaticResource BodyTextBlockStyle}"
+					Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+					TextWrapping="NoWrap"
+				>
+					<Span>&#xA9; 2024 <Hyperlink UnderlineStyle="None" NavigateUri="https://github.com/twinkles-twinstar">TwinStar</Hyperlink>. All rights reserved.</Span>
+					<LineBreak/>
+					<Span>Released under <Hyperlink UnderlineStyle="None" NavigateUri="https://www.gnu.org/licenses/gpl-3.0.en.html">GPL-3.0</Hyperlink>. Icons by <Hyperlink UnderlineStyle="None" NavigateUri="https://icons8.com">Icons8</Hyperlink>.</Span>
+					<LineBreak/>
+				</TextBlock>
+			</my:Stack>
+		</ScrollViewer>
+	</my:Stack>
+</Page>
