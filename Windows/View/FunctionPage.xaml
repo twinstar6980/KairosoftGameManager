@@ -179,6 +179,7 @@
 								<TextBox
 									my:Stack.Weight="1" HorizontalAlignment="Stretch"
 									VerticalAlignment="Center"
+									Description="'0a 1b' or 'd32:1234' or 'd64:5678'"
 									Text="{x:Bind Controller.uArgumentOfEncryptRecordOfKeyEditor_Text}"
 									LostFocus="{x:Bind Controller.uArgumentOfEncryptRecordOfKeyEditor_LostFocus}"
 								/>

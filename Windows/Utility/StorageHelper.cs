@@ -292,6 +292,7 @@ namespace KairosoftGameManager.Utility {
 			Window host
 		) {
 			var picker = new FolderPicker() {
+				FileTypeFilter = { "*" },
 			};
 			WinRT.Interop.InitializeWithWindow.Initialize(picker, WindowHelper.Handle(host));
 			var target = await picker.PickSingleFolderAsync();

@@ -3,6 +3,7 @@
 
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
+using System.Buffers.Binary;
 using FluentIconGlyph = KairosoftGameManager.Control.FluentIconGlyph;
 
 namespace KairosoftGameManager.View {
@@ -40,7 +41,7 @@ namespace KairosoftGameManager.View {
 
 		public String ArgumentOfEncryptRecordOfTargetDirectory { get; set; } = "";
 
-		public IntegerU64 ArgumentOfEncryptRecordOfKey { get; set; } = 0;
+		public Byte[] ArgumentOfEncryptRecordOfKey { get; set; } = [0x00];
 
 		// ----------------
 
@@ -159,7 +160,7 @@ namespace KairosoftGameManager.View {
 
 		public String uArgumentOfEncryptRecordOfKeyEditor_Text {
 			get {
-				return this.ArgumentOfEncryptRecordOfKey.ToString();
+				return String.Join(' ', this.ArgumentOfEncryptRecordOfKey.Select((value) => ($"{value:x2}")));
 			}
 		}
 
@@ -169,10 +170,27 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.AsClass<TextBox>();
 			if (senders.Text.Length == 0) {
-				this.ArgumentOfEncryptRecordOfKey = 0;
+				this.ArgumentOfEncryptRecordOfKey = [0x00];
 			}
-			else if (IntegerU64.TryParse(senders.Text, out var value)) {
-				this.ArgumentOfEncryptRecordOfKey = value;
+			else if (senders.Text.StartsWith("d32:") && IntegerU32.TryParse(senders.Text["d32:".Length..], out var value32)) {
+				this.ArgumentOfEncryptRecordOfKey = new Byte[4];
+				BinaryPrimitives.WriteUInt32LittleEndian(this.ArgumentOfEncryptRecordOfKey, value32);
+			}
+			else if (senders.Text.StartsWith("d64:") && IntegerU64.TryParse(senders.Text["d64:".Length..], out var value64)) {
+				this.ArgumentOfEncryptRecordOfKey = new Byte[8];
+				BinaryPrimitives.WriteUInt64LittleEndian(this.ArgumentOfEncryptRecordOfKey, value64);
+			}
+			else {
+				var text = senders.Text.Replace(" ", "");
+				if (text.Length != 0 && text.All(Character.IsAsciiHexDigit)) {
+					if (text.Length % 2 == 1) {
+						text += "0";
+					}
+					this.ArgumentOfEncryptRecordOfKey = new Byte[text.Length / 2];
+					for (var index = 0; index < text.Length / 2; index++) {
+						this.ArgumentOfEncryptRecordOfKey[index] = IntegerU8.Parse(text.Substring(index * 2, 2), NumberStyles.HexNumber);
+					}
+				}
 			}
 			this.NotifyPropertyChanged(
 				nameof(this.uArgumentOfEncryptRecordOfKeyEditor_Text)

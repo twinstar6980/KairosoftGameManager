@@ -34,7 +34,7 @@ namespace KairosoftGameManager.Utility {
 		public String           Version  = "";
 		public String           Name     = "";
 		public ImageSource?     Icon     = null;
-		public IntegerU64       User     = 0;
+		public String           User     = "";
 		public GameRecordState  Record   = GameRecordState.None;
 		public GameProgramState Program  = GameProgramState.None;
 	}
@@ -149,8 +149,8 @@ namespace KairosoftGameManager.Utility {
 		}
 
 		private static async Task<GameRecordState> DetectRecordState (
-			String     recordDirectory,
-			IntegerU64 key
+			String  recordDirectory,
+			Byte[]? key
 		) {
 			var state = default(GameRecordState);
 			var itemNameList = GameUtility.ListRecordFile(recordDirectory);
@@ -171,11 +171,15 @@ namespace KairosoftGameManager.Utility {
 					if (firstNumber == 0x00000000) {
 						state = GameRecordState.Decrypted;
 					}
-					else if (firstNumber == (key & 0xFFFFFFFF)) {
-						state = GameRecordState.Original;
-					}
 					else {
-						state = GameRecordState.Invalid;
+						GameUtility.EncryptRecordData(itemData, key);
+						firstNumber = BinaryPrimitives.ReadUInt32LittleEndian(itemData);
+						if (firstNumber == 0x00000000) {
+							state = GameRecordState.Original;
+						}
+						else {
+							state = GameRecordState.Invalid;
+						}
 					}
 				}
 			}
@@ -184,26 +188,32 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		private static async Task EncryptRecordFile (
-			String      sourceFile,
-			String      destinationFile,
-			IntegerU64? key
+		private static void EncryptRecordData (
+			Byte[]  data,
+			Byte[]? key
 		) {
-			var data = await StorageHelper.ReadFile(sourceFile);
-			if (key is not null) {
-				var keyData = new Byte[8];
-				BinaryPrimitives.WriteUInt64LittleEndian(keyData, key.AsNotNull());
+			if (key is not null && key.Length != 0) {
 				for (var index = 0; index < data.Length; index++) {
-					data[index] ^= keyData[index % keyData.Length];
+					data[index] ^= key[index % key.Length];
 				}
 			}
+			return;
+		}
+
+		private static async Task EncryptRecordFile (
+			String  sourceFile,
+			String  destinationFile,
+			Byte[]? key
+		) {
+			var data = await StorageHelper.ReadFile(sourceFile);
+			GameUtility.EncryptRecordData(data, key);
 			await StorageHelper.WriteFile(destinationFile, data);
 			return;
 		}
 
 		public static async Task EncryptRecord (
 			String         targetDirectory,
-			IntegerU64     key,
+			Byte[]         key,
 			Action<String> onNotify
 		) {
 			var itemNameList = GameUtility.ListRecordFile(targetDirectory);
@@ -528,7 +538,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task ImportRecordArchive (
 			String                                              archiveFile,
 			String                                              targetDirectory,
-			IntegerU64?                                         key,
+			Byte[]?                                             key,
 			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
 		) {
 			var archiveDirectory = StorageHelper.Temporary();
@@ -558,7 +568,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task ExportRecordArchive (
 			String                                              archiveFile,
 			String                                              targetDirectory,
-			IntegerU64?                                         key,
+			Byte[]?                                             key,
 			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
 		) {
 			var archiveDirectory = StorageHelper.Temporary();
@@ -588,11 +598,24 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
+		public static Byte[] ConvertKeyFromUser (
+			String user
+		) {
+			var keyValue = IntegerU64.Parse(user);
+			var key = new Byte[8];
+			BinaryPrimitives.TryWriteUInt64LittleEndian(key, keyValue);
+			return key;
+		}
+
 		public static async Task<GameConfiguration?> LoadGameConfiguration (
 			String repositoryDirectory,
 			String gameIdentity
 		) {
-			var gameManifest = VdfConvert.Deserialize(await StorageHelper.ReadFileText($"{repositoryDirectory}/steamapps/appmanifest_{gameIdentity}.acf"));
+			var gameManifestFile = $"{repositoryDirectory}/steamapps/appmanifest_{gameIdentity}.acf";
+			if (!StorageHelper.ExistFile(gameManifestFile)) {
+				return null;
+			}
+			var gameManifest = VdfConvert.Deserialize(await StorageHelper.ReadFileText(gameManifestFile));
 			GF.AssertTest(gameManifest.Key == "AppState");
 			GF.AssertTest(gameManifest.Value["appid"].AsNotNull().Value<String>() == gameIdentity);
 			var gameDirectory = $"{repositoryDirectory}/steamapps/common/{gameManifest.Value["installdir"].AsNotNull().Value<String>()}";
@@ -605,12 +628,12 @@ namespace KairosoftGameManager.Utility {
 			configuration.Version = gameManifest.Value["buildid"].AsNotNull().Value<String>();
 			configuration.Name = gameManifest.Value["name"].AsNotNull().Value<String>();
 			configuration.Icon = await ConvertHelper.ConvertBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon($"{gameDirectory}/{GameUtility.ExecutableFile}", 0, 48).AsNotNull().ToBitmap());
-			configuration.User = IntegerU64.Parse(gameManifest.Value["LastOwner"].AsNotNull().Value<String>());
+			configuration.User = gameManifest.Value["LastOwner"].AsNotNull().Value<String>();
 			if (!StorageHelper.ExistDirectory($"{gameDirectory}/{GameUtility.RecordBundleDirectory}/{configuration.User}")) {
 				configuration.Record = GameRecordState.None;
 			}
 			else {
-				configuration.Record = await GameUtility.DetectRecordState($"{gameDirectory}/{GameUtility.RecordBundleDirectory}/{configuration.User}", configuration.User);
+				configuration.Record = await GameUtility.DetectRecordState($"{gameDirectory}/{GameUtility.RecordBundleDirectory}/{configuration.User}", GameUtility.ConvertKeyFromUser(configuration.User));
 			}
 			if (!StorageHelper.ExistFile($"{gameDirectory}/{GameUtility.ProgramFile}")) {
 				configuration.Program = GameProgramState.None;

@@ -245,7 +245,7 @@ namespace KairosoftGameManager.View {
 							break;
 						}
 						var recordDirectory = $"{game.Path}/{GameUtility.RecordBundleDirectory}/{game.User}";
-						await GameUtility.EncryptRecord(recordDirectory, game.User, (_) => { });
+						await GameUtility.EncryptRecord(recordDirectory, GameUtility.ConvertKeyFromUser(game.User), (_) => { });
 						shouldReload = true;
 						break;
 					}
@@ -259,7 +259,7 @@ namespace KairosoftGameManager.View {
 							break;
 						}
 						var recordDirectory = $"{game.Path}/{GameUtility.RecordBundleDirectory}/{game.User}";
-						await GameUtility.EncryptRecord(recordDirectory, game.User, (_) => { });
+						await GameUtility.EncryptRecord(recordDirectory, GameUtility.ConvertKeyFromUser(game.User), (_) => { });
 						shouldReload = true;
 						break;
 					}
@@ -324,7 +324,7 @@ namespace KairosoftGameManager.View {
 							StorageHelper.TrashDirectory(recordDirectory);
 						}
 						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.Windows.ToString().ToLower(), Identity = game.Identity, Version = game.Version };
-						await GameUtility.ImportRecordArchive(archiveFile, recordDirectory, !shouldEncrypt ? null : game.User, async (archiveConfiguration) => {
+						await GameUtility.ImportRecordArchive(archiveFile, recordDirectory, !shouldEncrypt ? null : GameUtility.ConvertKeyFromUser(game.User), async (archiveConfiguration) => {
 							if (archiveConfiguration != archiveConfigurationForLocal) {
 								if (!await ControlHelper.ShowDialogForPausing(this.View, "Record Incompatible", $"This archive may not work with the current game.\nProvided: {GameUtility.MakeRecordArchiveConfigurationText(archiveConfiguration)}\nExpected: {GameUtility.MakeRecordArchiveConfigurationText(archiveConfigurationForLocal)}")) {
 									cancelled = true;
@@ -356,7 +356,7 @@ namespace KairosoftGameManager.View {
 						}
 						var recordDirectory = $"{game.Path}/{GameUtility.RecordBundleDirectory}/{game.User}";
 						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.Windows.ToString().ToLower(), Identity = game.Identity, Version = game.Version };
-						await GameUtility.ExportRecordArchive(archiveFile, recordDirectory, !shouldEncrypt ? null : game.User, async (archiveConfiguration) => {
+						await GameUtility.ExportRecordArchive(archiveFile, recordDirectory, !shouldEncrypt ? null : GameUtility.ConvertKeyFromUser(game.User), async (archiveConfiguration) => {
 							archiveConfiguration.Platform = archiveConfigurationForLocal.Platform;
 							archiveConfiguration.Identity = archiveConfigurationForLocal.Identity;
 							archiveConfiguration.Version = archiveConfigurationForLocal.Version;
