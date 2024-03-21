@@ -49,7 +49,7 @@ namespace KairosoftGameManager.View {
 
 		public Boolean ArgumentOfModifyProgramOfDisableRecordEncryption { get; set; } = true;
 
-		public Boolean ArgumentOfModifyProgramOfEnableDebugMode { get; set; } = false;
+		public Boolean ArgumentOfModifyProgramOfEnableDebugMode { get; set; } = true;
 
 		// ----------------
 
@@ -318,6 +318,7 @@ namespace KairosoftGameManager.View {
 							this.ArgumentOfModifyProgramOfDisableRecordEncryption,
 							this.ArgumentOfModifyProgramOfEnableDebugMode,
 							Setting.Data.ProgramFileOfIl2CppDumper,
+							null,
 							PublishMessage
 						);
 						break;

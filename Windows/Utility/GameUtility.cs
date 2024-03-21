@@ -49,43 +49,53 @@ namespace KairosoftGameManager.Utility {
 
 		public static readonly SortedDictionary<String, List<String>> TestedGame = new () {
 			// Hot Springs Story
-			{ "1823710", ["9883792"] },
+			{ "1823710", ["9883792", "13332097"] },
 			// Game Dev Story
-			{ "1847240", ["12865314"] },
+			{ "1847240", ["12865314", "13584515"] },
 			// Dungeon Village
-			{ "1859360", ["9882689"] },
+			{ "1859360", ["9882689", "13493523"] },
 			// Dream House Days DX
-			{ "1859370", ["10513663"] },
+			{ "1859370", ["10513663", "13652821"] },
+			// Nanja Village
+			{ "1918520", ["13560678"] },
 			// Pocket Academy
-			{ "1921760", ["11746770"] },
+			{ "1921760", ["11746770", "13652705"] },
 			// Mega Mall Story
-			{ "1923680", ["9259357"] },
+			{ "1923680", ["9259357", "13642430"] },
 			// Pool Slide Story
-			{ "1933980", ["9889731"] },
+			{ "1933980", ["9889731", "13698186"] },
 			// Burger Bistro Story
-			{ "1933990", ["10314100"] },
+			{ "1933990", ["10314100", "13321147", "13698407"] },
 			// Grand Prix Story
-			{ "1978100", ["9835394"] },
+			{ "1978100", ["9835394", "13641093"] },
 			// Forest Camp Story
-			{ "1983690", ["10825670"] },
+			{ "1983690", ["10825670", "13343525"] },
 			// Dungeon Village 2
-			{ "1983710", ["12756185"] },
+			{ "1983710", ["12756185", "13450272"] },
+			// Magazine Mogul
+			{ "2054800", ["13708967"] },
 			// Tennis Club Story
-			{ "2054810", ["9784452"] },
+			{ "2054810", ["9784452", "13735556"] },
+			// Pocket Arcade Story
+			{ "2072130", ["13735337"] },
 			// Shiny Ski Resort
-			{ "2072170", ["9735034"] },
+			{ "2072170", ["9735034", "13515402"] },
+			// 8-Bit Farm
+			{ "2074810", ["13769596"] },
 			// Home Run High
-			{ "2084720", ["9720692"] },
+			{ "2084720", ["9720692", "13652157"] },
+			// Biz Builder Delux
+			{ "2102480", ["13721698"] },
 			// Basketball Club Story
-			{ "2102490", ["10915393"] },
+			{ "2102490", ["10915393", "13628976", "13667306"] },
 			// Dream Park Story
-			{ "2119660", ["12769873"] },
+			{ "2119660", ["12769873", "13494212"] },
 			// Forest Golf Planner
-			{ "2119670", ["11577947"] },
+			{ "2119670", ["11577947", "13664559"] },
 			// Jumbo Airport Story
-			{ "2191480", ["12579631"] },
+			{ "2191480", ["12579631", "13561083"] },
 			// Zoo Park Story
-			{ "2437690", ["12409789"] },
+			{ "2437690", ["12409789", "13333913"] },
 		};
 
 		public static Boolean IsTestedGame (
@@ -102,11 +112,13 @@ namespace KairosoftGameManager.Utility {
 
 		public const String ProgramFile = "GameAssembly.dll";
 
-		public const String ProgramBackupFile = "GameAssembly.dll.bak";
-
 		public const String RecordBundleDirectory = "saves";
 
 		public const String RecordArchiveFileExtension = "kgra";
+
+		public const String BackupDirectory = ".backup";
+
+		public const String BackupProgramFile = "program";
 
 		// ----------------
 
@@ -363,6 +375,7 @@ namespace KairosoftGameManager.Utility {
 			Boolean        disableRecordEncryption,
 			Boolean        enableDebugMode,
 			String         programFileOfIl2CppDumper,
+			String?        backupToken,
 			Action<String> onNotify
 		) {
 			onNotify($"Phase: detect game platform.");
@@ -379,7 +392,7 @@ namespace KairosoftGameManager.Utility {
 				GamePlatform.Android => $"{targetDirectory}/assets/bin/Data/Managed/Metadata/global-metadata.dat",
 				_                    => throw new (),
 			};
-			var programBackupFile = $"{programFile}.bak";
+			var programBackupFile = $"{targetDirectory}/{GameUtility.BackupDirectory}{(backupToken is null ? "" : $"_{backupToken}")}/{GameUtility.BackupProgramFile}";
 			onNotify($"Phase: check game file.");
 			GF.AssertTest(StorageHelper.ExistFile(programFile) || StorageHelper.ExistFile(programBackupFile));
 			GF.AssertTest(StorageHelper.ExistFile(metadataFile));
@@ -639,7 +652,7 @@ namespace KairosoftGameManager.Utility {
 				configuration.Program = GameProgramState.None;
 			}
 			else {
-				if (!StorageHelper.ExistFile($"{gameDirectory}/{GameUtility.ProgramBackupFile}")) {
+				if (!StorageHelper.ExistFile($"{gameDirectory}/{GameUtility.BackupDirectory}_{configuration.Version}/{GameUtility.BackupProgramFile}")) {
 					configuration.Program = GameProgramState.Original;
 				}
 				else {

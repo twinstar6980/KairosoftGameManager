@@ -204,6 +204,7 @@
 									FontSize="16"
 									TextWrapping="NoWrap"
 									Text="{x:Bind uName_Text}"
+									IsTextSelectionEnabled="True"
 									ToolTipService.ToolTip="{x:Bind uName_ToolTip}"
 								/>
 								<my:Stack
@@ -229,6 +230,7 @@
 											Foreground="{ThemeResource TextFillColorSecondaryBrush}"
 											TextWrapping="NoWrap"
 											Text="{x:Bind uIdentityText_Text}"
+											IsTextSelectionEnabled="True"
 										/>
 									</my:Stack>
 									<my:Stack
@@ -249,6 +251,7 @@
 											Foreground="{ThemeResource TextFillColorSecondaryBrush}"
 											TextWrapping="NoWrap"
 											Text="{x:Bind uVersionText_Text}"
+											IsTextSelectionEnabled="True"
 										/>
 									</my:Stack>
 									<my:Stack
@@ -269,6 +272,7 @@
 											Foreground="{ThemeResource TextFillColorSecondaryBrush}"
 											TextWrapping="NoWrap"
 											Text="{x:Bind uRecordText_Text}"
+											IsTextSelectionEnabled="True"
 										/>
 									</my:Stack>
 									<my:Stack
@@ -289,6 +293,7 @@
 											Foreground="{ThemeResource TextFillColorSecondaryBrush}"
 											TextWrapping="NoWrap"
 											Text="{x:Bind uProgramText_Text}"
+											IsTextSelectionEnabled="True"
 										/>
 									</my:Stack>
 								</my:Stack>

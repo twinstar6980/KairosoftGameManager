@@ -104,6 +104,10 @@ namespace KairosoftGameManager.Utility {
 			String source,
 			String destination
 		) {
+			var destinationParent = StorageHelper.Parent(destination);
+			if (destinationParent is not null && !Directory.Exists(destinationParent)) {
+				StorageHelper.CreateDirectory(destinationParent);
+			}
 			File.Copy(source, destination, true);
 			return;
 		}
