@@ -8,9 +8,47 @@ namespace KairosoftGameManager.Utility {
 
 	public static class ConvertHelper {
 
+		#region type
+
+		public static Boolean IsTypeOfTuple (
+			Type type
+		) {
+			if (!type.IsGenericType) {
+				return false;
+			}
+			var genericType = type.GetGenericTypeDefinition();
+			return genericType == typeof(Tuple<>)
+				|| genericType == typeof(Tuple<,>)
+				|| genericType == typeof(Tuple<,,>)
+				|| genericType == typeof(Tuple<,,,>)
+				|| genericType == typeof(Tuple<,,,,>)
+				|| genericType == typeof(Tuple<,,,,,>)
+				|| genericType == typeof(Tuple<,,,,,,>)
+				|| genericType == typeof(Tuple<,,,,,,,>);
+		}
+
+		public static Boolean IsTypeOfValueTuple (
+			Type type
+		) {
+			if (!type.IsGenericType) {
+				return false;
+			}
+			var genericType = type.GetGenericTypeDefinition();
+			return genericType == typeof(ValueTuple<>)
+				|| genericType == typeof(ValueTuple<,>)
+				|| genericType == typeof(ValueTuple<,,>)
+				|| genericType == typeof(ValueTuple<,,,>)
+				|| genericType == typeof(ValueTuple<,,,,>)
+				|| genericType == typeof(ValueTuple<,,,,,>)
+				|| genericType == typeof(ValueTuple<,,,,,,>)
+				|| genericType == typeof(ValueTuple<,,,,,,,>);
+		}
+
+		#endregion
+
 		#region boolean
 
-		public static String BooleanToConfirmationStringCamel (
+		public static String MakeBooleanToStringOfConfirmation (
 			Boolean value
 		) {
 			return value switch {
@@ -23,7 +61,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region theme
 
-		public static String ThemeToString (
+		public static String MakeThemeToString (
 			ElementTheme value
 		) {
 			return value switch {

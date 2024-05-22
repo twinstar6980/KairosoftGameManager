@@ -123,12 +123,6 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public String uArgumentOfEncryptRecordOfTargetDirectoryEditor_Text {
-			get {
-				return this.ArgumentOfEncryptRecordOfTargetDirectory;
-			}
-		}
-
 		public async void uArgumentOfEncryptRecordOfTargetDirectoryEditor_LostFocus (
 			Object          sender,
 			RoutedEventArgs args
@@ -141,12 +135,18 @@ namespace KairosoftGameManager.View {
 			return;
 		}
 
+		public String uArgumentOfEncryptRecordOfTargetDirectoryEditor_Text {
+			get {
+				return this.ArgumentOfEncryptRecordOfTargetDirectory;
+			}
+		}
+
 		public async void uArgumentOfEncryptRecordOfTargetDirectoryPicker_Click (
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.AsClass<Button>();
-			var value = await StorageHelper.PickDirectory(WindowHelper.Find(this.View));
+			var value = await StorageHelper.PickOpenDirectory(WindowHelper.Find(this.View), ".EncryptRecord.TargetDirectory");
 			if (value is not null) {
 				this.ArgumentOfEncryptRecordOfTargetDirectory = value;
 				this.NotifyPropertyChanged(
@@ -157,12 +157,6 @@ namespace KairosoftGameManager.View {
 		}
 
 		// ----------------
-
-		public String uArgumentOfEncryptRecordOfKeyEditor_Text {
-			get {
-				return String.Join(' ', this.ArgumentOfEncryptRecordOfKey.Select((value) => ($"{value:x2}")));
-			}
-		}
 
 		public async void uArgumentOfEncryptRecordOfKeyEditor_LostFocus (
 			Object          sender,
@@ -198,6 +192,12 @@ namespace KairosoftGameManager.View {
 			return;
 		}
 
+		public String uArgumentOfEncryptRecordOfKeyEditor_Text {
+			get {
+				return String.Join(' ', this.ArgumentOfEncryptRecordOfKey.Select((value) => ($"{value:x2}")));
+			}
+		}
+
 		// ----------------
 
 		public Boolean uArgumentOfModifyProgram_Visibility {
@@ -207,12 +207,6 @@ namespace KairosoftGameManager.View {
 		}
 
 		// ----------------
-
-		public String uArgumentOfModifyProgramOfTargetDirectoryEditor_Text {
-			get {
-				return this.ArgumentOfModifyProgramOfTargetDirectory;
-			}
-		}
 
 		public async void uArgumentOfModifyProgramOfTargetDirectoryEditor_LostFocus (
 			Object          sender,
@@ -226,12 +220,18 @@ namespace KairosoftGameManager.View {
 			return;
 		}
 
+		public String uArgumentOfModifyProgramOfTargetDirectoryEditor_Text {
+			get {
+				return this.ArgumentOfModifyProgramOfTargetDirectory;
+			}
+		}
+
 		public async void uArgumentOfModifyProgramOfTargetDirectoryPicker_Click (
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.AsClass<Button>();
-			var value = await StorageHelper.PickDirectory(WindowHelper.Find(this.View));
+			var value = await StorageHelper.PickOpenDirectory(WindowHelper.Find(this.View), ".ModifyProgram.TargetDirectory");
 			if (value is not null) {
 				this.ArgumentOfModifyProgramOfTargetDirectory = value;
 				this.NotifyPropertyChanged(
@@ -242,12 +242,6 @@ namespace KairosoftGameManager.View {
 		}
 
 		// ----------------
-
-		public String uArgumentOfModifyProgramOfDisableRecordEncryptionEditor_Content {
-			get {
-				return ConvertHelper.BooleanToConfirmationStringCamel(this.ArgumentOfModifyProgramOfDisableRecordEncryption);
-			}
-		}
 
 		public async void uArgumentOfModifyProgramOfDisableRecordEncryptionEditor_Click (
 			Object          sender,
@@ -261,13 +255,13 @@ namespace KairosoftGameManager.View {
 			return;
 		}
 
-		// ----------------
-
-		public String uArgumentOfModifyProgramOfEnableDebugModeEditor_Content {
+		public String uArgumentOfModifyProgramOfDisableRecordEncryptionEditor_Content {
 			get {
-				return ConvertHelper.BooleanToConfirmationStringCamel(this.ArgumentOfModifyProgramOfEnableDebugMode);
+				return ConvertHelper.MakeBooleanToStringOfConfirmation(this.ArgumentOfModifyProgramOfDisableRecordEncryption);
 			}
 		}
+
+		// ----------------
 
 		public async void uArgumentOfModifyProgramOfEnableDebugModeEditor_Click (
 			Object          sender,
@@ -279,6 +273,12 @@ namespace KairosoftGameManager.View {
 				nameof(this.uArgumentOfModifyProgramOfEnableDebugModeEditor_Content)
 			);
 			return;
+		}
+
+		public String uArgumentOfModifyProgramOfEnableDebugModeEditor_Content {
+			get {
+				return ConvertHelper.MakeBooleanToStringOfConfirmation(this.ArgumentOfModifyProgramOfEnableDebugMode);
+			}
 		}
 
 		#endregion
@@ -317,7 +317,7 @@ namespace KairosoftGameManager.View {
 							this.ArgumentOfModifyProgramOfTargetDirectory,
 							this.ArgumentOfModifyProgramOfDisableRecordEncryption,
 							this.ArgumentOfModifyProgramOfEnableDebugMode,
-							Setting.Data.ProgramFileOfIl2CppDumper,
+							App.Setting.Data.ProgramFileOfIl2CppDumper,
 							null,
 							PublishMessage
 						);
@@ -328,7 +328,7 @@ namespace KairosoftGameManager.View {
 				PublishMessage($"Done.");
 			}
 			catch (Exception e) {
-				App.MainWindow.PublishTip(InfoBarSeverity.Error, "Failed to run function.", "");
+				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed to run function.", "");
 				PublishMessage($"Exception!");
 				PublishMessage(e.ToString());
 			}

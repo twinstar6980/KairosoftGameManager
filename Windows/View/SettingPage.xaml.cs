@@ -72,7 +72,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.AsClass<SettingsCard>();
-			await StorageHelper.RevealDirectory(StorageHelper.Parent(Setting.File).AsNotNull());
+			await StorageHelper.RevealDirectory(StorageHelper.Parent(App.Setting.File).AsNotNull());
 			return;
 		}
 
@@ -80,13 +80,13 @@ namespace KairosoftGameManager.View {
 
 		public List<String> uThemeMode_ItemsSource {
 			get {
-				return Enum.GetValues<ElementTheme>().Select(ConvertHelper.ThemeToString).ToList();
+				return Enum.GetValues<ElementTheme>().Select(ConvertHelper.MakeThemeToString).ToList();
 			}
 		}
 
 		public Size uThemeMode_SelectedIndex {
 			get {
-				return (Size)Setting.Data.ThemeMode;
+				return (Size)App.Setting.Data.ThemeMode;
 			}
 		}
 
@@ -95,58 +95,58 @@ namespace KairosoftGameManager.View {
 			SelectionChangedEventArgs args
 		) {
 			var senders = sender.AsClass<ComboBox>();
-			Setting.Data.ThemeMode = (ElementTheme)senders.SelectedIndex;
-			await Setting.Save();
+			App.Setting.Data.ThemeMode = (ElementTheme)senders.SelectedIndex;
+			await App.Setting.Save();
 			return;
 		}
 
 		// ----------------
-
-		public String uRepositoryDirectory_Text {
-			get {
-				return Setting.Data.RepositoryDirectory;
-			}
-		}
 
 		public async void uRepositoryDirectory_LostFocus (
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.AsClass<TextBox>();
-			Setting.Data.RepositoryDirectory = StorageHelper.Regularize(senders.Text);
-			await Setting.Save();
+			App.Setting.Data.RepositoryDirectory = StorageHelper.Regularize(senders.Text);
+			await App.Setting.Save();
 			this.NotifyPropertyChanged(
 				nameof(this.uRepositoryDirectory_Text)
 			);
 			return;
 		}
 
-		// ----------------
-
-		public String uProgramFileOfIl2CppDumper_Text {
+		public String uRepositoryDirectory_Text {
 			get {
-				return Setting.Data.ProgramFileOfIl2CppDumper;
+				return App.Setting.Data.RepositoryDirectory;
 			}
 		}
+
+		// ----------------
 
 		public async void uProgramFileOfIl2CppDumper_LostFocus (
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.AsClass<TextBox>();
-			Setting.Data.ProgramFileOfIl2CppDumper = StorageHelper.Regularize(senders.Text);
-			await Setting.Save();
+			App.Setting.Data.ProgramFileOfIl2CppDumper = StorageHelper.Regularize(senders.Text);
+			await App.Setting.Save();
 			this.NotifyPropertyChanged(
 				nameof(this.uProgramFileOfIl2CppDumper_Text)
 			);
 			return;
 		}
 
+		public String uProgramFileOfIl2CppDumper_Text {
+			get {
+				return App.Setting.Data.ProgramFileOfIl2CppDumper;
+			}
+		}
+
 		// ----------------
 
 		public String uTestedGameText_Text {
 			get {
-				return String.Join('\n', Setting.Data.TestedGame.Select((value) => ($"{value.Key} - {String.Join(' ', value.Value)}")));
+				return String.Join('\n', App.Setting.Data.TestedGame.Select((value) => ($"{value.Key} - {String.Join(' ', value.Value)}")));
 			}
 		}
 
@@ -155,8 +155,8 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.AsClass<Button>();
-			Setting.Data.TestedGame = GameUtility.TestedGame;
-			await Setting.Save();
+			App.Setting.Data.TestedGame = GameUtility.TestedGame;
+			await App.Setting.Save();
 			this.NotifyPropertyChanged(
 				nameof(this.uTestedGameText_Text)
 			);

@@ -49,7 +49,7 @@ namespace KairosoftGameManager.Utility {
 
 		public static String Temporary (
 		) {
-			var parent = StorageHelper.Regularize(Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path);
+			var parent = App.CacheDirectory;
 			var name = DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
 			var result = $"{parent}/{name}";
 			var suffix = 0;
@@ -198,25 +198,9 @@ namespace KairosoftGameManager.Utility {
 			return Directory.EnumerateDirectories(target, pattern, new EnumerationOptions() { RecurseSubdirectories = true, MaxRecursionDepth = depth }).Select((value) => (StorageHelper.Regularize(value[(targetFullPath.Length + 1)..]))).ToList();
 		}
 
-		// ----------------
-
-		public static void TrashFile (
-			String target
-		) {
-			Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
-			return;
-		}
-
-		public static void TrashDirectory (
-			String target
-		) {
-			Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
-			return;
-		}
-
 		#endregion
 
-		#region data
+		#region file
 
 		public static async Task WriteFile (
 			String target,
@@ -246,7 +230,7 @@ namespace KairosoftGameManager.Utility {
 
 		#endregion
 
-		#region text
+		#region file - text
 
 		public static async Task WriteFileText (
 			String target,
@@ -280,22 +264,41 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task<String?> PickFile (
+		public static void TrashFile (
+			String target
+		) {
+			Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
+			return;
+		}
+
+		public static void TrashDirectory (
+			String target
+		) {
+			Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
+			return;
+		}
+
+		// ----------------
+
+		public static async Task<String?> PickOpenFile (
 			Window  host,
-			String? filter = null
+			String? tag
 		) {
 			var picker = new FileOpenPicker() {
-				FileTypeFilter = { filter is null ? "*" : "." + filter },
+				SettingsIdentifier = tag,
+				FileTypeFilter = { "*" },
 			};
 			WinRT.Interop.InitializeWithWindow.Initialize(picker, WindowHelper.Handle(host));
 			var target = await picker.PickSingleFileAsync();
 			return target is null ? null : StorageHelper.Regularize(target.Path);
 		}
 
-		public static async Task<String?> PickDirectory (
-			Window host
+		public static async Task<String?> PickOpenDirectory (
+			Window  host,
+			String? tag
 		) {
 			var picker = new FolderPicker() {
+				SettingsIdentifier = tag,
 				FileTypeFilter = { "*" },
 			};
 			WinRT.Interop.InitializeWithWindow.Initialize(picker, WindowHelper.Handle(host));
@@ -303,20 +306,25 @@ namespace KairosoftGameManager.Utility {
 			return target is null ? null : StorageHelper.Regularize(target.Path);
 		}
 
-		// ----------------
-
-		public static async Task<String?> SaveFile (
-			Window                host,
-			Tuple<String, String> filter,
-			String?               defaultName = null
+		public static async Task<String?> PickSaveFile (
+			Window  host,
+			String? tag,
+			String? type,
+			String? name
 		) {
 			var picker = new FileSavePicker() {
-				FileTypeChoices = { new (filter.Item1, ["." + filter.Item2]) },
-				SuggestedFileName = defaultName,
+				SettingsIdentifier = tag,
+				FileTypeChoices = { },
+				SuggestedFileName = name ?? "",
 			};
+			if (type is not null) {
+				picker.FileTypeChoices.Add(new ("", ["." + type]));
+			}
+			picker.FileTypeChoices.Add(new ("", ["."]));
+			var timeBeforePick = DateTimeOffset.Now;
 			WinRT.Interop.InitializeWithWindow.Initialize(picker, WindowHelper.Handle(host));
 			var target = await picker.PickSaveFileAsync();
-			if (target is not null) {
+			if (target is not null && target.DateCreated > timeBeforePick) {
 				await target.DeleteAsync();
 			}
 			return target is null ? null : StorageHelper.Regularize(target.Path);

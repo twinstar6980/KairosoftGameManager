@@ -57,10 +57,10 @@ namespace KairosoftGameManager.View {
 			);
 			var closeDialog = await ControlHelper.ShowDialogForWaiting(this.View, null, null);
 			try {
-				GF.AssertTest(await GameUtility.CheckRepositoryDirectory(Setting.Data.RepositoryDirectory));
+				GF.AssertTest(await GameUtility.CheckRepositoryDirectory(App.Setting.Data.RepositoryDirectory));
 				var gameConfigurationList = new List<GameConfiguration>();
-				foreach (var gameIdentity in await GameUtility.ListGameInRepository(Setting.Data.RepositoryDirectory)) {
-					var gameConfiguration = await GameUtility.LoadGameConfiguration(Setting.Data.RepositoryDirectory, gameIdentity);
+				foreach (var gameIdentity in await GameUtility.ListGameInRepository(App.Setting.Data.RepositoryDirectory)) {
+					var gameConfiguration = await GameUtility.LoadGameConfiguration(App.Setting.Data.RepositoryDirectory, gameIdentity);
 					if (gameConfiguration is not null) {
 						gameConfigurationList.Add(gameConfiguration);
 					}
@@ -71,7 +71,7 @@ namespace KairosoftGameManager.View {
 				}
 			}
 			catch (Exception e) {
-				App.MainWindow.PublishTip(InfoBarSeverity.Error, "Failed to load repository.", e.ToString());
+				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed to load repository.", e.ToString());
 			}
 			await closeDialog();
 			this.NotifyPropertyChanged(
@@ -83,7 +83,7 @@ namespace KairosoftGameManager.View {
 		public async Task ReloadGame (
 			ManagerPageGameItemController gameController
 		) {
-			gameController.Configuration = (await GameUtility.LoadGameConfiguration(Setting.Data.RepositoryDirectory, gameController.Configuration.Identity)).AsNotNull();
+			gameController.Configuration = (await GameUtility.LoadGameConfiguration(App.Setting.Data.RepositoryDirectory, gameController.Configuration.Identity)).AsNotNull();
 			gameController.NotifyPropertyChanged(
 				nameof(gameController.uIcon_Source),
 				nameof(gameController.uName_Text),
@@ -122,7 +122,7 @@ namespace KairosoftGameManager.View {
 				var game = gameController.Configuration;
 				var temporaryState = temporaryStateMap.GetValueOrDefault(action);
 				var confirmIfNotTested = async Task<Boolean> () => {
-					if (GameUtility.IsTestedGame(Setting.Data.TestedGame, game.Identity, game.Version)) {
+					if (GameUtility.IsTestedGame(App.Setting.Data.TestedGame, game.Identity, game.Version)) {
 						return true;
 					}
 					var controlWarning = new TextBlock() {
@@ -133,13 +133,13 @@ namespace KairosoftGameManager.View {
 						Content = "Trust This Game",
 					};
 					controlTrust.Click += async (_, _) => {
-						if (Setting.Data.TestedGame.TryGetValue(game.Identity, out var versionList)) {
+						if (App.Setting.Data.TestedGame.TryGetValue(game.Identity, out var versionList)) {
 							versionList.Add(game.Version);
 						}
 						else {
-							Setting.Data.TestedGame.Add(game.Identity, [game.Version]);
+							App.Setting.Data.TestedGame.Add(game.Identity, [game.Version]);
 						}
-						await Setting.Save();
+						await App.Setting.Save();
 						shouldReload = true;
 						controlTrust.IsEnabled = false;
 						return;
@@ -231,7 +231,7 @@ namespace KairosoftGameManager.View {
 							}
 							temporaryStateMap.Add(action, new Tuple<Boolean, Boolean>(argumentDisableRecordEncryption, argumentEnableDebugMode));
 						}
-						await GameUtility.ModifyProgram(game.Path, argumentDisableRecordEncryption, argumentEnableDebugMode, Setting.Data.ProgramFileOfIl2CppDumper, game.Version, (_) => { });
+						await GameUtility.ModifyProgram(game.Path, argumentDisableRecordEncryption, argumentEnableDebugMode, App.Setting.Data.ProgramFileOfIl2CppDumper, game.Version, (_) => { });
 						shouldReload = true;
 						break;
 					}
@@ -314,7 +314,7 @@ namespace KairosoftGameManager.View {
 						else {
 							shouldEncrypt = game.Record == GameRecordState.Original;
 						}
-						var archiveFile = await StorageHelper.PickFile(WindowHelper.Find(this.View), GameUtility.RecordArchiveFileExtension);
+						var archiveFile = await StorageHelper.PickOpenFile(WindowHelper.Find(this.View), ".RecordFile");
 						if (archiveFile is null) {
 							cancelled = true;
 							break;
@@ -349,7 +349,7 @@ namespace KairosoftGameManager.View {
 						else {
 							shouldEncrypt = game.Record == GameRecordState.Original;
 						}
-						var archiveFile = await StorageHelper.SaveFile(WindowHelper.Find(this.View), new ("Kairosoft Game Record Archive", GameUtility.RecordArchiveFileExtension), game.Name);
+						var archiveFile = await StorageHelper.PickSaveFile(WindowHelper.Find(this.View), ".RecordFile", GameUtility.RecordArchiveFileExtension, game.Name);
 						if (archiveFile is null) {
 							cancelled = true;
 							break;
@@ -367,15 +367,15 @@ namespace KairosoftGameManager.View {
 					default: throw new ();
 				}
 				if (!cancelled) {
-					App.MainWindow.PublishTip(InfoBarSeverity.Success, "Succeeded.", "");
+					App.MainWindow.PublishNotification(InfoBarSeverity.Success, "Succeeded.", "");
 				}
 				else {
-					App.MainWindow.PublishTip(InfoBarSeverity.Warning, "Cancelled.", "");
+					App.MainWindow.PublishNotification(InfoBarSeverity.Warning, "Cancelled.", "");
 					state = null;
 				}
 			}
 			catch (Exception e) {
-				App.MainWindow.PublishTip(InfoBarSeverity.Error, "Failed.", e.ToString());
+				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed.", e.ToString());
 				state = false;
 			}
 			await closeDialog();
@@ -391,7 +391,7 @@ namespace KairosoftGameManager.View {
 
 		public String uRepositoryDirectoryText_Text {
 			get {
-				return Setting.Data.RepositoryDirectory;
+				return App.Setting.Data.RepositoryDirectory;
 			}
 		}
 
@@ -412,10 +412,10 @@ namespace KairosoftGameManager.View {
 					break;
 				}
 				case "Reselect": {
-					var directory = await StorageHelper.PickDirectory(WindowHelper.Find(this.View));
+					var directory = await StorageHelper.PickOpenDirectory(WindowHelper.Find(this.View), ".RepositoryDirectory");
 					if (directory is not null) {
-						Setting.Data.RepositoryDirectory = directory;
-						await Setting.Save();
+						App.Setting.Data.RepositoryDirectory = directory;
+						await App.Setting.Save();
 						this.NotifyPropertyChanged(
 							nameof(this.uRepositoryDirectoryText_Text)
 						);
@@ -486,15 +486,15 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public String uName_Text {
-			get {
-				return this.Configuration.Name;
-			}
-		}
-
 		public String uName_ToolTip {
 			get {
 				return $"{this.Configuration.Path}\nUser {this.Configuration.User}";
+			}
+		}
+
+		public String uName_Text {
+			get {
+				return this.Configuration.Name;
 			}
 		}
 
@@ -502,14 +502,14 @@ namespace KairosoftGameManager.View {
 
 		public String uIdentity_ToolTip {
 			get {
-				var tested = GameUtility.IsTestedGame(Setting.Data.TestedGame, this.Configuration.Identity, null);
+				var tested = GameUtility.IsTestedGame(App.Setting.Data.TestedGame, this.Configuration.Identity, null);
 				return $"Identity {(!tested ? "Untested" : "Tested")}";
 			}
 		}
 
 		public Style uIdentityBadge_Style {
 			get {
-				var tested = GameUtility.IsTestedGame(Setting.Data.TestedGame, this.Configuration.Identity, null);
+				var tested = GameUtility.IsTestedGame(App.Setting.Data.TestedGame, this.Configuration.Identity, null);
 				return this.Host.View.FindResource(!tested ? "CautionIconInfoBadgeStyle" : "SuccessIconInfoBadgeStyle").AsClass<Style>();
 			}
 		}
@@ -524,14 +524,14 @@ namespace KairosoftGameManager.View {
 
 		public String uVersion_ToolTip {
 			get {
-				var tested = GameUtility.IsTestedGame(Setting.Data.TestedGame, this.Configuration.Identity, this.Configuration.Version);
+				var tested = GameUtility.IsTestedGame(App.Setting.Data.TestedGame, this.Configuration.Identity, this.Configuration.Version);
 				return $"Version {(!tested ? "Untested" : "Tested")}";
 			}
 		}
 
 		public Style uVersionBadge_Style {
 			get {
-				var tested = GameUtility.IsTestedGame(Setting.Data.TestedGame, this.Configuration.Identity, this.Configuration.Version);
+				var tested = GameUtility.IsTestedGame(App.Setting.Data.TestedGame, this.Configuration.Identity, this.Configuration.Version);
 				return this.Host.View.FindResource(!tested ? "CautionIconInfoBadgeStyle" : "SuccessIconInfoBadgeStyle").AsClass<Style>();
 			}
 		}

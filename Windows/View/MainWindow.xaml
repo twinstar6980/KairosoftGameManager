@@ -1,46 +1,55 @@
 <Window
-	x:Class="KairosoftGameManager.View.MainWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:community="using:CommunityToolkit.WinUI"
 	xmlns:communityControls="using:CommunityToolkit.WinUI.Controls"
+	xmlns:communityBehaviors="using:CommunityToolkit.WinUI.Behaviors"
+	xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
 	xmlns:local="using:KairosoftGameManager"
 	xmlns:localView="using:KairosoftGameManager.View"
 	xmlns:my="using:KairosoftGameManager.Control"
 	mc:Ignorable="d"
 	x:DefaultBindMode="OneWay"
->
+	x:Class="KairosoftGameManager.View.MainWindow"
+	>
 	<Window.SystemBackdrop>
 		<MicaBackdrop Kind="Base" />
 	</Window.SystemBackdrop>
 	<my:Box
-		Padding="0,0"
-	>
-		<my:Stack
-			x:Name="uTitle" x:FieldModifier="public"
-			Margin="0,0"
-			Padding="14,0,180,0"
-			Width="NaN" Height="48"
-			HorizontalAlignment="Stretch" VerticalAlignment="Top"
-			Orientation="Horizontal" Spacing="12"
+		HorizontalAlignment="Stretch"
+		VerticalAlignment="Stretch"
 		>
+		<my:Stack
+			x:Name="uTitle"
+			x:FieldModifier="public"
+			HorizontalAlignment="Stretch"
+			VerticalAlignment="Top"
+			Height="48"
+			Padding="14,0,180,0"
+			Orientation="Horizontal"
+			Spacing="12"
+			>
 			<ImageIcon
-				Width="22" Height="22"
+				HorizontalAlignment="Stretch"
 				VerticalAlignment="Center"
+				Width="22"
+				Height="22"
 				Source="/Asset/Logo.png"
-			/>
+				/>
 			<TextBlock
+				HorizontalAlignment="Stretch"
 				VerticalAlignment="Center"
 				Style="{StaticResource CaptionTextBlockStyle}"
 				TextWrapping="NoWrap"
 				Text="{x:Bind Controller.uTitleText_Text}"
-			/>
+				/>
 		</my:Stack>
 		<NavigationView
+			HorizontalAlignment="Stretch"
+			VerticalAlignment="Stretch"
 			Margin="0,48,0,0"
-			HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
 			IsBackButtonVisible="Collapsed"
 			IsPaneToggleButtonVisible="False"
 			IsSettingsVisible="False"
@@ -48,38 +57,38 @@
 			AlwaysShowHeader="False"
 			SelectionChanged="{x:Bind Controller.uNavigation_SelectionChanged}"
 			SelectedItem="{x:Bind uNavigationViewItemFirst, Mode=OneTime}"
-		>
+			>
 			<NavigationView.MenuItems>
 				<NavigationViewItem
 					x:Name="uNavigationViewItemFirst"
+					Tag="Manager"
 					Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.OEM}}"
 					Content="Manager"
-					Tag="Manager"
-				/>
+					/>
 				<NavigationViewItem
+					Tag="Function"
 					Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.HomeGroup}}"
 					Content="Function"
-					Tag="Function"
-				/>
+					/>
 			</NavigationView.MenuItems>
 			<NavigationView.FooterMenuItems>
 				<NavigationViewItem
+					Tag="Setting"
 					Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Settings}}"
 					Content="Setting"
-					Tag="Setting"
-				/>
+					/>
 			</NavigationView.FooterMenuItems>
 			<Frame />
 		</NavigationView>
 		<InfoBar
+			HorizontalAlignment="Center"
+			VerticalAlignment="Bottom"
 			Margin="8,4"
-			HorizontalAlignment="Center" VerticalAlignment="Bottom"
-			BorderThickness="0"
-			IsOpen="{x:Bind Controller.uTip_IsOpen}"
-			Severity="{x:Bind Controller.uTip_Severity}"
-			Title="{x:Bind Controller.uTip_Title}"
-			Message="{x:Bind Controller.uTip_Message}"
 			Transitions="{StaticResource ContentThemeTransitionCollection}"
-		/>
+			>
+			<interactivity:Interaction.Behaviors>
+				<communityBehaviors:StackedNotificationsBehavior x:Name="uNotificationsBehavior" x:FieldModifier="public" />
+			</interactivity:Interaction.Behaviors>
+		</InfoBar>
 	</my:Box>
 </Window>

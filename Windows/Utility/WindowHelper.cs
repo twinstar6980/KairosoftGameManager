@@ -67,18 +67,6 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static void Theme (
-			Window       window,
-			ElementTheme theme
-		) {
-			if (window.Content is FrameworkElement content) {
-				content.RequestedTheme = theme;
-			}
-			return;
-		}
-
-		// ----------------
-
 		public static void Activate (
 			Window window
 		) {

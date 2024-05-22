@@ -4,63 +4,120 @@
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
 using Windows.ApplicationModel;
+using Microsoft.UI;
 using Newtonsoft.Json;
 
 namespace KairosoftGameManager {
 
-	public class Setting {
+	[JsonObject(ItemRequired = Required.AllowNull)]
+	public record SettingData {
+		public Integer                                Version                   = default!;
+		public ElementTheme                           ThemeMode                 = default!;
+		public String                                 RepositoryDirectory       = default!;
+		public String                                 ProgramFileOfIl2CppDumper = default!;
+		public SortedDictionary<String, List<String>> TestedGame                = default!;
+	}
 
-		#region data
+	public record SettingState {
+		public ElementTheme? ThemeMode = default!;
+	}
 
-		[JsonObject(ItemRequired = Required.AllowNull)]
-		public class SettingData {
-			public required Integer                                Version;
-			public required ElementTheme                           ThemeMode;
-			public required String                                 RepositoryDirectory;
-			public required String                                 ProgramFileOfIl2CppDumper;
-			public required SortedDictionary<String, List<String>> TestedGame;
+	public class SettingProvider {
+
+		#region structor
+
+		public SettingData Data;
+
+		public SettingState State;
+
+		// ----------------
+
+		public SettingProvider (
+		) {
+			this.Data = SettingProvider.CreateDefaultData();
+			this.State = SettingProvider.CreateDefaultState();
 		}
 
 		#endregion
 
-		#region loader
+		#region action
 
-		public static SettingData Data = null!;
+		public async Task Reset (
+		) {
+			this.Data = SettingProvider.CreateDefaultData();
+			this.State = SettingProvider.CreateDefaultState();
+			return;
+		}
 
-		public static readonly String File = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "Setting.json");
+		public async Task Apply (
+		) {
+			// ThemeMode
+			if (this.State.ThemeMode != this.Data.ThemeMode && App.MainWindowIsInitialized) {
+				App.MainWindow.Content.AsClass<FrameworkElement>().RequestedTheme = this.Data.ThemeMode;
+				App.MainWindow.AppWindow.TitleBar.ButtonForegroundColor = this.Data.ThemeMode switch {
+					ElementTheme.Default => null,
+					ElementTheme.Light   => Colors.Black,
+					ElementTheme.Dark    => Colors.White,
+					_                    => throw new (),
+				};
+				this.State.ThemeMode = this.Data.ThemeMode;
+			}
+			return;
+		}
+
+		#endregion
+
+		#region storage
+
+		public String File {
+			get {
+				return StorageHelper.ToWindowsStyle($"{App.SharedDirectory}/Setting.json");
+			}
+		}
 
 		// ----------------
 
-		public static async Task Load (
+		public async Task Load (
+			String? file = null
 		) {
-			Setting.Data = await JsonHelper.DeserializeFile<SettingData>(Setting.File);
+			file ??= this.File;
+			this.Data = await JsonHelper.DeserializeFile<SettingData>(file);
+			GF.AssertTest(this.Data.Version == Package.Current.Id.Version.Major);
 			return;
 		}
 
-		public static async Task Save (
+		public async Task Save (
+			String? file  = null,
+			Boolean apply = true
 		) {
-			WindowHelper.Current.ForEach((item) => { WindowHelper.Theme(item, Setting.Data.ThemeMode); });
-			await JsonHelper.SerializeFile<SettingData>(Setting.File, Setting.Data);
+			file ??= this.File;
+			if (apply) {
+				await this.Apply();
+			}
+			await JsonHelper.SerializeFile<SettingData>(file, this.Data);
 			return;
 		}
 
-		public static async Task Initialize (
+		#endregion
+
+		#region utility
+
+		private static SettingData CreateDefaultData (
 		) {
-			try {
-				await Setting.Load();
-				GF.AssertTest(Setting.Data.Version == Package.Current.Id.Version.Major);
-			}
-			catch (Exception) {
-				Setting.Data = new () {
-					Version = Package.Current.Id.Version.Major,
-					ThemeMode = ElementTheme.Default,
-					RepositoryDirectory = "C:/Program Files (x86)/Steam",
-					ProgramFileOfIl2CppDumper = "",
-					TestedGame = GameUtility.TestedGame,
-				};
-			}
-			await Setting.Save();
-			return;
+			return new () {
+				Version = Package.Current.Id.Version.Major,
+				ThemeMode = ElementTheme.Default,
+				RepositoryDirectory = "C:/Program Files (x86)/Steam",
+				ProgramFileOfIl2CppDumper = "",
+				TestedGame = GameUtility.TestedGame,
+			};
+		}
+
+		private static SettingState CreateDefaultState (
+		) {
+			return new () {
+				ThemeMode = null,
+			};
 		}
 
 		#endregion

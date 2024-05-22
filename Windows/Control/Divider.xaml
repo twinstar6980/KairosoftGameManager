@@ -5,15 +5,23 @@
 	xmlns:communityControls="using:CommunityToolkit.WinUI.Controls"
 	xmlns:local="using:KairosoftGameManager"
 	xmlns:my="using:KairosoftGameManager.Control"
->
+	>
 	<Style TargetType="my:Divider">
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="my:Divider">
-					<Rectangle
-						HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-						Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
-					/>
+					<my:Box
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						>
+						<Rectangle
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							MinWidth="{StaticResource DividerThickness}"
+							MinHeight="{StaticResource DividerThickness}"
+							Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+							/>
+					</my:Box>
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>

@@ -29,12 +29,12 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void PublishTip (
+		public async void PublishNotification (
 			InfoBarSeverity severity,
 			String          title,
 			String          message,
 			Size            duration = 4000
-		) => this.Controller.PublishTip(severity, title, message, duration);
+		) => this.Controller.PublishNotification(severity, title, message, duration);
 
 		#endregion
 
@@ -57,36 +57,18 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void PublishTip (
+		public async void PublishNotification (
 			InfoBarSeverity severity,
 			String          title,
 			String          message,
 			Size            duration = 4000
 		) {
-			this.uTip_IsOpen = false;
-			this.uTip_Severity = severity;
-			this.uTip_Title = title;
-			this.uTip_Message = message;
-			this.NotifyPropertyChanged(
-				nameof(this.uTip_IsOpen),
-				nameof(this.uTip_Severity),
-				nameof(this.uTip_Title),
-				nameof(this.uTip_Message)
-			);
-			await Task.Delay(80);
-			this.uTip_IsOpen = true;
-			this.NotifyPropertyChanged(
-				nameof(this.uTip_IsOpen)
-			);
-			this.uTip_vDelayCount++;
-			await Task.Delay(duration);
-			this.uTip_vDelayCount--;
-			if (this.uTip_vDelayCount == 0) {
-				this.uTip_IsOpen = false;
-				this.NotifyPropertyChanged(
-					nameof(this.uTip_IsOpen)
-				);
-			}
+			this.View.uNotificationsBehavior.Show(new () {
+				Severity = severity,
+				Title = title,
+				Message = message,
+				Duration = TimeSpan.FromMilliseconds(duration),
+			});
 			return;
 		}
 
@@ -120,22 +102,6 @@ namespace KairosoftGameManager.View {
 			}
 			return;
 		}
-
-		#endregion
-
-		#region tip
-
-		public Boolean uTip_IsOpen { get; set; } = false;
-
-		public InfoBarSeverity uTip_Severity { get; set; } = InfoBarSeverity.Informational;
-
-		public String uTip_Title { get; set; } = "";
-
-		public String uTip_Message { get; set; } = "";
-
-		// ----------------
-
-		public Size uTip_vDelayCount { get; set; } = 0;
 
 		#endregion
 

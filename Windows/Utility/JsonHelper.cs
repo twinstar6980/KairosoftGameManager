@@ -2,6 +2,7 @@
 // ReSharper disable
 
 using KairosoftGameManager;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -19,6 +20,7 @@ namespace KairosoftGameManager.Utility {
 				new StringEnumConverter() {
 					NamingStrategy = new SnakeCaseNamingStrategy(),
 				},
+				new TupleJsonConverter(),
 			],
 			ContractResolver = new DefaultContractResolver() {
 				NamingStrategy = new SnakeCaseNamingStrategy(),
@@ -87,6 +89,52 @@ namespace KairosoftGameManager.Utility {
 			TValue value
 		) {
 			return JsonHelper.DeserializeToken<TValue>(JsonHelper.SerializeToken(value));
+		}
+
+		#endregion
+
+		#region converter
+
+		public class TupleJsonConverter : JsonConverter {
+
+			public override Boolean CanConvert (
+				Type objectType
+			) {
+				return ConvertHelper.IsTypeOfTuple(objectType) || ConvertHelper.IsTypeOfValueTuple(objectType);
+			}
+
+			public override void WriteJson (
+				JsonWriter     writer,
+				Object?        value,
+				JsonSerializer serializer
+			) {
+				if (value is null) {
+					serializer.Serialize(writer, null);
+					return;
+				}
+				var values = value.AsClass<ITuple>();
+				var types = value.GetType().GetGenericArguments();
+				var token = new JArray(types.Select((type, index) => (values[index] is null ? null : JToken.FromObject(values[index].AsNotNull(), serializer))));
+				serializer.Serialize(writer, token);
+				return;
+			}
+
+			public override Object? ReadJson (
+				JsonReader     reader,
+				Type           objectType,
+				Object?        existingValue,
+				JsonSerializer serializer
+			) {
+				var token = serializer.Deserialize<JArray>(reader);
+				if (token is null) {
+					return null;
+				}
+				var types = objectType.GetGenericArguments();
+				GF.AssertTest(token.Count == types.Length);
+				var values = objectType.GetConstructor(types).AsNotNull().Invoke(types.Select((type, index) => (token[index].ToObject(type, serializer))).ToArray());
+				return values;
+			}
+
 		}
 
 		#endregion

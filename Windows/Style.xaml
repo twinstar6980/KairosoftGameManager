@@ -5,52 +5,24 @@
 	xmlns:communityControls="using:CommunityToolkit.WinUI.Controls"
 	xmlns:local="using:KairosoftGameManager"
 	xmlns:my="using:KairosoftGameManager.Control"
-	xmlns:ui="using:Windows.UI"
->
+	>
 	<!-- Common -->
-	<ResourceDictionary.ThemeDictionaries>
-		<ResourceDictionary x:Key="Light">
-			<ui:Color x:Key="StaticAttentionColor">#0078D4</ui:Color>
-		</ResourceDictionary>
-		<ResourceDictionary x:Key="Dark">
-			<ui:Color x:Key="StaticAttentionColor">#4CC2FF</ui:Color>
-		</ResourceDictionary>
-	</ResourceDictionary.ThemeDictionaries>
 	<Thickness x:Key="BorderThickness">1</Thickness>
 	<x:Double x:Key="DividerThickness">1</x:Double>
-	<TransitionCollection x:Key="ContentThemeTransitionCollection">
-		<ContentThemeTransition />
-	</TransitionCollection>
-	<!-- ScrollViewer -->
-	<Style TargetType="ScrollViewer" BasedOn="{StaticResource DefaultScrollViewerStyle}">
-		<Setter Property="HorizontalScrollMode" Value="Disabled" />
-		<Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
-		<Setter Property="VerticalScrollMode" Value="Disabled" />
-		<Setter Property="VerticalScrollBarVisibility" Value="Disabled" />
-	</Style>
-	<!-- FontIcon -->
-	<Style TargetType="FontIcon">
-		<Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
-	</Style>
 	<x:Double x:Key="SmallIconSize">17</x:Double>
 	<x:Double x:Key="MediumIconSize">19</x:Double>
 	<x:Double x:Key="LargeIconSize">21</x:Double>
-	<!-- TextBox -->
-	<Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
-		<Setter Property="IsSpellCheckEnabled" Value="False" />
-	</Style>
+	<TransitionCollection x:Key="ContentThemeTransitionCollection">
+		<ContentThemeTransition />
+	</TransitionCollection>
 	<!-- InfoBadge -->
 	<Style x:Key="AttentionDotInfoBadgeStyle" TargetType="InfoBadge" BasedOn="{StaticResource AttentionDotInfoBadgeStyle}">
-		<Setter Property="Background" Value="{ThemeResource StaticAttentionColor}" />
+		<Setter Property="Background" Value="{ThemeResource FluentColor.Information}" />
 	</Style>
 	<Style x:Key="AttentionValueInfoBadgeStyle" TargetType="InfoBadge" BasedOn="{StaticResource AttentionValueInfoBadgeStyle}">
-		<Setter Property="Background" Value="{ThemeResource StaticAttentionColor}" />
+		<Setter Property="Background" Value="{ThemeResource FluentColor.Information}" />
 	</Style>
 	<Style x:Key="AttentionIconInfoBadgeStyle" TargetType="InfoBadge" BasedOn="{StaticResource AttentionIconInfoBadgeStyle}">
-		<Setter Property="Background" Value="{ThemeResource StaticAttentionColor}" />
-	</Style>
-	<!-- MenuFlyout -->
-	<Style TargetType="MenuFlyoutPresenter" BasedOn="{StaticResource DefaultMenuFlyoutPresenterStyle}">
-		<Setter Property="BorderBrush" Value="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" />
+		<Setter Property="Background" Value="{ThemeResource FluentColor.Information}" />
 	</Style>
 </ResourceDictionary>

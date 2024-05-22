@@ -58,6 +58,7 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var dialog = new ContentDialog() {
 				XamlRoot = root.XamlRoot,
+				RequestedTheme = root.XamlRoot.Content.AsClass<FrameworkElement>().RequestedTheme,
 				Title = title,
 				Content = content,
 				CloseButtonText = "Close",
@@ -75,6 +76,7 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var dialog = new ContentDialog() {
 				XamlRoot = root.XamlRoot,
+				RequestedTheme = root.XamlRoot.Content.AsClass<FrameworkElement>().RequestedTheme,
 				Resources = [
 					new ("ContentDialogMinWidth", size?.Item1 ?? 720.0),
 					new ("ContentDialogMaxWidth", size?.Item1 ?? 720.0),
@@ -83,8 +85,12 @@ namespace KairosoftGameManager.Utility {
 				],
 				Title = title,
 				Content = new ScrollViewer() {
-					IsTabStop = true,
+					HorizontalAlignment = HorizontalAlignment.Stretch,
+					VerticalAlignment = VerticalAlignment.Stretch,
 					Padding = new (12, 0, 12, 0),
+					IsTabStop = true,
+					HorizontalScrollMode = ScrollMode.Disabled,
+					HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
 					VerticalScrollMode = ScrollMode.Enabled,
 					VerticalScrollBarVisibility = ScrollBarVisibility.Visible,
 					Content = content,
@@ -103,19 +109,21 @@ namespace KairosoftGameManager.Utility {
 			String?   title,
 			Object?   content
 		) {
+			var result = false;
 			var dialog = new ContentDialog() {
 				XamlRoot = root.XamlRoot,
+				RequestedTheme = root.XamlRoot.Content.AsClass<FrameworkElement>().RequestedTheme,
 				Title = title ?? "Pausing ...",
 				Content = content,
 				PrimaryButtonText = "Continue",
 				CloseButtonText = "Cancel",
 				DefaultButton = ContentDialogButton.Primary,
-			};
-			var result = false;
-			dialog.Closed += (sender, args) => {
-				result = args.Result == ContentDialogResult.Primary;
-				return;
-			};
+			}.ApplySelf((it) => {
+				it.Closed += (_, args) => {
+					result = args.Result == ContentDialogResult.Primary;
+					return;
+				};
+			});
 			await ControlHelper.PushDialog(dialog);
 			return result;
 		}
@@ -127,9 +135,11 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var dialog = new ContentDialog() {
 				XamlRoot = root.XamlRoot,
+				RequestedTheme = root.XamlRoot.Content.AsClass<FrameworkElement>().RequestedTheme,
 				Title = title ?? "Waiting ...",
 				Content = content ?? new ProgressBar() {
 					HorizontalAlignment = HorizontalAlignment.Stretch,
+					VerticalAlignment = VerticalAlignment.Center,
 					IsIndeterminate = true,
 				},
 				CloseButtonText = "Hide",
