@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <OutDir>$(SolutionDir).build\bin\$(MSBuildProjectName)\$(Platform).$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir).build\obj\$(MSBuildProjectName)\$(Platform).$(Configuration)\</IntDir>
+    <BaseOutputPath>$(SolutionDir).build\bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <OutputPath>$(SolutionDir).build\bin\$(MSBuildProjectName)\$(Platform).$(Configuration)\</OutputPath>
+    <BaseIntermediateOutputPath>$(SolutionDir).build\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(SolutionDir).build\obj\$(MSBuildProjectName)\$(Platform).$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
+</Project>

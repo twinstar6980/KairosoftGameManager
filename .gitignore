@@ -1,6 +1,23 @@
+# Git
+/.git
 
-/Windows/.vs
-/Windows/bin
-/Windows/obj
-/Windows/KairosoftGameManager.csproj.user
-/Windows/.editorconfig
+# System - Windows
+/**/desktop.ini
+
+# System - Macintosh
+/**/.DS_Store
+
+# Environment - Visual Studio
+/**/.vs
+/**/*.vcxproj.user
+/**/*.csproj.user
+
+# Environment - Visual Studio Code
+/**/.vscode
+
+# Common
+/common/certificate
+
+# Part - Windows
+/Windows/.build
+/Windows/Application/.editorconfig

@@ -1,7 +1,0 @@
-{
-  "profiles": {
-    "KairosoftGameManager (Package)": {
-      "commandName": "MsixPackage"
-    }
-  }
-}
