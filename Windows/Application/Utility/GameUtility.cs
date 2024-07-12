@@ -468,7 +468,7 @@ namespace KairosoftGameManager.Utility {
 				var searchResult = GameUtility.SearchFieldFromDumpData(dumpData, "MyConfig", "DEBUG");
 				GF.AssertTest(searchResult != null);
 				symbolAddress.MyConfig.DEBUG.Add(searchResult.Item1);
-				onNotify($"The symbol 'MyConfig.DEBUG' at {symbolAddress.MyConfig.DEBUG:x8}.");
+				onNotify($"The symbol 'MyConfig.DEBUG' at +{symbolAddress.MyConfig.DEBUG[0]:x8}.");
 			}
 			onNotify($"Phase: load original program.");
 			var programData = await StorageHelper.ReadFile(programBackupFile);
