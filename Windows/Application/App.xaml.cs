@@ -55,7 +55,7 @@ namespace KairosoftGameManager {
 			var window = default(Window);
 			try {
 				App.PackageDirectory = StorageHelper.Parent(Environment.GetCommandLineArgs()[0]).AsNotNull();
-				App.ProgramFile = $"{App.PackageDirectory}/KairosoftGameManager.exe";
+				App.ProgramFile = $"{App.PackageDirectory}/Application.exe";
 				App.SharedDirectory = StorageHelper.Regularize(Windows.Storage.ApplicationData.Current.LocalFolder.Path);
 				App.CacheDirectory = $"{App.SharedDirectory}/Cache";
 				try {
@@ -104,7 +104,12 @@ namespace KairosoftGameManager {
 			if (App.MainWindowIsInitialized) {
 				args.Handled = true;
 				try {
-					_ = ControlHelper.ShowDialogSimple(App.MainWindow.Content, "Unhandled Exception", args.Exception.ToString());
+					_ = ControlHelper.ShowDialogAsAutomatic(App.MainWindow.Content, "Unhandled Exception", new TextBlock() {
+						HorizontalAlignment = HorizontalAlignment.Stretch,
+						VerticalAlignment = VerticalAlignment.Stretch,
+						TextWrapping = TextWrapping.Wrap,
+						Text = args.Exception.ToString(),
+					}, null);
 				}
 				catch (Exception) {
 					// ignored

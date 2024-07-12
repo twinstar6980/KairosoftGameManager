@@ -55,7 +55,7 @@ namespace KairosoftGameManager.View {
 			this.NotifyPropertyChanged(
 				nameof(this.uRepositoryDirectoryCount_Value)
 			);
-			var closeDialog = await ControlHelper.ShowDialogForWaiting(this.View, null, null);
+			var hideDialog = await ControlHelper.ShowDialogForWait(this.View);
 			try {
 				GF.AssertTest(await GameUtility.CheckRepositoryDirectory(App.Setting.Data.RepositoryDirectory));
 				var gameConfigurationList = new List<GameConfiguration>();
@@ -73,7 +73,7 @@ namespace KairosoftGameManager.View {
 			catch (Exception e) {
 				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed to load repository.", e.ToString());
 			}
-			await closeDialog();
+			await hideDialog();
 			this.NotifyPropertyChanged(
 				nameof(this.uRepositoryDirectoryCount_Value)
 			);
@@ -116,7 +116,7 @@ namespace KairosoftGameManager.View {
 		) {
 			var state = true as Boolean?;
 			var shouldReload = false;
-			var closeDialog = await ControlHelper.ShowDialogForWaiting(this.View, null, null);
+			var hideDialog = await ControlHelper.ShowDialogForWait(this.View);
 			try {
 				var cancelled = false;
 				var game = gameController.Configuration;
@@ -152,7 +152,7 @@ namespace KairosoftGameManager.View {
 							controlTrust,
 						},
 					};
-					return await ControlHelper.ShowDialogForPausing(this.View, "Untested Game", controlPanel);
+					return await ControlHelper.ShowDialogForConfirm(this.View, "Untested Game", controlPanel);
 				};
 				switch (action) {
 					case "ReloadGame": {
@@ -225,7 +225,7 @@ namespace KairosoftGameManager.View {
 									controlEnableDebugMode,
 								},
 							};
-							if (!await ControlHelper.ShowDialogForPausing(this.View, "Program Feature", controlPanel)) {
+							if (!await ControlHelper.ShowDialogForConfirm(this.View, "Program Feature", controlPanel)) {
 								cancelled = true;
 								break;
 							}
@@ -304,7 +304,7 @@ namespace KairosoftGameManager.View {
 										controlModeDecrypted,
 									},
 								};
-								if (!await ControlHelper.ShowDialogForPausing(this.View, "Encryption Mode", controlPanel)) {
+								if (!await ControlHelper.ShowDialogForConfirm(this.View, "Encryption Mode", controlPanel)) {
 									cancelled = true;
 									break;
 								}
@@ -326,7 +326,7 @@ namespace KairosoftGameManager.View {
 						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.Windows.ToString().ToLower(), Identity = game.Identity, Version = game.Version };
 						await GameUtility.ImportRecordArchive(archiveFile, recordDirectory, !shouldEncrypt ? null : GameUtility.ConvertKeyFromUser(game.User), async (archiveConfiguration) => {
 							if (archiveConfiguration != archiveConfigurationForLocal) {
-								if (!await ControlHelper.ShowDialogForPausing(this.View, "Record Incompatible", $"This archive may not work with the current game.\nProvided: {GameUtility.MakeRecordArchiveConfigurationText(archiveConfiguration)}\nExpected: {GameUtility.MakeRecordArchiveConfigurationText(archiveConfigurationForLocal)}")) {
+								if (!await ControlHelper.ShowDialogForConfirm(this.View, "Record Incompatible", $"This archive may not work with the current game.\nProvided: {GameUtility.MakeRecordArchiveConfigurationText(archiveConfiguration)}\nExpected: {GameUtility.MakeRecordArchiveConfigurationText(archiveConfigurationForLocal)}")) {
 									cancelled = true;
 									return false;
 								}
@@ -378,7 +378,7 @@ namespace KairosoftGameManager.View {
 				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed.", e.ToString());
 				state = false;
 			}
-			await closeDialog();
+			await hideDialog();
 			if (shouldReload) {
 				await this.ReloadGame(gameController);
 			}
@@ -448,14 +448,14 @@ namespace KairosoftGameManager.View {
 				var state = await this.ActionGame(item, action, actionTemporaryState);
 				result.Add(new (item, state));
 				if (state != null && !state.AsNotNull()) {
-					if (!await ControlHelper.ShowDialogForPausing(this.View, "Error Occurred", $"Failed to action for '{item.Configuration.Name}'.\nWhether to proceed with the remaining item?")) {
+					if (!await ControlHelper.ShowDialogForConfirm(this.View, "Error Occurred", $"Failed to action for '{item.Configuration.Name}'.\nWhether to proceed with the remaining item?")) {
 						break;
 					}
 				}
 			}
 			if (result.Count != this.View.uGameList.SelectedItems.Count || !result.All((value) => (value.Item2 != null && value.Item2.AsNotNull()))) {
 				var report = String.Join('\n', result.Select((value) => ($"{(value.Item2 == null ? "Cancelled" : !value.Item2.AsNotNull() ? "Failed" : "Succeeded")} - {value.Item1.Configuration.Name}")));
-				await ControlHelper.ShowDialogSimple(this.View, "Result Report", report);
+				await ControlHelper.ShowDialogAsAutomatic(this.View, "Result Report", report, null);
 			}
 			return;
 		}

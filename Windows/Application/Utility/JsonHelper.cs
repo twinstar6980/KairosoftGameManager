@@ -138,8 +138,8 @@ namespace KairosoftGameManager.Utility {
 				}
 				var types = objectType.GetGenericArguments();
 				GF.AssertTest(token.Count == types.Length);
-				var values = objectType.GetConstructor(types).AsNotNull().Invoke(types.Select((type, index) => (token[index].ToObject(type, serializer))).ToArray());
-				return values;
+				var values = types.Select((type, index) => (token[index].ToObject(type, serializer))).ToArray();
+				return objectType.GetConstructor(types).AsNotNull().Invoke(values);
 			}
 
 		}

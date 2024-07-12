@@ -270,22 +270,6 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static void TrashFile (
-			String target
-		) {
-			Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
-			return;
-		}
-
-		public static void TrashDirectory (
-			String target
-		) {
-			Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
-			return;
-		}
-
-		// ----------------
-
 		public static async Task<String?> PickLoadFile (
 			Window  host,
 			String? tag
@@ -334,6 +318,22 @@ namespace KairosoftGameManager.Utility {
 				await target.DeleteAsync();
 			}
 			return target == null ? null : StorageHelper.Regularize(target.Path);
+		}
+
+		// ----------------
+
+		public static void TrashFile (
+			String target
+		) {
+			Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
+			return;
+		}
+
+		public static void TrashDirectory (
+			String target
+		) {
+			Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
+			return;
 		}
 
 		#endregion

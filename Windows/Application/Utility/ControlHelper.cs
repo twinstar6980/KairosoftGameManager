@@ -25,7 +25,7 @@ namespace KairosoftGameManager.Utility {
 
 		private static List<ContentDialog> CurrentDialog { get; } = [];
 
-		private static async Task PushDialog (
+		private static async Task<ContentDialogResult> PushDialog (
 			ContentDialog item
 		) {
 			ControlHelper.CurrentDialog.Add(item);
@@ -33,9 +33,11 @@ namespace KairosoftGameManager.Utility {
 				ControlHelper.CurrentDialog[^2].Hide();
 			}
 			var semaphore = new SemaphoreSlim(0, 1);
+			var result = ContentDialogResult.None;
 			var index = ControlHelper.CurrentDialog.Count;
-			item.Closed += (_, _) => {
+			item.Closed += (sender, args) => {
 				if (ControlHelper.CurrentDialog.Count == index) {
+					result = args.Result;
 					semaphore.Release();
 					ControlHelper.CurrentDialog.RemoveAt(index - 1);
 					if (index > 1) {
@@ -46,98 +48,59 @@ namespace KairosoftGameManager.Utility {
 			};
 			_ = item.ShowAsync();
 			await semaphore.WaitAsync();
-			return;
-		}
-
-		// ----------------
-
-		public static async Task ShowDialogSimple (
-			UIElement root,
-			String    title,
-			Object?   content
-		) {
-			var dialog = new ContentDialog() {
-				XamlRoot = root.XamlRoot,
-				RequestedTheme = root.XamlRoot.Content.As<FrameworkElement>().RequestedTheme,
-				Title = title,
-				Content = content,
-				CloseButtonText = "Close",
-				DefaultButton = ContentDialogButton.Close,
-			};
-			await ControlHelper.PushDialog(dialog);
-			return;
-		}
-
-		public static async Task ShowDialogFixed (
-			UIElement          root,
-			String             title,
-			Object?            content,
-			Tuple<Size, Size>? size = null
-		) {
-			var dialog = new ContentDialog() {
-				XamlRoot = root.XamlRoot,
-				RequestedTheme = root.XamlRoot.Content.As<FrameworkElement>().RequestedTheme,
-				Resources = [
-					new ("ContentDialogMinWidth", size?.Item1 ?? 720.0),
-					new ("ContentDialogMaxWidth", size?.Item1 ?? 720.0),
-					new ("ContentDialogMinHeight", size?.Item2 ?? 640.0),
-					new ("ContentDialogMaxHeight", size?.Item2 ?? 640.0),
-				],
-				Title = title,
-				Content = new ScrollViewer() {
-					HorizontalAlignment = HorizontalAlignment.Stretch,
-					VerticalAlignment = VerticalAlignment.Stretch,
-					Padding = new (12, 0, 12, 0),
-					IsTabStop = true,
-					HorizontalScrollMode = ScrollMode.Disabled,
-					HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-					VerticalScrollMode = ScrollMode.Enabled,
-					VerticalScrollBarVisibility = ScrollBarVisibility.Visible,
-					Content = content,
-				},
-				CloseButtonText = "Close",
-				DefaultButton = ContentDialogButton.Close,
-			};
-			await ControlHelper.PushDialog(dialog);
-			return;
-		}
-
-		// ----------------
-
-		public static async Task<Boolean> ShowDialogForPausing (
-			UIElement root,
-			String?   title,
-			Object?   content
-		) {
-			var result = false;
-			var dialog = new ContentDialog() {
-				XamlRoot = root.XamlRoot,
-				RequestedTheme = root.XamlRoot.Content.As<FrameworkElement>().RequestedTheme,
-				Title = title ?? "Pausing ...",
-				Content = content,
-				PrimaryButtonText = "Continue",
-				CloseButtonText = "Cancel",
-				DefaultButton = ContentDialogButton.Primary,
-			}.SelfAlso((it) => {
-				it.Closed += (_, args) => {
-					result = args.Result == ContentDialogResult.Primary;
-					return;
-				};
-			});
-			await ControlHelper.PushDialog(dialog);
 			return result;
 		}
 
-		public static async Task<Func<Task>> ShowDialogForWaiting (
-			UIElement root,
-			String?   title,
-			Object?   content
+		// ----------------
+
+		public static async Task<ContentDialogResult> ShowDialogAsAutomatic (
+			UIElement                         root,
+			String                            title,
+			Object?                           content,
+			Tuple<String?, String?, String?>? action
 		) {
 			var dialog = new ContentDialog() {
 				XamlRoot = root.XamlRoot,
 				RequestedTheme = root.XamlRoot.Content.As<FrameworkElement>().RequestedTheme,
-				Title = title ?? "Waiting ...",
-				Content = content ?? new ProgressBar() {
+				Title = title,
+				Content = content == null
+					? null
+					: new ScrollViewer() {
+						HorizontalAlignment = HorizontalAlignment.Stretch,
+						VerticalAlignment = VerticalAlignment.Stretch,
+						Margin = new (-16, 0, -16, 0),
+						Padding = new (16, 0, 16, 0),
+						IsTabStop = true,
+						HorizontalScrollMode = ScrollMode.Disabled,
+						HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+						VerticalScrollMode = ScrollMode.Enabled,
+						VerticalScrollBarVisibility = ScrollBarVisibility.Visible,
+						Content = content,
+					},
+				CloseButtonText = action == null ? "Close" : action.Item1,
+				PrimaryButtonText = action?.Item2,
+				SecondaryButtonText = action?.Item3,
+				DefaultButton = action == null
+					? ContentDialogButton.Close
+					: action.Item2 != null
+						? ContentDialogButton.Primary
+						: action.Item3 != null
+							? ContentDialogButton.Secondary
+							: ContentDialogButton.Close,
+			};
+			return await ControlHelper.PushDialog(dialog);
+		}
+
+		// ----------------
+
+		public static async Task<Func<Task>> ShowDialogForWait (
+			UIElement root
+		) {
+			var dialog = new ContentDialog() {
+				XamlRoot = root.XamlRoot,
+				RequestedTheme = root.XamlRoot.Content.As<FrameworkElement>().RequestedTheme,
+				Title = "Waiting ...",
+				Content = new ProgressBar() {
 					HorizontalAlignment = HorizontalAlignment.Stretch,
 					VerticalAlignment = VerticalAlignment.Center,
 					IsIndeterminate = true,
@@ -151,6 +114,14 @@ namespace KairosoftGameManager.Utility {
 				await task;
 				return;
 			};
+		}
+
+		public static async Task<Boolean> ShowDialogForConfirm (
+			UIElement root,
+			String?   title,
+			Object?   content
+		) {
+			return await ControlHelper.ShowDialogAsAutomatic(root, title ?? "Confirm ?", content, new ("Cancel", "Continue", null)) == ContentDialogResult.Primary;
 		}
 
 		#endregion
