@@ -11,8 +11,9 @@ using Microsoft.UI.Xaml.Media;
 namespace KairosoftGameManager.Utility {
 
 	public enum GamePlatform {
-		Windows,
-		Android,
+		WindowsX32,
+		AndroidA32,
+		AndroidA64,
 	}
 
 	public enum GameRecordState {
@@ -146,10 +147,17 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var type = null as GamePlatform?;
 			if (StorageHelper.ExistFile($"{gameDirectory}/KairoGames.exe")) {
-				type = GamePlatform.Windows;
+				if (StorageHelper.ExistFile($"{gameDirectory}/GameAssembly.dll")) {
+					type = GamePlatform.WindowsX32;
+				}
 			}
-			else if (StorageHelper.ExistFile($"{gameDirectory}/AndroidManifest.xml")) {
-				type = GamePlatform.Android;
+			if (StorageHelper.ExistFile($"{gameDirectory}/AndroidManifest.xml")) {
+				if (StorageHelper.ExistFile($"{gameDirectory}/lib/armeabi-v7a/libil2cpp.so")) {
+					type = GamePlatform.AndroidA32;
+				}
+				if (StorageHelper.ExistFile($"{gameDirectory}/lib/arm64-v8a/libil2cpp.so")) {
+					type = GamePlatform.AndroidA64;
+				}
 			}
 			return type;
 		}
@@ -303,9 +311,11 @@ namespace KairosoftGameManager.Utility {
 			return result;
 		}
 
-		private const IntegerU8 InstructionCodeNopX86 = 0x90;
+		private const IntegerU8 InstructionCodeNopX32 = 0x90;
 
-		private const IntegerU32 InstructionCodeNopArm = 0xE320F000;
+		private const IntegerU32 InstructionCodeNopA32 = 0xE320F000;
+
+		private const IntegerU32 InstructionCodeNopA64 = 0xD503201F;
 
 		private static Boolean FindCallInstruction (
 			Span<Byte>   data,
@@ -317,11 +327,11 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var state = false;
 			var end = Math.Min(data.Length, position + limit);
-			if (platform == GamePlatform.Windows) {
+			if (platform == GamePlatform.WindowsX32) {
 				while (position < end) {
 					var instructionCode = data[position];
 					position += 1;
-					// call <offset> = E8 XX XX XX XX
+					// call #X = E8 XX XX XX XX
 					if (instructionCode != 0xE8u) {
 						continue;
 					}
@@ -334,21 +344,21 @@ namespace KairosoftGameManager.Utility {
 					}
 					if (overwrite) {
 						position -= 5;
-						data[position++] = GameUtility.InstructionCodeNopX86;
-						data[position++] = GameUtility.InstructionCodeNopX86;
-						data[position++] = GameUtility.InstructionCodeNopX86;
-						data[position++] = GameUtility.InstructionCodeNopX86;
-						data[position++] = GameUtility.InstructionCodeNopX86;
+						data[position++] = GameUtility.InstructionCodeNopX32;
+						data[position++] = GameUtility.InstructionCodeNopX32;
+						data[position++] = GameUtility.InstructionCodeNopX32;
+						data[position++] = GameUtility.InstructionCodeNopX32;
+						data[position++] = GameUtility.InstructionCodeNopX32;
 					}
 					state = true;
 					break;
 				}
 			}
-			if (platform == GamePlatform.Android) {
+			if (platform == GamePlatform.AndroidA32) {
 				while (position < end) {
 					var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(data.Slice(position, 4));
 					position += 4;
-					// bl <offset> = EB XX XX XX
+					// bl #X = EB XX XX XX
 					if ((instructionCode & 0xFF000000u) != 0xEB000000u) {
 						continue;
 					}
@@ -361,7 +371,30 @@ namespace KairosoftGameManager.Utility {
 						continue;
 					}
 					if (overwrite) {
-						BinaryPrimitives.TryWriteUInt32LittleEndian(data.Slice(position - 4, 4), GameUtility.InstructionCodeNopArm);
+						BinaryPrimitives.TryWriteUInt32LittleEndian(data.Slice(position - 4, 4), GameUtility.InstructionCodeNopA32);
+					}
+					state = true;
+					break;
+				}
+			}
+			if (platform == GamePlatform.AndroidA64) {
+				while (position < end) {
+					var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(data.Slice(position, 4));
+					position += 4;
+					// bl #X = 97 XX XX XX
+					if ((instructionCode & 0xFF000000u) != 0x97000000u) {
+						continue;
+					}
+					var jumpOffset = (Size)(instructionCode & 0x00FFFFFFu);
+					if ((jumpOffset & 0x800000u) == 0x800000u) {
+						jumpOffset = -(0x1000000 - jumpOffset);
+					}
+					var jumpAddress = position - 4 + jumpOffset * 4;
+					if (!address.Contains(jumpAddress)) {
+						continue;
+					}
+					if (overwrite) {
+						BinaryPrimitives.TryWriteUInt32LittleEndian(data.Slice(position - 4, 4), GameUtility.InstructionCodeNopA64);
 					}
 					state = true;
 					break;
@@ -383,14 +416,16 @@ namespace KairosoftGameManager.Utility {
 			GF.AssertTest(platform != null);
 			onNotify($"The game platform is '{platform}'.");
 			var programFile = platform switch {
-				GamePlatform.Windows => $"{targetDirectory}/GameAssembly.dll",
-				GamePlatform.Android => $"{targetDirectory}/lib/armeabi-v7a/libil2cpp.so",
-				_                    => throw new (),
+				GamePlatform.WindowsX32 => $"{targetDirectory}/GameAssembly.dll",
+				GamePlatform.AndroidA32 => $"{targetDirectory}/lib/armeabi-v7a/libil2cpp.so",
+				GamePlatform.AndroidA64 => $"{targetDirectory}/lib/arm64-v8a/libil2cpp.so",
+				_                       => throw new (),
 			};
 			var metadataFile = platform switch {
-				GamePlatform.Windows => $"{targetDirectory}/KairoGames_Data/il2cpp_data/Metadata/global-metadata.dat",
-				GamePlatform.Android => $"{targetDirectory}/assets/bin/Data/Managed/Metadata/global-metadata.dat",
-				_                    => throw new (),
+				GamePlatform.WindowsX32 => $"{targetDirectory}/KairoGames_Data/il2cpp_data/Metadata/global-metadata.dat",
+				GamePlatform.AndroidA32 => $"{targetDirectory}/assets/bin/Data/Managed/Metadata/global-metadata.dat",
+				GamePlatform.AndroidA64 => $"{targetDirectory}/assets/bin/Data/Managed/Metadata/global-metadata.dat",
+				_                       => throw new (),
 			};
 			var programBackupFile = $"{targetDirectory}/{GameUtility.BackupDirectory}{(backupToken == null ? "" : $"_{backupToken}")}/{GameUtility.BackupProgramFile}";
 			onNotify($"Phase: check game file.");
@@ -432,43 +467,43 @@ namespace KairosoftGameManager.Utility {
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "CRC64", "GetValue");
 				GF.AssertTest(searchResult.Count == 1);
 				symbolAddress.CRC64.GetValue.AddRange(searchResult.Select((value) => value.Item1));
-				onNotify($"The symbol 'CRC64.GetValue' at {String.Join(',', symbolAddress.CRC64.GetValue.Select((value) => ($"{value:x8}")))}.");
+				onNotify($"The symbol 'CRC64.GetValue' at {String.Join(',', symbolAddress.CRC64.GetValue.Select((value) => ($"{value:x}")))}.");
 			}
 			{
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "Encrypter", "Encode");
 				GF.AssertTest(searchResult.Count == 3);
 				symbolAddress.Encrypter.Encode.AddRange(searchResult.Select((value) => value.Item1));
-				onNotify($"The symbol 'Encrypter.Encode' at {String.Join(',', symbolAddress.Encrypter.Encode.Select((value) => ($"{value:x8}")))}.");
+				onNotify($"The symbol 'Encrypter.Encode' at {String.Join(',', symbolAddress.Encrypter.Encode.Select((value) => ($"{value:x}")))}.");
 			}
 			{
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "Encrypter", "Decode");
 				GF.AssertTest(searchResult.Count == 3);
 				symbolAddress.Encrypter.Decode.AddRange(searchResult.Select((value) => value.Item1));
-				onNotify($"The symbol 'Encrypter.Decode' at {String.Join(',', symbolAddress.Encrypter.Decode.Select((value) => ($"{value:x8}")))}.");
+				onNotify($"The symbol 'Encrypter.Decode' at {String.Join(',', symbolAddress.Encrypter.Decode.Select((value) => ($"{value:x}")))}.");
 			}
 			{
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "RecordStore", "ReadRecord").Where((value) => (!value.Item3 && value.Item5 == "int rcId")).ToList();
 				GF.AssertTest(searchResult.Count == 1);
 				symbolAddress.RecordStore.ReadRecord.Add(searchResult[0].Item1);
-				onNotify($"The symbol 'RecordStore.ReadRecord' at {symbolAddress.RecordStore.ReadRecord[0]:x8}.");
+				onNotify($"The symbol 'RecordStore.ReadRecord' at {symbolAddress.RecordStore.ReadRecord[0]:x}.");
 			}
 			{
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "RecordStore", "WriteRecord").Where((value) => (!value.Item3 && value.Item5 == "int rcId, byte[][] data")).ToList();
 				GF.AssertTest(searchResult.Count == 1);
 				symbolAddress.RecordStore.WriteRecord.Add(searchResult[0].Item1);
-				onNotify($"The symbol 'RecordStore.WriteRecord' at {symbolAddress.RecordStore.WriteRecord[0]:x8}.");
+				onNotify($"The symbol 'RecordStore.WriteRecord' at {symbolAddress.RecordStore.WriteRecord[0]:x}.");
 			}
 			{
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "MyConfig", ".cctor");
 				GF.AssertTest(searchResult.Count == 1);
 				symbolAddress.MyConfig._cctor.Add(searchResult[0].Item1);
-				onNotify($"The symbol 'MyConfig..cctor' at {symbolAddress.MyConfig._cctor[0]:x8}.");
+				onNotify($"The symbol 'MyConfig..cctor' at {symbolAddress.MyConfig._cctor[0]:x}.");
 			}
 			{
 				var searchResult = GameUtility.SearchFieldFromDumpData(dumpData, "MyConfig", "DEBUG");
 				GF.AssertTest(searchResult != null);
 				symbolAddress.MyConfig.DEBUG.Add(searchResult.Item1);
-				onNotify($"The symbol 'MyConfig.DEBUG' at +{symbolAddress.MyConfig.DEBUG[0]:x8}.");
+				onNotify($"The symbol 'MyConfig.DEBUG' at +{symbolAddress.MyConfig.DEBUG[0]:x}.");
 			}
 			onNotify($"Phase: load original program.");
 			var programData = await StorageHelper.ReadFile(programBackupFile);
@@ -479,7 +514,7 @@ namespace KairosoftGameManager.Utility {
 				GF.AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Decode, true, platform.AsNotNull()));
 				GF.AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Decode, true, platform.AsNotNull()));
 				GF.AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.CRC64.GetValue, false, platform.AsNotNull()));
-				if (platform == GamePlatform.Windows) {
+				if (platform == GamePlatform.WindowsX32) {
 					// add esp, .. = 83 C4 XX
 					GF.AssertTest(programData[programPosition] == 0x83);
 					programPosition++;
@@ -488,19 +523,26 @@ namespace KairosoftGameManager.Utility {
 					programPosition++;
 					// cmp eax, .. = 3B XX XX
 					GF.AssertTest(programData[programPosition] == 0x3B);
-					programData[programPosition++] = GameUtility.InstructionCodeNopX86;
-					programData[programPosition++] = GameUtility.InstructionCodeNopX86;
-					programData[programPosition++] = GameUtility.InstructionCodeNopX86;
+					programData[programPosition++] = GameUtility.InstructionCodeNopX32;
+					programData[programPosition++] = GameUtility.InstructionCodeNopX32;
+					programData[programPosition++] = GameUtility.InstructionCodeNopX32;
 					// jnz .. = 75 XX
 					GF.AssertTest(programData[programPosition] == 0x75);
-					programData[programPosition++] = GameUtility.InstructionCodeNopX86;
-					programData[programPosition++] = GameUtility.InstructionCodeNopX86;
+					programData[programPosition++] = GameUtility.InstructionCodeNopX32;
+					programData[programPosition++] = GameUtility.InstructionCodeNopX32;
 				}
-				if (platform == GamePlatform.Android) {
+				if (platform == GamePlatform.AndroidA32) {
 					programPosition += 12;
-					// bne <offset> = 1A XX XX XX
+					// bne #X = 1A XX XX XX
 					GF.AssertTest((BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4)) & 0xFF000000) == 0x1A000000);
-					BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4), GameUtility.InstructionCodeNopArm);
+					BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4), GameUtility.InstructionCodeNopA32);
+					programPosition += 4;
+				}
+				if (platform == GamePlatform.AndroidA64) {
+					programPosition += 8;
+					// bne #X = 54 XX XX XX
+					GF.AssertTest((BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4)) & 0xFF000000) == 0x54000000);
+					BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4), GameUtility.InstructionCodeNopA64);
 					programPosition += 4;
 				}
 			}
@@ -513,8 +555,9 @@ namespace KairosoftGameManager.Utility {
 			if (enableDebugMode) {
 				onNotify($"Phase: modify method 'MyConfig..cctor'.");
 				programPosition = symbolAddress.MyConfig._cctor[0];
-				if (platform == GamePlatform.Windows) {
-					while (programPosition < symbolAddress.MyConfig._cctor[0] + 0x100) {
+				var searchLimit = 512;
+				if (platform == GamePlatform.WindowsX32) {
+					while (programPosition < symbolAddress.MyConfig._cctor[0] + searchLimit) {
 						// mov byte ptr [eax+X], 0 = C6 40 XX 00
 						if (programData[programPosition] != 0xC6) {
 							programPosition++;
@@ -533,12 +576,44 @@ namespace KairosoftGameManager.Utility {
 							continue;
 						}
 						programData[programPosition++] = 0x01;
+						onNotify($"Warning : the STR instruction for 'MyConfig.DEBUG' was found at {(programPosition - 4):x}, but this modification may cause error.");
 						break;
 					}
+					GF.AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
 				}
-				if (platform == GamePlatform.Android) {
-					// TODO
-					onNotify($"Skipped this phase because not yet implemented for platform 'android'.");
+				if (platform == GamePlatform.AndroidA32) {
+					while (programPosition < symbolAddress.MyConfig._cctor[0] + searchLimit) {
+						// strb rX, [rY, #Z] = 111001011100 YYYY XXXX ZZZZZZZZZZZZ
+						var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4));
+						programPosition += 4;
+						if ((instructionCode & 0b111111111111_0000_0000_000000000000) != 0b111001011100_0000_0000_000000000000) {
+							continue;
+						}
+						if ((instructionCode & 0b000000000000_0000_0000_111111111111) >> 0 != symbolAddress.MyConfig.DEBUG.First() + 4) {
+							continue;
+						}
+						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b111111111111_1111_0000_000000000000u) | (14u << 12) | ((USize)symbolAddress.MyConfig.DEBUG.First() << 0));
+						onNotify($"Warning : the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
+						break;
+					}
+					GF.AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
+				}
+				if (platform == GamePlatform.AndroidA64) {
+					while (programPosition < symbolAddress.MyConfig._cctor[0] + searchLimit) {
+						// strb wX, [xY, #Z] = 0011100100 ZZZZZZZZZZZZ YYYYY XXXXX
+						var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4));
+						programPosition += 4;
+						if ((instructionCode & 0b1111111111_000000000000_00000_00000) != 0b0011100100_000000000000_00000_00000) {
+							continue;
+						}
+						if ((instructionCode & 0b0000000000_111111111111_00000_00000) >> 10 != symbolAddress.MyConfig.DEBUG.First() + 4) {
+							continue;
+						}
+						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b1111111111_000000000000_11111_00000u) | ((USize)symbolAddress.MyConfig.DEBUG.First() << 10) | (30u << 0));
+						onNotify($"Warning : the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
+						break;
+					}
+					GF.AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
 				}
 			}
 			onNotify($"Phase: save modified program.");

@@ -323,7 +323,7 @@ namespace KairosoftGameManager.View {
 						if (StorageHelper.ExistDirectory(recordDirectory)) {
 							StorageHelper.TrashDirectory(recordDirectory);
 						}
-						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.Windows.ToString().ToLower(), Identity = game.Identity, Version = game.Version };
+						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.WindowsX32.ToString().ToLower(), Identity = game.Identity, Version = game.Version };
 						await GameUtility.ImportRecordArchive(archiveFile, recordDirectory, !shouldEncrypt ? null : GameUtility.ConvertKeyFromUser(game.User), async (archiveConfiguration) => {
 							if (archiveConfiguration != archiveConfigurationForLocal) {
 								if (!await ControlHelper.ShowDialogForConfirm(this.View, "Record Incompatible", $"This archive may not work with the current game.\nProvided: {GameUtility.MakeRecordArchiveConfigurationText(archiveConfiguration)}\nExpected: {GameUtility.MakeRecordArchiveConfigurationText(archiveConfigurationForLocal)}")) {
@@ -355,7 +355,7 @@ namespace KairosoftGameManager.View {
 							break;
 						}
 						var recordDirectory = $"{game.Path}/{GameUtility.RecordBundleDirectory}/{game.User}";
-						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.Windows.ToString().ToLower(), Identity = game.Identity, Version = game.Version };
+						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.WindowsX32.ToString().ToLower(), Identity = game.Identity, Version = game.Version };
 						await GameUtility.ExportRecordArchive(archiveFile, recordDirectory, !shouldEncrypt ? null : GameUtility.ConvertKeyFromUser(game.User), async (archiveConfiguration) => {
 							archiveConfiguration.Platform = archiveConfigurationForLocal.Platform;
 							archiveConfiguration.Identity = archiveConfigurationForLocal.Identity;

@@ -4,7 +4,7 @@
 
 > 适用于通过 Steam 安装的 Windows 版本开罗游戏。
 
-## 预览
+## 应用预览
 
 ![manager](./media/preview/manager.png)
 
@@ -12,7 +12,7 @@
 
 ![setting](./media/preview/setting.png)
 
-## 功能
+## 功能列表
 
 * 禁用游戏对存档文件的加密与验证。
 
@@ -22,7 +22,7 @@
 
 * 导出或导入游戏存档（允许跨设备、跨账号转移存档）。
 
-## 使用
+## 使用方法
 
 1. 在 [Release](https://github.com/twinstar6980/KairosoftGameManager/releases/tag/Latest) 页中下载并安装最新版本的 `msix` 安装包文件。
 	
