@@ -4,6 +4,8 @@
 
 > 适用于通过 Steam 安装的 Windows 版本开罗游戏。
 
+[更新日志](./CHANGELOG.md)
+
 ## 应用预览
 
 ![manager](./media/preview/manager.png)
