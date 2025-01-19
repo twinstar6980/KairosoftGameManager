@@ -52,6 +52,7 @@ namespace KairosoftGameManager {
 			LaunchActivatedEventArgs args
 		) {
 			this.UnhandledException += this.OnUnhandledException;
+			TaskScheduler.UnobservedTaskException += this.OnUnobservedTaskException;
 			var window = default(Window);
 			try {
 				App.PackageDirectory = StorageHelper.Parent(Environment.GetCommandLineArgs()[0]).AsNotNull();
@@ -97,23 +98,45 @@ namespace KairosoftGameManager {
 
 		// ----------------
 
-		protected void OnUnhandledException (
+		private void OnUnhandledException (
 			Object                                        sender,
 			Microsoft.UI.Xaml.UnhandledExceptionEventArgs args
 		) {
+			args.Handled = true;
+			this.HandleException(args.Exception);
+			return;
+		}
+
+		private void OnUnobservedTaskException (
+			Object?                          sender,
+			UnobservedTaskExceptionEventArgs args
+		) {
+			args.SetObserved();
+			this.HandleException(args.Exception);
+			return;
+		}
+
+		#endregion
+
+		#region utility
+
+		private void HandleException (
+			Exception exception
+		) {
 			if (App.MainWindowIsInitialized) {
-				args.Handled = true;
-				try {
-					_ = ControlHelper.ShowDialogAsAutomatic(App.MainWindow.Content, "Unhandled Exception", new TextBlock() {
-						HorizontalAlignment = HorizontalAlignment.Stretch,
-						VerticalAlignment = VerticalAlignment.Stretch,
-						TextWrapping = TextWrapping.Wrap,
-						Text = args.Exception.ToString(),
-					}, null);
-				}
-				catch (Exception) {
-					// ignored
-				}
+				App.MainWindow.DispatcherQueue.EnqueueAsync(() => {
+					try {
+						_ = ControlHelper.ShowDialogAsAutomatic(App.MainWindow.Content, "Unhandled Exception", new TextBlock() {
+							HorizontalAlignment = HorizontalAlignment.Stretch,
+							VerticalAlignment = VerticalAlignment.Stretch,
+							TextWrapping = TextWrapping.Wrap,
+							Text = exception.ToString(),
+						}, null);
+					}
+					catch (Exception) {
+						// ignored
+					}
+				});
 			}
 			return;
 		}
