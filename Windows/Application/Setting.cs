@@ -5,11 +5,9 @@ using KairosoftGameManager;
 using KairosoftGameManager.Utility;
 using Windows.ApplicationModel;
 using Microsoft.UI;
-using Newtonsoft.Json;
 
 namespace KairosoftGameManager {
 
-	[JsonObject(ItemRequired = Required.AllowNull)]
 	public record SettingData {
 		public Integer                                Version                   = default!;
 		public ElementTheme                           ThemeMode                 = default!;

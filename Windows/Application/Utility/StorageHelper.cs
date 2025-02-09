@@ -256,16 +256,20 @@ namespace KairosoftGameManager.Utility {
 
 		#region shell
 
-		public static async Task<Boolean> RevealFile (
+		public static async Task RevealFile (
 			String target
 		) {
-			return await Windows.System.Launcher.LaunchFileAsync(await StorageFile.GetFileFromPathAsync(StorageHelper.ToWindowsStyle(target)));
+			var result = PlatformInvoke.Shell32.ShellExecute(IntPtr.Zero, "open", $"file://{target}", null, null, PlatformInvoke.Shell32.SW_SHOWNORMAL);
+			GF.AssertTest(result >= 32);
+			return;
 		}
 
-		public static async Task<Boolean> RevealDirectory (
+		public static async Task RevealDirectory (
 			String target
 		) {
-			return await Windows.System.Launcher.LaunchFolderAsync(await StorageFolder.GetFolderFromPathAsync(StorageHelper.ToWindowsStyle(target)));
+			var result = PlatformInvoke.Shell32.ShellExecute(IntPtr.Zero, "open", $"file://{target}", null, null, PlatformInvoke.Shell32.SW_SHOWNORMAL);
+			GF.AssertTest(result >= 32);
+			return;
 		}
 
 		// ----------------

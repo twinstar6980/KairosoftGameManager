@@ -6,7 +6,7 @@ using KairosoftGameManager.Utility;
 
 namespace KairosoftGameManager.Control {
 
-	public sealed class Divider : Microsoft.UI.Xaml.Controls.Control {
+	public sealed partial class Divider : Microsoft.UI.Xaml.Controls.Control {
 
 		#region life
 

@@ -7,7 +7,7 @@ using Windows.Foundation;
 
 namespace KairosoftGameManager.Control {
 
-	public class Stack : Panel {
+	public partial class Stack : Panel {
 
 		#region measure & arrange
 
