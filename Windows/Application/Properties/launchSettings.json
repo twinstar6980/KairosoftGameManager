@@ -1,4 +1,4 @@
-{
+﻿{
   "profiles": {
     "Application": {
       "commandName": "MsixPackage"

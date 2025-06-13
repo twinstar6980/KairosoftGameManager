@@ -1,0 +1,43 @@
+# Global
+/**/*                                        binary
+
+# General - Article
+/**/*.txt                                    text eol=lf
+/**/*.md                                     text eol=lf
+
+# General - Media
+/**/*.ico                                    binary
+/**/*.png                                    binary
+
+# Language - C#/XAML
+/**/*.cs                                     text eol=lf
+/**/*.xaml                                   text eol=lf
+
+# Environment - Git
+/**/.git*                                    text eol=lf
+
+# Environment - EditConfig
+/**/.editorconfig                            text eol=lf
+
+# Environment - Visual Studio
+/**/*.sln                                    text eol=crlf
+/**/*.vcxproj                                text eol=crlf
+/**/*.vcxproj.filters                        text eol=crlf
+/**/*.csproj                                 text eol=crlf
+/**/*.csproj.filters                         text eol=crlf
+/**/*.wapproj                                text eol=crlf
+/**/Directory.Build.props                    text eol=crlf
+/**/Directory.Build.targets                  text eol=crlf
+/**/*.rc                                     text eol=crlf
+/**/*.def                                    text eol=crlf
+/**/*.manifest                               text eol=crlf
+/**/*.appxmanifest                           text eol=crlf
+/**/*.pubxml                                 text eol=crlf
+/**/launchSettings.json                      text eol=crlf
+
+# Common
+/LICENSE                                     text eol=lf
+
+# Part - Windows
+
+# Miscellaneous

@@ -164,7 +164,7 @@
 					Style="{StaticResource BodyTextBlockStyle}"
 					TextWrapping="NoWrap"
 					>
-					<Span xml:space="preserve">&#xA9; 2024 TwinStar. All rights reserved.</Span>
+					<Span xml:space="preserve">&#xA9; 2024-2025 TwinStar. All rights reserved.</Span>
 					<LineBreak />
 					<Span xml:space="preserve">Released under <Hyperlink UnderlineStyle="None" NavigateUri="https://www.gnu.org/licenses/gpl-3.0.en.html">GPL-3.0</Hyperlink>. Icons by <Hyperlink UnderlineStyle="None" NavigateUri="https://icons8.com">Icons8</Hyperlink>.</Span>
 				</TextBlock>

@@ -1,11 +1,13 @@
-# Git
-/.git
+# Global
 
 # System - Windows
 /**/desktop.ini
 
 # System - Macintosh
 /**/.DS_Store
+
+# Environment - Git
+/.git
 
 # Environment - Visual Studio
 /**/.vs
@@ -20,4 +22,3 @@
 
 # Part - Windows
 /Windows/.build
-/Windows/Application/.editorconfig
