@@ -102,12 +102,12 @@ namespace KairosoftGameManager.View {
 				nameof(FunctionType.ModifyProgram) => FunctionType.ModifyProgram,
 				_                                  => throw new (),
 			};
-			this.NotifyPropertyChanged(
+			this.NotifyPropertyChanged([
 				nameof(this.uTypeIcon_Glyph),
 				nameof(this.uTypeName_Text),
 				nameof(this.uArgumentOfEncryptRecord_Visibility),
-				nameof(this.uArgumentOfModifyProgram_Visibility)
-			);
+				nameof(this.uArgumentOfModifyProgram_Visibility),
+			]);
 			return;
 		}
 
@@ -129,9 +129,9 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<TextBox>();
 			this.ArgumentOfEncryptRecordOfTargetDirectory = senders.Text;
-			this.NotifyPropertyChanged(
-				nameof(this.uArgumentOfEncryptRecordOfTargetDirectoryEditor_Text)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uArgumentOfEncryptRecordOfTargetDirectoryEditor_Text),
+			]);
 			return;
 		}
 
@@ -149,9 +149,9 @@ namespace KairosoftGameManager.View {
 			var value = await StorageHelper.PickLoadDirectory(WindowHelper.Find(this.View), ".EncryptRecord.TargetDirectory");
 			if (value != null) {
 				this.ArgumentOfEncryptRecordOfTargetDirectory = value;
-				this.NotifyPropertyChanged(
-					nameof(this.uArgumentOfEncryptRecordOfTargetDirectoryEditor_Text)
-				);
+				this.NotifyPropertyChanged([
+					nameof(this.uArgumentOfEncryptRecordOfTargetDirectoryEditor_Text),
+				]);
 			}
 			return;
 		}
@@ -186,9 +186,9 @@ namespace KairosoftGameManager.View {
 					}
 				}
 			}
-			this.NotifyPropertyChanged(
-				nameof(this.uArgumentOfEncryptRecordOfKeyEditor_Text)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uArgumentOfEncryptRecordOfKeyEditor_Text),
+			]);
 			return;
 		}
 
@@ -214,9 +214,9 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<TextBox>();
 			this.ArgumentOfModifyProgramOfTargetDirectory = senders.Text;
-			this.NotifyPropertyChanged(
-				nameof(this.uArgumentOfModifyProgramOfTargetDirectoryEditor_Text)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uArgumentOfModifyProgramOfTargetDirectoryEditor_Text),
+			]);
 			return;
 		}
 
@@ -234,9 +234,9 @@ namespace KairosoftGameManager.View {
 			var value = await StorageHelper.PickLoadDirectory(WindowHelper.Find(this.View), ".ModifyProgram.TargetDirectory");
 			if (value != null) {
 				this.ArgumentOfModifyProgramOfTargetDirectory = value;
-				this.NotifyPropertyChanged(
-					nameof(this.uArgumentOfModifyProgramOfTargetDirectoryEditor_Text)
-				);
+				this.NotifyPropertyChanged([
+					nameof(this.uArgumentOfModifyProgramOfTargetDirectoryEditor_Text),
+				]);
 			}
 			return;
 		}
@@ -249,9 +249,9 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<Button>();
 			this.ArgumentOfModifyProgramOfDisableRecordEncryption = !this.ArgumentOfModifyProgramOfDisableRecordEncryption;
-			this.NotifyPropertyChanged(
-				nameof(this.uArgumentOfModifyProgramOfDisableRecordEncryptionEditor_Content)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uArgumentOfModifyProgramOfDisableRecordEncryptionEditor_Content),
+			]);
 			return;
 		}
 
@@ -269,9 +269,9 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<Button>();
 			this.ArgumentOfModifyProgramOfEnableDebugMode = !this.ArgumentOfModifyProgramOfEnableDebugMode;
-			this.NotifyPropertyChanged(
-				nameof(this.uArgumentOfModifyProgramOfEnableDebugModeEditor_Content)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uArgumentOfModifyProgramOfEnableDebugModeEditor_Content),
+			]);
 			return;
 		}
 
@@ -298,9 +298,9 @@ namespace KairosoftGameManager.View {
 			var senders = sender.As<Button>();
 			GF.AssertTest(!this.Running);
 			this.Running = true;
-			this.NotifyPropertyChanged(
-				nameof(this.uRun_IsEnabled)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uRun_IsEnabled),
+			]);
 			try {
 				PublishMessage($"Starting at {DateTime.Now:HH:mm:ss}.");
 				switch (this.Type) {
@@ -334,17 +334,17 @@ namespace KairosoftGameManager.View {
 			}
 			PublishMessage($"");
 			this.Running = false;
-			this.NotifyPropertyChanged(
-				nameof(this.uRun_IsEnabled)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uRun_IsEnabled),
+			]);
 			return;
 			async void PublishMessage (
 				String message
 			) {
 				this.Message += message + "\n";
-				this.NotifyPropertyChanged(
-					nameof(this.uMessage_Text)
-				);
+				this.NotifyPropertyChanged([
+					nameof(this.uMessage_Text),
+				]);
 				await Task.Delay(40);
 				this.View.uMessageScrollViewer.ChangeView(null, this.View.uMessageScrollViewer.ScrollableHeight, null, true);
 				return;

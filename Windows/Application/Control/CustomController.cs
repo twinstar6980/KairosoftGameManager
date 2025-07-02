@@ -13,7 +13,7 @@ namespace KairosoftGameManager {
 		public event PropertyChangedEventHandler? PropertyChanged;
 
 		public void NotifyPropertyChanged (
-			params String[] propertyNameList
+			String[] propertyNameList
 		) {
 			foreach (var propertyName in propertyNameList) {
 				this.PropertyChanged?.Invoke(this, new (propertyName));

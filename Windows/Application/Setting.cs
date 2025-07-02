@@ -58,6 +58,9 @@ namespace KairosoftGameManager {
 					ElementTheme.Dark    => Colors.White,
 					_                    => throw new (),
 				};
+				await ControlHelper.IterateDialog(async (it) => {
+					it.RequestedTheme = App.MainWindow.Content.As<FrameworkElement>().RequestedTheme;
+				});
 				this.State.ThemeMode = this.Data.ThemeMode;
 			}
 			return;

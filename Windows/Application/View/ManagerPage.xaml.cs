@@ -52,9 +52,9 @@ namespace KairosoftGameManager.View {
 		public async Task LoadRepository (
 		) {
 			this.uGameList_ItemsSource.Clear();
-			this.NotifyPropertyChanged(
-				nameof(this.uRepositoryDirectoryCount_Value)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uRepositoryDirectoryCount_Value),
+			]);
 			var hideDialog = await ControlHelper.ShowDialogForWait(this.View);
 			try {
 				GF.AssertTest(await GameUtility.CheckRepositoryDirectory(App.Setting.Data.RepositoryDirectory));
@@ -74,9 +74,9 @@ namespace KairosoftGameManager.View {
 				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed to load repository.", e.ToString());
 			}
 			await hideDialog();
-			this.NotifyPropertyChanged(
-				nameof(this.uRepositoryDirectoryCount_Value)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uRepositoryDirectoryCount_Value),
+			]);
 			return;
 		}
 
@@ -84,7 +84,7 @@ namespace KairosoftGameManager.View {
 			ManagerPageGameItemController gameController
 		) {
 			gameController.Configuration = (await GameUtility.LoadGameConfiguration(App.Setting.Data.RepositoryDirectory, gameController.Configuration.Identity)).AsNotNull();
-			gameController.NotifyPropertyChanged(
+			gameController.NotifyPropertyChanged([
 				nameof(gameController.uIcon_Source),
 				nameof(gameController.uName_Text),
 				nameof(gameController.uIdentity_ToolTip),
@@ -104,8 +104,8 @@ namespace KairosoftGameManager.View {
 				nameof(gameController.uActionEncryptRecord_IsEnabled),
 				nameof(gameController.uActionDecryptRecord_IsEnabled),
 				nameof(gameController.uActionImportRecord_IsEnabled),
-				nameof(gameController.uActionExportRecord_IsEnabled)
-			);
+				nameof(gameController.uActionExportRecord_IsEnabled),
+			]);
 			return;
 		}
 
@@ -416,9 +416,9 @@ namespace KairosoftGameManager.View {
 					if (directory != null) {
 						App.Setting.Data.RepositoryDirectory = directory;
 						await App.Setting.Save();
-						this.NotifyPropertyChanged(
-							nameof(this.uRepositoryDirectoryText_Text)
-						);
+						this.NotifyPropertyChanged([
+							nameof(this.uRepositoryDirectoryText_Text),
+						]);
 						await this.LoadRepository();
 					}
 					break;

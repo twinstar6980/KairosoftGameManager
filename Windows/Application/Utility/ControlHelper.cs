@@ -51,6 +51,15 @@ namespace KairosoftGameManager.Utility {
 			return result;
 		}
 
+		public static async Task IterateDialog (
+			Func<ContentDialog, Task> action
+		) {
+			foreach (var item in ControlHelper.CurrentDialog) {
+				await action(item);
+			}
+			return;
+		}
+
 		// ----------------
 
 		public static async Task<ContentDialogResult> ShowDialogAsAutomatic (

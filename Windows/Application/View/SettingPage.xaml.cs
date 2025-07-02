@@ -109,9 +109,9 @@ namespace KairosoftGameManager.View {
 			var senders = sender.As<TextBox>();
 			App.Setting.Data.RepositoryDirectory = StorageHelper.Regularize(senders.Text);
 			await App.Setting.Save();
-			this.NotifyPropertyChanged(
-				nameof(this.uRepositoryDirectory_Text)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uRepositoryDirectory_Text),
+			]);
 			return;
 		}
 
@@ -130,9 +130,9 @@ namespace KairosoftGameManager.View {
 			var senders = sender.As<TextBox>();
 			App.Setting.Data.ProgramFileOfIl2CppDumper = StorageHelper.Regularize(senders.Text);
 			await App.Setting.Save();
-			this.NotifyPropertyChanged(
-				nameof(this.uProgramFileOfIl2CppDumper_Text)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uProgramFileOfIl2CppDumper_Text),
+			]);
 			return;
 		}
 
@@ -157,9 +157,9 @@ namespace KairosoftGameManager.View {
 			var senders = sender.As<Button>();
 			App.Setting.Data.TestedGame = GameUtility.TestedGame;
 			await App.Setting.Save();
-			this.NotifyPropertyChanged(
-				nameof(this.uTestedGameText_Text)
-			);
+			this.NotifyPropertyChanged([
+				nameof(this.uTestedGameText_Text),
+			]);
 			return;
 		}
 
