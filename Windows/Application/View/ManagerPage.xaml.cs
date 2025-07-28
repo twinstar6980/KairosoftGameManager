@@ -26,7 +26,7 @@ namespace KairosoftGameManager.View {
 
 	}
 
-	public class ManagerPageController : CustomController {
+	public partial class ManagerPageController : CustomController {
 
 		#region data
 
@@ -160,7 +160,7 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "RevealGame": {
-						await StorageHelper.RevealDirectory(game.Path);
+						await StorageHelper.Reveal(game.Path);
 						break;
 					}
 					case "LaunchGame": {
@@ -176,8 +176,8 @@ namespace KairosoftGameManager.View {
 							cancelled = true;
 							break;
 						}
-						StorageHelper.CopyFile(game.Path + $"/{GameUtility.BackupDirectory}_{game.Version}/{GameUtility.BackupProgramFile}", game.Path + $"/{GameUtility.ProgramFile}");
-						StorageHelper.TrashFile(game.Path + $"/{GameUtility.BackupDirectory}_{game.Version}/{GameUtility.BackupProgramFile}");
+						StorageHelper.Copy(game.Path + $"/{GameUtility.BackupDirectory}_{game.Version}/{GameUtility.BackupProgramFile}", game.Path + $"/{GameUtility.ProgramFile}");
+						StorageHelper.Trash(game.Path + $"/{GameUtility.BackupDirectory}_{game.Version}/{GameUtility.BackupProgramFile}");
 						shouldReload = true;
 						break;
 					}
@@ -314,14 +314,14 @@ namespace KairosoftGameManager.View {
 						else {
 							shouldEncrypt = game.Record == GameRecordState.Original;
 						}
-						var archiveFile = await StorageHelper.PickLoadFile(WindowHelper.Find(this.View), ".RecordFile");
+						var archiveFile = await StorageHelper.PickLoadFile(WindowHelper.Find(this.View), "@RecordFile");
 						if (archiveFile == null) {
 							cancelled = true;
 							break;
 						}
 						var recordDirectory = $"{game.Path}/{GameUtility.RecordBundleDirectory}/{game.User}";
 						if (StorageHelper.ExistDirectory(recordDirectory)) {
-							StorageHelper.TrashDirectory(recordDirectory);
+							StorageHelper.Trash(recordDirectory);
 						}
 						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.WindowsX32.ToString().ToLower(), Identity = game.Identity, Version = game.Version };
 						await GameUtility.ImportRecordArchive(archiveFile, recordDirectory, !shouldEncrypt ? null : GameUtility.ConvertKeyFromUser(game.User), async (archiveConfiguration) => {
@@ -349,7 +349,7 @@ namespace KairosoftGameManager.View {
 						else {
 							shouldEncrypt = game.Record == GameRecordState.Original;
 						}
-						var archiveFile = await StorageHelper.PickSaveFile(WindowHelper.Find(this.View), ".RecordFile", GameUtility.RecordArchiveFileExtension, game.Name);
+						var archiveFile = await StorageHelper.PickSaveFile(WindowHelper.Find(this.View), "@RecordFile", $"{game.Name}.{GameUtility.RecordArchiveFileExtension}");
 						if (archiveFile == null) {
 							cancelled = true;
 							break;
@@ -412,7 +412,7 @@ namespace KairosoftGameManager.View {
 					break;
 				}
 				case "Reselect": {
-					var directory = await StorageHelper.PickLoadDirectory(WindowHelper.Find(this.View), ".RepositoryDirectory");
+					var directory = await StorageHelper.PickLoadDirectory(WindowHelper.Find(this.View), "@RepositoryDirectory");
 					if (directory != null) {
 						App.Setting.Data.RepositoryDirectory = directory;
 						await App.Setting.Save();
@@ -464,7 +464,7 @@ namespace KairosoftGameManager.View {
 
 	}
 
-	public class ManagerPageGameItemController : CustomController {
+	public partial class ManagerPageGameItemController : CustomController {
 
 		#region data
 

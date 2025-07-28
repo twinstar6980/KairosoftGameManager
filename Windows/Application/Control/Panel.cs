@@ -3,7 +3,6 @@
 
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
-using Windows.Foundation;
 
 namespace KairosoftGameManager.Control {
 
@@ -27,7 +26,7 @@ namespace KairosoftGameManager.Control {
 		) {
 			var parentPadding = this.Padding;
 			var parentSpace = new Windows.Foundation.Size(Math.Max(0.0, finalSize.Width - (parentPadding.Left + parentPadding.Right)), Math.Max(0.0, finalSize.Height - (parentPadding.Top + parentPadding.Bottom)));
-			var currentOffset = new Point(parentPadding.Left, parentPadding.Top);
+			var currentOffset = new Windows.Foundation.Point(parentPadding.Left, parentPadding.Top);
 			this.ArrangeWithoutPadding(currentOffset, parentSpace);
 			return finalSize;
 		}

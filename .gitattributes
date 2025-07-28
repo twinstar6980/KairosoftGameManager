@@ -32,6 +32,9 @@
 /**/*.def                                    text eol=crlf
 /**/*.manifest                               text eol=crlf
 /**/*.appxmanifest                           text eol=crlf
+/**/AppxManifest.xml                         text eol=crlf
+/**/NativeMethods.txt                        text eol=crlf
+/**/NativeMethods.json                       text eol=crlf
 /**/*.pubxml                                 text eol=crlf
 /**/launchSettings.json                      text eol=crlf
 

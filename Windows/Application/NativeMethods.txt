@@ -1,0 +1,28 @@
+﻿
+// Error
+WIN32_ERROR
+
+// FileSystem
+GetLongPathName
+
+// Window
+GetDpiForWindow
+ShowWindow
+SetForegroundWindow
+SHOW_WINDOW_CMD
+
+// COM
+CoInitialize
+CoUninitialize
+CoCreateInstance
+
+// FileDialog
+SHCreateItemFromParsingName
+IFileOpenDialog
+FileOpenDialog
+IFileSaveDialog
+FileSaveDialog
+FILEOPENDIALOGOPTIONS
+
+// Miscellaneous
+ShellExecute

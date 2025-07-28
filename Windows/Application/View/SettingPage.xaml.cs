@@ -27,7 +27,7 @@ namespace KairosoftGameManager.View {
 
 	}
 
-	public class SettingPageController : CustomController {
+	public partial class SettingPageController : CustomController {
 
 		#region data
 
@@ -72,7 +72,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<SettingsCard>();
-			await StorageHelper.RevealDirectory(StorageHelper.Parent(App.Setting.File).AsNotNull());
+			await StorageHelper.Reveal(StorageHelper.Parent(App.Setting.File).AsNotNull());
 			return;
 		}
 

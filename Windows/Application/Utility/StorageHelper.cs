@@ -2,8 +2,6 @@
 // ReSharper disable
 
 using KairosoftGameManager;
-using Windows.Storage;
-using Windows.Storage.Pickers;
 
 namespace KairosoftGameManager.Utility {
 
@@ -60,9 +58,37 @@ namespace KairosoftGameManager.Utility {
 			return result;
 		}
 
+		// ----------------
+
+		private static readonly Character[] InvalidPathNameCharacter = Path.GetInvalidFileNameChars();
+
+		public static Boolean CheckName (
+			String name
+		) {
+			if (name.Length == 0) {
+				return false;
+			}
+			if (name[0] == ' ' || name[^1] == ' ' || name[^1] == '.') {
+				return false;
+			}
+			return name.All((value) => (!StorageHelper.InvalidPathNameCharacter.Contains(value)));
+		}
+
+		// ----------------
+
+		public static String GetLongPath (
+			String source
+		) {
+			var destinationLength = Win32.PInvoke.GetLongPathName(source, []);
+			var destination = new Character[destinationLength];
+			var destinationLengthCheck = Win32.PInvoke.GetLongPathName(source, destination.AsSpan());
+			GF.AssertTest(destinationLengthCheck == destinationLength - 1);
+			return StorageHelper.Regularize(new (destination.AsSpan(0, destinationLength.AsCast<Size>() - 1)));
+		}
+
 		#endregion
 
-		#region basic
+		#region exist
 
 		public static Boolean Exist (
 			String target
@@ -82,67 +108,56 @@ namespace KairosoftGameManager.Utility {
 			return Directory.Exists(target);
 		}
 
-		// ----------------
+		#endregion
 
-		public static void CopyFile (
+		#region basic
+
+		public static void Copy (
 			String source,
 			String destination
 		) {
-			var destinationParent = StorageHelper.Parent(destination);
-			if (destinationParent != null && !Directory.Exists(destinationParent)) {
-				StorageHelper.CreateDirectory(destinationParent);
+			GF.AssertTest(StorageHelper.Exist(source));
+			if (StorageHelper.ExistFile(source)) {
+				StorageHelper.CreateFile(destination);
+				File.Copy(source, destination, true);
 			}
-			File.Copy(source, destination, true);
-			return;
-		}
-
-		public static void CopyDirectory (
-			String source,
-			String destination
-		) {
-			if (!Directory.Exists(destination)) {
-				Directory.CreateDirectory(destination);
-			}
-			foreach (var item in Directory.GetFiles(source)) {
-				StorageHelper.CopyFile(item, $"{destination}/{StorageHelper.Name(item)}");
-			}
-			foreach (var item in Directory.GetDirectories(source)) {
-				StorageHelper.CopyDirectory(item, $"{destination}/{StorageHelper.Name(item)}");
+			if (StorageHelper.ExistDirectory(source)) {
+				StorageHelper.CreateDirectory(destination);
+				foreach (var item in Directory.GetFiles(source)) {
+					StorageHelper.Copy(item, $"{destination}/{StorageHelper.Name(item)}");
+				}
+				foreach (var item in Directory.GetDirectories(source)) {
+					StorageHelper.Copy(item, $"{destination}/{StorageHelper.Name(item)}");
+				}
 			}
 			return;
 		}
 
-		// ----------------
-
-		public static void RenameFile (
+		public static void Rename (
 			String source,
 			String destination
 		) {
-			File.Move(source, destination);
+			GF.AssertTest(StorageHelper.Exist(source));
+			StorageHelper.CreateDirectory(StorageHelper.Parent(destination).AsNotNull());
+			if (StorageHelper.ExistFile(source)) {
+				File.Move(source, destination);
+			}
+			if (StorageHelper.ExistDirectory(source)) {
+				Directory.Move(source, destination);
+			}
 			return;
 		}
 
-		public static void RenameDirectory (
-			String source,
-			String destination
-		) {
-			Directory.Move(source, destination);
-			return;
-		}
-
-		// ----------------
-
-		public static void RemoveFile (
+		public static void Remove (
 			String source
 		) {
-			File.Delete(source);
-			return;
-		}
-
-		public static void RemoveDirectory (
-			String source
-		) {
-			Directory.Delete(source, true);
+			GF.AssertTest(StorageHelper.Exist(source));
+			if (StorageHelper.ExistFile(source)) {
+				File.Delete(source);
+			}
+			if (StorageHelper.ExistDirectory(source)) {
+				Directory.Delete(source, true);
+			}
 			return;
 		}
 
@@ -256,87 +271,135 @@ namespace KairosoftGameManager.Utility {
 
 		#region shell
 
-		public static async Task RevealFile (
+		public static async Task Reveal (
 			String target
 		) {
-			var result = PlatformInvoke.Shell32.ShellExecute(IntPtr.Zero, "open", $"file://{target}", null, null, PlatformInvoke.Shell32.SW_SHOWNORMAL);
-			GF.AssertTest(result >= 32);
-			return;
-		}
-
-		public static async Task RevealDirectory (
-			String target
-		) {
-			var result = PlatformInvoke.Shell32.ShellExecute(IntPtr.Zero, "open", $"file://{target}", null, null, PlatformInvoke.Shell32.SW_SHOWNORMAL);
+			var result = Win32.PInvoke.ShellExecute(new (IntPtr.Zero), "open", $"file://{target}", null, null, Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOWNORMAL);
 			GF.AssertTest(result >= 32);
 			return;
 		}
 
 		// ----------------
 
+		public static async Task<String?> Pick (
+			String  type,
+			Window  host,
+			String? location,
+			String? name
+		) {
+			GF.AssertTest(type == "LoadFile" || type == "LoadDirectory" || type == "SaveFile");
+			var target = null as String;
+			var locationTag = location == null ? null : !location.StartsWith('@') ? null : location[1..];
+			var locationPath = location;
+			if (locationTag != null) {
+				locationPath = App.Setting.Data.StoragePickerHistoryLocation.GetValueOrDefault(locationTag);
+			}
+			if (locationPath != null && !StorageHelper.ExistDirectory(locationPath)) {
+				locationPath = null;
+			}
+			locationPath ??= "C:/";
+			await Task.Run(() => {
+				unsafe {
+					Win32.PInvoke.CoInitialize(null);
+					using var comFinalizer = new DisposableWrapper(() => {
+						Win32.PInvoke.CoUninitialize();
+					});
+					var dialogPointer = default(void*);
+					if (type == "LoadFile" || type == "LoadDirectory") {
+						Win32.PInvoke.CoCreateInstance(
+							typeof(Win32.UI.Shell.FileOpenDialog).GUID,
+							null,
+							Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
+							typeof(Win32.UI.Shell.IFileOpenDialog).GUID,
+							out dialogPointer
+						).ThrowOnFailure();
+					}
+					if (type == "SaveFile") {
+						Win32.PInvoke.CoCreateInstance(
+							typeof(Win32.UI.Shell.FileSaveDialog).GUID,
+							null,
+							Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
+							typeof(Win32.UI.Shell.IFileSaveDialog).GUID,
+							out dialogPointer
+						).ThrowOnFailure();
+					}
+					ref var dialog = ref *(Win32.UI.Shell.IFileDialog*)dialogPointer;
+					dialog.GetOptions(out var option).ThrowOnFailure();
+					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM;
+					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_NOVALIDATE;
+					if (type == "LoadDirectory") {
+						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
+					}
+					dialog.SetOptions(option).ThrowOnFailure();
+					Win32.PInvoke.SHCreateItemFromParsingName(
+						StorageHelper.ToWindowsStyle(locationPath),
+						null,
+						typeof(Win32.UI.Shell.IShellItem).GUID,
+						out var locationItemPointer
+					).ThrowOnFailure();
+					dialog.SetFolder((Win32.UI.Shell.IShellItem*)locationItemPointer).ThrowOnFailure();
+					if (type == "SaveFile") {
+						dialog.SetFileName((Character*)Marshal.StringToCoTaskMemUni(name)).ThrowOnFailure();
+					}
+					var dialogResult = dialog.Show(new (WindowHelper.Handle(host)));
+					if (dialogResult.Failed && dialogResult != unchecked((IntegerS32)0x800704C7)) {
+						dialogResult.ThrowOnFailure();
+					}
+					if (dialogResult.Succeeded) {
+						var targetItemPointer = default(Win32.UI.Shell.IShellItem*);
+						dialog.GetResult(&targetItemPointer).ThrowOnFailure();
+						ref var targetItem = ref *targetItemPointer;
+						targetItem.GetDisplayName(Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, out var targetPath).ThrowOnFailure();
+						target = targetPath == null ? null : StorageHelper.Regularize(targetPath.ToString());
+					}
+				}
+			});
+			if (locationTag != null && target != null) {
+				App.Setting.Data.StoragePickerHistoryLocation[locationTag] = type switch {
+					"LoadFile"      => StorageHelper.Parent(target).AsNotNull(),
+					"LoadDirectory" => target,
+					"SaveFile"      => StorageHelper.Parent(target).AsNotNull(),
+					_               => throw new (),
+				};
+				await App.Setting.Save(apply: false);
+			}
+			return target;
+		}
+
 		public static async Task<String?> PickLoadFile (
 			Window  host,
-			String? tag
+			String? location
 		) {
-			var picker = new FileOpenPicker() {
-				SettingsIdentifier = tag,
-				FileTypeFilter = { "*" },
-			};
-			WinRT.Interop.InitializeWithWindow.Initialize(picker, WindowHelper.Handle(host));
-			var target = await picker.PickSingleFileAsync();
-			return target == null ? null : StorageHelper.Regularize(target.Path);
+			return await StorageHelper.Pick("LoadFile", host, location, null);
 		}
 
 		public static async Task<String?> PickLoadDirectory (
 			Window  host,
-			String? tag
+			String? location
 		) {
-			var picker = new FolderPicker() {
-				SettingsIdentifier = tag,
-				FileTypeFilter = { "*" },
-			};
-			WinRT.Interop.InitializeWithWindow.Initialize(picker, WindowHelper.Handle(host));
-			var target = await picker.PickSingleFolderAsync();
-			return target == null ? null : StorageHelper.Regularize(target.Path);
+			return await StorageHelper.Pick("LoadDirectory", host, location, null);
 		}
 
 		public static async Task<String?> PickSaveFile (
 			Window  host,
-			String? tag,
-			String? type,
+			String? location,
 			String? name
 		) {
-			var picker = new FileSavePicker() {
-				SettingsIdentifier = tag,
-				FileTypeChoices = { },
-				SuggestedFileName = name ?? "",
-			};
-			if (type != null) {
-				picker.FileTypeChoices.Add(new ("", ["." + type]));
-			}
-			picker.FileTypeChoices.Add(new ("", ["."]));
-			var timeBeforePick = DateTimeOffset.Now;
-			WinRT.Interop.InitializeWithWindow.Initialize(picker, WindowHelper.Handle(host));
-			var target = await picker.PickSaveFileAsync();
-			if (target != null && target.DateCreated > timeBeforePick) {
-				await target.DeleteAsync();
-			}
-			return target == null ? null : StorageHelper.Regularize(target.Path);
+			return await StorageHelper.Pick("SaveFile", host, location, name);
 		}
 
 		// ----------------
 
-		public static void TrashFile (
+		public static void Trash (
 			String target
 		) {
-			Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
-			return;
-		}
-
-		public static void TrashDirectory (
-			String target
-		) {
-			Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
+			GF.AssertTest(StorageHelper.Exist(target));
+			if (StorageHelper.ExistFile(target)) {
+				Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
+			}
+			if (StorageHelper.ExistDirectory(target)) {
+				Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
+			}
 			return;
 		}
 

@@ -3,7 +3,6 @@
 
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
-using Windows.Foundation;
 
 namespace KairosoftGameManager.Control {
 
@@ -28,7 +27,7 @@ namespace KairosoftGameManager.Control {
 			Windows.Foundation.Point finalOffset,
 			Windows.Foundation.Size  finalSize
 		) {
-			var currentOffset = new Point(finalOffset.X, finalOffset.Y);
+			var currentOffset = new Windows.Foundation.Point(finalOffset.X, finalOffset.Y);
 			foreach (var child in this.Children) {
 				child.Arrange(new (currentOffset, finalSize));
 			}

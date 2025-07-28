@@ -41,12 +41,12 @@ namespace KairosoftGameManager.Utility {
 					semaphore.Release();
 					ControlHelper.CurrentDialog.RemoveAt(index - 1);
 					if (index > 1) {
-						_ = ControlHelper.CurrentDialog[^1].ShowAsync();
+						_ = ControlHelper.CurrentDialog[^1].ShowAsync().AsTask().SelfLet(App.Instance.WithTaskExceptionHandler);
 					}
 				}
 				return;
 			};
-			_ = item.ShowAsync();
+			_ = item.ShowAsync().AsTask().SelfLet(App.Instance.WithTaskExceptionHandler);
 			await semaphore.WaitAsync();
 			return result;
 		}

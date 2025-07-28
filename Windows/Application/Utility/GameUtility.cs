@@ -433,7 +433,7 @@ namespace KairosoftGameManager.Utility {
 			GF.AssertTest(StorageHelper.ExistFile(metadataFile));
 			if (!StorageHelper.ExistFile(programBackupFile)) {
 				onNotify($"Phase: backup original program.");
-				StorageHelper.CopyFile(programFile, programBackupFile);
+				StorageHelper.Copy(programFile, programBackupFile);
 			}
 			var dumpData = new List<String>();
 			onNotify($"Phase: dump program information via Il2CppDumper.");
@@ -592,7 +592,7 @@ namespace KairosoftGameManager.Utility {
 						if ((instructionCode & 0b000000000000_0000_0000_111111111111) >> 0 != symbolAddress.MyConfig.DEBUG.First() + 4) {
 							continue;
 						}
-						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b111111111111_1111_0000_000000000000u) | (14u << 12) | ((USize)symbolAddress.MyConfig.DEBUG.First() << 0));
+						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b111111111111_1111_0000_000000000000u) | (14u << 12) | ((SizeU)symbolAddress.MyConfig.DEBUG.First() << 0));
 						onNotify($"Warning : the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
 						break;
 					}
@@ -609,7 +609,7 @@ namespace KairosoftGameManager.Utility {
 						if ((instructionCode & 0b0000000000_111111111111_00000_00000) >> 10 != symbolAddress.MyConfig.DEBUG.First() + 4) {
 							continue;
 						}
-						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b1111111111_000000000000_11111_00000u) | ((USize)symbolAddress.MyConfig.DEBUG.First() << 10) | (30u << 0));
+						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b1111111111_000000000000_11111_00000u) | ((SizeU)symbolAddress.MyConfig.DEBUG.First() << 10) | (30u << 0));
 						onNotify($"Warning : the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
 						break;
 					}
@@ -646,10 +646,10 @@ namespace KairosoftGameManager.Utility {
 				}
 			}
 			catch (Exception) {
-				StorageHelper.RemoveDirectory(archiveDirectory);
+				StorageHelper.Remove(archiveDirectory);
 				throw;
 			}
-			StorageHelper.RemoveDirectory(archiveDirectory);
+			StorageHelper.Remove(archiveDirectory);
 			return;
 		}
 
@@ -677,10 +677,10 @@ namespace KairosoftGameManager.Utility {
 				ZipFile.CreateFromDirectory(archiveDirectory, archiveFile, CompressionLevel.SmallestSize, false, Encoding.UTF8);
 			}
 			catch (Exception) {
-				StorageHelper.RemoveDirectory(archiveDirectory);
+				StorageHelper.Remove(archiveDirectory);
 				throw;
 			}
-			StorageHelper.RemoveDirectory(archiveDirectory);
+			StorageHelper.Remove(archiveDirectory);
 			return;
 		}
 

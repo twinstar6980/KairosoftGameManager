@@ -13,6 +13,7 @@ namespace KairosoftGameManager.Utility {
 	[JsonSerializable(typeof(String))]
 	[JsonSerializable(typeof(List<Object>))]
 	[JsonSerializable(typeof(Dictionary<String, Object>))]
+	[JsonSerializable(typeof(Dictionary<String, String>))]
 	[JsonSerializable(typeof(SortedDictionary<String, List<String>>))]
 	[JsonSerializable(typeof(ElementTheme), TypeInfoPropertyName = "ElementTheme")]
 	[JsonSerializable(typeof(SettingData), TypeInfoPropertyName = "KairosoftGameManager_SettingData")]

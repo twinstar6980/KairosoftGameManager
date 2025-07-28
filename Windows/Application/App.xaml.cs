@@ -142,6 +142,17 @@ namespace KairosoftGameManager {
 			return;
 		}
 
+		public Task WithTaskExceptionHandler (
+			Task task
+		) {
+			return task.ContinueWith((it) => {
+				if (task.Exception?.InnerException != null) {
+					this.HandleException(task.Exception.InnerException);
+				}
+				return;
+			});
+		}
+
 		#endregion
 
 	}

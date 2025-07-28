@@ -6,7 +6,7 @@ using KairosoftGameManager.Utility;
 
 namespace KairosoftGameManager {
 
-	public class CustomController : INotifyPropertyChanged {
+	public partial class CustomController : INotifyPropertyChanged {
 
 		#region implement
 

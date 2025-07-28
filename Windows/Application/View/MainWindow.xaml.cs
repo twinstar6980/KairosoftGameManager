@@ -40,7 +40,7 @@ namespace KairosoftGameManager.View {
 
 	}
 
-	public class MainWindowController : CustomController {
+	public partial class MainWindowController : CustomController {
 
 		#region data
 
