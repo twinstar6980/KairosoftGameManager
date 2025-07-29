@@ -415,10 +415,10 @@ namespace KairosoftGameManager.View {
 					var directory = await StorageHelper.PickLoadDirectory(WindowHelper.Find(this.View), "@RepositoryDirectory");
 					if (directory != null) {
 						App.Setting.Data.RepositoryDirectory = directory;
-						await App.Setting.Save();
 						this.NotifyPropertyChanged([
 							nameof(this.uRepositoryDirectoryText_Text),
 						]);
+						await App.Setting.Save();
 						await this.LoadRepository();
 					}
 					break;

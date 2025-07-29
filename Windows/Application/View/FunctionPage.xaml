@@ -168,10 +168,11 @@
 									Text="{x:Bind Controller.uArgumentOfEncryptRecordOfTargetDirectoryEditor_Text}"
 									/>
 								<Button
+									ToolTipService.ToolTip="Pick"
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Center"
 									Click="{x:Bind Controller.uArgumentOfEncryptRecordOfTargetDirectoryPicker_Click}"
-									Content="{community:FontIcon Glyph={StaticResource FluentIconGlyph.FolderOpen}}"
+									Content="{community:FontIcon Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
 									/>
 							</my:Stack>
 						</my:Stack>
@@ -269,10 +270,11 @@
 									Text="{x:Bind Controller.uArgumentOfModifyProgramOfTargetDirectoryEditor_Text}"
 									/>
 								<Button
+									ToolTipService.ToolTip="Pick"
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Center"
 									Click="{x:Bind Controller.uArgumentOfModifyProgramOfTargetDirectoryPicker_Click}"
-									Content="{community:FontIcon Glyph={StaticResource FluentIconGlyph.FolderOpen}}"
+									Content="{community:FontIcon Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
 									/>
 							</my:Stack>
 						</my:Stack>

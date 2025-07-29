@@ -83,7 +83,7 @@ namespace KairosoftGameManager.Utility {
 			var destination = new Character[destinationLength];
 			var destinationLengthCheck = Win32.PInvoke.GetLongPathName(source, destination.AsSpan());
 			GF.AssertTest(destinationLengthCheck == destinationLength - 1);
-			return StorageHelper.Regularize(new (destination.AsSpan(0, destinationLength.AsCast<Size>() - 1)));
+			return StorageHelper.Regularize(new (destination.AsSpan(0, destinationLength.CastPrimitive<Size>() - 1)));
 		}
 
 		#endregion
@@ -200,7 +200,7 @@ namespace KairosoftGameManager.Utility {
 			Size   limit
 		) {
 			await using var stream = File.OpenRead(target);
-			var size = Math.Min((Size)stream.Length, limit);
+			var size = Math.Min(stream.Length.CastPrimitive<Size>(), limit);
 			var data = new Byte[size];
 			var sizeActual = await stream.ReadAsync(data, 0, size);
 			GF.AssertTest(sizeActual == size);

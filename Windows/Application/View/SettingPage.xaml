@@ -91,14 +91,21 @@
 					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.BlueLight}}"
 					Header="Theme Mode"
 					>
-					<ComboBox
+					<my:Stack
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Stretch"
-						Width="120"
-						ItemsSource="{x:Bind Controller.uThemeMode_ItemsSource}"
-						SelectedIndex="{x:Bind Controller.uThemeMode_SelectedIndex}"
-						SelectionChanged="{x:Bind Controller.uThemeMode_SelectionChanged}"
-						/>
+						Orientation="Horizontal"
+						Spacing="8"
+						>
+						<ComboBox
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Top"
+							Width="120"
+							ItemsSource="{x:Bind Controller.uThemeMode_ItemsSource}"
+							SelectedIndex="{x:Bind Controller.uThemeMode_SelectedIndex}"
+							SelectionChanged="{x:Bind Controller.uThemeMode_SelectionChanged}"
+							/>
+					</my:Stack>
 				</communityControls:SettingsCard>
 				<communityControls:SettingsCard
 					HorizontalAlignment="Stretch"
@@ -106,13 +113,28 @@
 					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.FileExplorer}}"
 					Header="Repository Directory"
 					>
-					<TextBox
+					<my:Stack
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Stretch"
-						Width="232"
-						LostFocus="{x:Bind Controller.uRepositoryDirectory_LostFocus}"
-						Text="{x:Bind Controller.uRepositoryDirectory_Text}"
-						/>
+						Orientation="Horizontal"
+						Spacing="8"
+						>
+						<TextBox
+							my:Stack.Weight="1"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Top"
+							Width="208"
+							LostFocus="{x:Bind Controller.uRepositoryDirectory_LostFocus}"
+							Text="{x:Bind Controller.uRepositoryDirectory_Text}"
+							/>
+						<Button
+							ToolTipService.ToolTip="Pick"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Top"
+							Click="{x:Bind Controller.uRepositoryDirectoryPick_Click}"
+							Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
+							/>
+					</my:Stack>
 				</communityControls:SettingsCard>
 				<communityControls:SettingsCard
 					HorizontalAlignment="Stretch"
@@ -120,13 +142,27 @@
 					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.OpenFile}}"
 					Header="Program File Of Il2CppDumper"
 					>
-					<TextBox
+					<my:Stack
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Stretch"
-						Width="232"
-						LostFocus="{x:Bind Controller.uProgramFileOfIl2CppDumper_LostFocus}"
-						Text="{x:Bind Controller.uProgramFileOfIl2CppDumper_Text}"
-						/>
+						Orientation="Horizontal"
+						Spacing="8"
+						>
+						<TextBox
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Top"
+							Width="208"
+							LostFocus="{x:Bind Controller.uProgramFileOfIl2CppDumper_LostFocus}"
+							Text="{x:Bind Controller.uProgramFileOfIl2CppDumper_Text}"
+							/>
+						<Button
+							ToolTipService.ToolTip="Pick"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Top"
+							Click="{x:Bind Controller.uProgramFileOfIl2CppDumperPick_Click}"
+							Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
+							/>
+					</my:Stack>
 				</communityControls:SettingsCard>
 				<communityControls:SettingsExpander
 					HorizontalAlignment="Stretch"
@@ -134,12 +170,19 @@
 					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.BulletedList}}"
 					Header="Tested Game"
 					>
-					<Button
+					<my:Stack
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Stretch"
-						Click="{x:Bind Controller.uTestedGameReset_Click}"
-						Content="Reset"
-						/>
+						Orientation="Horizontal"
+						Spacing="8"
+						>
+						<Button
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Top"
+							Click="{x:Bind Controller.uTestedGameReset_Click}"
+							Content="Reset"
+							/>
+					</my:Stack>
 					<communityControls:SettingsExpander.Items>
 						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"

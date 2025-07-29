@@ -61,7 +61,7 @@ namespace KairosoftGameManager.Utility {
 			Size   height
 		) {
 			var ratio = Win32.PInvoke.GetDpiForWindow(new (WindowHelper.Handle(window))) / 96.0;
-			window.AppWindow.Resize(new ((Int32)(width * ratio), (Int32)(height * ratio)));
+			window.AppWindow.Resize(new ((width * ratio).CastPrimitive<Int32>(), (height * ratio).CastPrimitive<Int32>()));
 			return;
 		}
 

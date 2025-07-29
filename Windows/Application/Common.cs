@@ -1,5 +1,5 @@
 #pragma warning disable 0, CA1050,
-// ReSharper disable CheckNamespace InconsistentNaming RedundantUsingDirective.Global
+// ReSharper disable CheckNamespace InconsistentNaming RedundantUsingDirective.Global UnusedMember.Global OperatorIsCanBeUsed
 
 global using System;
 global using System.Collections.Generic;
@@ -56,6 +56,25 @@ public static class GF {
 
 	// ----------------
 
+	public static TResult SelfLet<TType, TResult> (
+		this TType           self,
+		Func<TType, TResult> action
+	)
+		where TType : notnull {
+		return action(self);
+	}
+
+	public static TType SelfAlso<TType> (
+		this TType    self,
+		Action<TType> action
+	)
+		where TType : notnull {
+		action(self);
+		return self;
+	}
+
+	// ----------------
+
 	public static TTarget As<TTarget> (
 		this Object self
 	)
@@ -64,13 +83,6 @@ public static class GF {
 			return target;
 		}
 		throw new NullReferenceException();
-	}
-
-	public static TTarget AsCast<TTarget> (
-		this Object self
-	)
-		where TTarget : notnull {
-		return (TTarget)(dynamic)self;
 	}
 
 	// ----------------
@@ -91,21 +103,43 @@ public static class GF {
 
 	// ----------------
 
-	public static TResult SelfLet<TType, TResult> (
-		this TType           self,
-		Func<TType, TResult> action
-	)
-		where TType : notnull {
-		return action(self);
-	}
-
-	public static TType SelfAlso<TType> (
-		this TType    self,
-		Action<TType> action
-	)
-		where TType : notnull {
-		action(self);
-		return self;
+	public static TTarget CastPrimitive<TTarget> (
+		this Object self
+	) {
+		var selfValue = self;
+		if (self.GetType() == typeof(IntegerUN)) {
+			selfValue = (IntegerU64)self.As<IntegerUN>();
+		}
+		if (self.GetType() == typeof(IntegerSN)) {
+			selfValue = (IntegerS64)self.As<IntegerSN>();
+		}
+		if (self.GetType() == typeof(Character)) {
+			selfValue = (IntegerU16)self.As<Character>();
+		}
+		var intermediateType = typeof(TTarget);
+		if (typeof(TTarget) == typeof(IntegerUN)) {
+			intermediateType = typeof(IntegerU64);
+		}
+		if (typeof(TTarget) == typeof(IntegerSN)) {
+			intermediateType = typeof(IntegerS64);
+		}
+		if (typeof(TTarget) == typeof(Character)) {
+			intermediateType = typeof(IntegerU16);
+		}
+		if (typeof(TTarget).IsEnum) {
+			intermediateType = typeof(Size);
+		}
+		var intermediateValue = Convert.ChangeType(selfValue, intermediateType);
+		if (typeof(TTarget) == typeof(IntegerUN)) {
+			intermediateValue = (IntegerUN)intermediateValue.As<IntegerU64>();
+		}
+		if (typeof(TTarget) == typeof(IntegerSN)) {
+			intermediateValue = (IntegerSN)intermediateValue.As<IntegerS64>();
+		}
+		if (typeof(TTarget) == typeof(Character)) {
+			intermediateValue = (Character)intermediateValue.As<IntegerU16>();
+		}
+		return (TTarget)intermediateValue;
 	}
 
 	// ----------------

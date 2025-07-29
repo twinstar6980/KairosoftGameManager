@@ -86,7 +86,7 @@ namespace KairosoftGameManager.View {
 
 		public Size uThemeMode_SelectedIndex {
 			get {
-				return (Size)App.Setting.Data.ThemeMode;
+				return App.Setting.Data.ThemeMode.CastPrimitive<Size>();
 			}
 		}
 
@@ -95,7 +95,7 @@ namespace KairosoftGameManager.View {
 			SelectionChangedEventArgs args
 		) {
 			var senders = sender.As<ComboBox>();
-			App.Setting.Data.ThemeMode = (ElementTheme)senders.SelectedIndex;
+			App.Setting.Data.ThemeMode = senders.SelectedIndex.CastPrimitive<ElementTheme>();
 			await App.Setting.Save();
 			return;
 		}
@@ -108,10 +108,10 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<TextBox>();
 			App.Setting.Data.RepositoryDirectory = StorageHelper.Regularize(senders.Text);
-			await App.Setting.Save();
 			this.NotifyPropertyChanged([
 				nameof(this.uRepositoryDirectory_Text),
 			]);
+			await App.Setting.Save();
 			return;
 		}
 
@@ -119,6 +119,22 @@ namespace KairosoftGameManager.View {
 			get {
 				return App.Setting.Data.RepositoryDirectory;
 			}
+		}
+
+		public async void uRepositoryDirectoryPick_Click (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<Button>();
+			var value = await StorageHelper.PickLoadDirectory(WindowHelper.Find(this.View), "@RepositoryDirectory");
+			if (value != null) {
+				App.Setting.Data.RepositoryDirectory = value;
+				this.NotifyPropertyChanged([
+					nameof(this.uRepositoryDirectory_Text),
+				]);
+				await App.Setting.Save();
+			}
+			return;
 		}
 
 		// ----------------
@@ -129,10 +145,10 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<TextBox>();
 			App.Setting.Data.ProgramFileOfIl2CppDumper = StorageHelper.Regularize(senders.Text);
-			await App.Setting.Save();
 			this.NotifyPropertyChanged([
 				nameof(this.uProgramFileOfIl2CppDumper_Text),
 			]);
+			await App.Setting.Save();
 			return;
 		}
 
@@ -140,6 +156,22 @@ namespace KairosoftGameManager.View {
 			get {
 				return App.Setting.Data.ProgramFileOfIl2CppDumper;
 			}
+		}
+
+		public async void uProgramFileOfIl2CppDumperPick_Click (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<Button>();
+			var value = await StorageHelper.PickLoadFile(WindowHelper.Find(this.View), "@ProgramFileOfIl2CppDumper");
+			if (value != null) {
+				App.Setting.Data.ProgramFileOfIl2CppDumper = value;
+				this.NotifyPropertyChanged([
+					nameof(this.uProgramFileOfIl2CppDumper_Text),
+				]);
+				await App.Setting.Save();
+			}
+			return;
 		}
 
 		// ----------------
@@ -156,10 +188,10 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<Button>();
 			App.Setting.Data.TestedGame = GameUtility.TestedGame;
-			await App.Setting.Save();
 			this.NotifyPropertyChanged([
 				nameof(this.uTestedGameText_Text),
 			]);
+			await App.Setting.Save();
 			return;
 		}
 

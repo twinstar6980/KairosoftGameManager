@@ -362,7 +362,7 @@ namespace KairosoftGameManager.Utility {
 					if ((instructionCode & 0xFF000000u) != 0xEB000000u) {
 						continue;
 					}
-					var jumpOffset = (Size)(instructionCode & 0x00FFFFFFu);
+					var jumpOffset = (instructionCode & 0x00FFFFFFu).CastPrimitive<Size>();
 					if ((jumpOffset & 0x800000u) == 0x800000u) {
 						jumpOffset = -(0x1000000 - jumpOffset);
 					}
@@ -385,7 +385,7 @@ namespace KairosoftGameManager.Utility {
 					if ((instructionCode & 0xFF000000u) != 0x97000000u) {
 						continue;
 					}
-					var jumpOffset = (Size)(instructionCode & 0x00FFFFFFu);
+					var jumpOffset = (instructionCode & 0x00FFFFFFu).CastPrimitive<Size>();
 					if ((jumpOffset & 0x800000u) == 0x800000u) {
 						jumpOffset = -(0x1000000 - jumpOffset);
 					}
@@ -592,7 +592,7 @@ namespace KairosoftGameManager.Utility {
 						if ((instructionCode & 0b000000000000_0000_0000_111111111111) >> 0 != symbolAddress.MyConfig.DEBUG.First() + 4) {
 							continue;
 						}
-						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b111111111111_1111_0000_000000000000u) | (14u << 12) | ((SizeU)symbolAddress.MyConfig.DEBUG.First() << 0));
+						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b111111111111_1111_0000_000000000000u) | (14u << 12) | (symbolAddress.MyConfig.DEBUG.First().CastPrimitive<SizeU>() << 0));
 						onNotify($"Warning : the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
 						break;
 					}
@@ -609,7 +609,7 @@ namespace KairosoftGameManager.Utility {
 						if ((instructionCode & 0b0000000000_111111111111_00000_00000) >> 10 != symbolAddress.MyConfig.DEBUG.First() + 4) {
 							continue;
 						}
-						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b1111111111_000000000000_11111_00000u) | ((SizeU)symbolAddress.MyConfig.DEBUG.First() << 10) | (30u << 0));
+						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b1111111111_000000000000_11111_00000u) | (symbolAddress.MyConfig.DEBUG.First().CastPrimitive<SizeU>() << 10) | (30u << 0));
 						onNotify($"Warning : the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
 						break;
 					}
