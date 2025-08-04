@@ -128,7 +128,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			this.ArgumentOfEncryptRecordOfTargetDirectory = senders.Text;
+			this.ArgumentOfEncryptRecordOfTargetDirectory = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uArgumentOfEncryptRecordOfTargetDirectoryEditor_Text),
 			]);
@@ -213,7 +213,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			this.ArgumentOfModifyProgramOfTargetDirectory = senders.Text;
+			this.ArgumentOfModifyProgramOfTargetDirectory = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uArgumentOfModifyProgramOfTargetDirectoryEditor_Text),
 			]);

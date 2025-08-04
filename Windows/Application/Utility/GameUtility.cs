@@ -267,7 +267,7 @@ namespace KairosoftGameManager.Utility {
 							result = new (
 								Size.Parse(fieldMatch.Groups[5].Value, NumberStyles.HexNumber),
 								fieldMatch.Groups[1].Value,
-								fieldMatch.Groups[2].Value == "static",
+								fieldMatch.Groups[2].Value == " static",
 								fieldMatch.Groups[3].Value
 							);
 							break;
@@ -299,7 +299,7 @@ namespace KairosoftGameManager.Utility {
 							result.Add(new (
 								Size.Parse(commentMatch.Groups[2].Value, NumberStyles.HexNumber),
 								methodMatch.Groups[1].Value,
-								methodMatch.Groups[2].Value == "static",
+								methodMatch.Groups[2].Value == " static",
 								methodMatch.Groups[3].Value,
 								methodMatch.Groups[5].Value
 							));
