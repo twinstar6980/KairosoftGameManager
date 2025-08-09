@@ -298,58 +298,62 @@ namespace KairosoftGameManager.Utility {
 				locationPath = null;
 			}
 			locationPath ??= "C:/";
+			name ??= "";
 			await Task.Run(() => {
 				unsafe {
 					Win32.PInvoke.CoInitialize(null);
 					using var comFinalizer = new DisposableWrapper(() => {
 						Win32.PInvoke.CoUninitialize();
 					});
-					var dialogPointer = default(void*);
-					if (type == "LoadFile" || type == "LoadDirectory") {
-						Win32.PInvoke.CoCreateInstance(
-							typeof(Win32.UI.Shell.FileOpenDialog).GUID,
-							null,
-							Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
-							typeof(Win32.UI.Shell.IFileOpenDialog).GUID,
-							out dialogPointer
-						).ThrowOnFailure();
-					}
-					if (type == "SaveFile") {
-						Win32.PInvoke.CoCreateInstance(
-							typeof(Win32.UI.Shell.FileSaveDialog).GUID,
-							null,
-							Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
-							typeof(Win32.UI.Shell.IFileSaveDialog).GUID,
-							out dialogPointer
-						).ThrowOnFailure();
-					}
-					ref var dialog = ref *(Win32.UI.Shell.IFileDialog*)dialogPointer;
-					dialog.GetOptions(out var option).ThrowOnFailure();
+					Win32.PInvoke.CoCreateInstance<Win32.UI.Shell.IFileDialog>(
+						type switch {
+							"LoadFile"      => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
+							"LoadDirectory" => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
+							"SaveFile"      => typeof(Win32.UI.Shell.FileSaveDialog).GUID,
+							_               => throw new (),
+						},
+						null,
+						Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
+						out var dialog
+					).ThrowOnFailure();
+					using var dialogFinalizer = new DisposableWrapper(() => {
+						dialog->Release();
+					});
+					dialog->GetOptions(out var option).ThrowOnFailure();
 					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM;
 					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_NOVALIDATE;
 					if (type == "LoadDirectory") {
 						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
 					}
-					dialog.SetOptions(option).ThrowOnFailure();
+					dialog->SetOptions(option).ThrowOnFailure();
 					Win32.PInvoke.SHCreateItemFromParsingName(
 						StorageHelper.ToWindowsStyle(locationPath),
 						null,
 						typeof(Win32.UI.Shell.IShellItem).GUID,
-						out var locationItemPointer
+						out var locationItem
 					).ThrowOnFailure();
-					dialog.SetFolder((Win32.UI.Shell.IShellItem*)locationItemPointer).ThrowOnFailure();
+					using var locationItemFinalizer = new DisposableWrapper(() => {
+						((Win32.UI.Shell.IShellItem*)locationItem)->Release();
+					});
+					dialog->SetFolder((Win32.UI.Shell.IShellItem*)locationItem).ThrowOnFailure();
 					if (type == "SaveFile") {
-						dialog.SetFileName((Character*)Marshal.StringToCoTaskMemUni(name)).ThrowOnFailure();
+						dialog->SetFileName(name).ThrowOnFailure();
 					}
-					var dialogResult = dialog.Show(new (WindowHelper.Handle(host)));
+					var dialogResult = dialog->Show(new (WindowHelper.Handle(host)));
 					if (dialogResult.Failed && dialogResult != unchecked((IntegerS32)0x800704C7)) {
 						dialogResult.ThrowOnFailure();
 					}
 					if (dialogResult.Succeeded) {
-						var targetItemPointer = default(Win32.UI.Shell.IShellItem*);
-						dialog.GetResult(&targetItemPointer).ThrowOnFailure();
-						ref var targetItem = ref *targetItemPointer;
-						targetItem.GetDisplayName(Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, out var targetPath).ThrowOnFailure();
+						var targetItem = default(Win32.UI.Shell.IShellItem*);
+						dialog->GetResult(&targetItem).ThrowOnFailure();
+						var targetItemPointer = &targetItem;
+						using var targetItemFinalizer = new DisposableWrapper(() => {
+							(*targetItemPointer)->Release();
+						});
+						targetItem->GetDisplayName(Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, out var targetPath).ThrowOnFailure();
+						using var targetPathFinalizer = new DisposableWrapper(() => {
+							Win32.PInvoke.CoTaskMemFree(targetPath.Value);
+						});
 						target = targetPath == null ? null : StorageHelper.Regularize(targetPath.ToString());
 					}
 				}

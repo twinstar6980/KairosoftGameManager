@@ -18,7 +18,10 @@
 /**/.vscode
 
 # Common
-/common/certificate
 
-# Part - Windows
+# Module - Windows
 /Windows/.build
+
+# Miscellaneous
+/.local
+# git clean -fdx -e /.local

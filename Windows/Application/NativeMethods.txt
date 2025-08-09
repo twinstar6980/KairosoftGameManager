@@ -15,6 +15,7 @@ SHOW_WINDOW_CMD
 CoInitialize
 CoUninitialize
 CoCreateInstance
+CoTaskMemFree
 
 // FileDialog
 SHCreateItemFromParsingName
