@@ -83,7 +83,7 @@ namespace KairosoftGameManager {
 								HorizontalAlignment = HorizontalAlignment.Center,
 								VerticalAlignment = VerticalAlignment.Center,
 								TextWrapping = TextWrapping.Wrap,
-								Text = e.ToString(),
+								Text = GF.GenerateExceptionMessage(e),
 							},
 						},
 					},
@@ -131,7 +131,7 @@ namespace KairosoftGameManager {
 							VerticalAlignment = VerticalAlignment.Stretch,
 							IsTextSelectionEnabled = true,
 							TextWrapping = TextWrapping.Wrap,
-							Text = exception.ToString(),
+							Text = GF.GenerateExceptionMessage(exception),
 						}, null);
 					}
 					catch (Exception) {
