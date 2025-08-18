@@ -68,7 +68,7 @@ namespace KairosoftGameManager.Utility {
 				ElementTheme.Default => "System",
 				ElementTheme.Light   => "Light",
 				ElementTheme.Dark    => "Dark",
-				_                    => throw new (),
+				_                    => throw new UnreachableException(),
 			};
 		}
 

@@ -419,13 +419,13 @@ namespace KairosoftGameManager.Utility {
 				GamePlatform.WindowsX32 => $"{targetDirectory}/GameAssembly.dll",
 				GamePlatform.AndroidA32 => $"{targetDirectory}/lib/armeabi-v7a/libil2cpp.so",
 				GamePlatform.AndroidA64 => $"{targetDirectory}/lib/arm64-v8a/libil2cpp.so",
-				_                       => throw new (),
+				_                       => throw new UnreachableException(),
 			};
 			var metadataFile = platform switch {
 				GamePlatform.WindowsX32 => $"{targetDirectory}/KairoGames_Data/il2cpp_data/Metadata/global-metadata.dat",
 				GamePlatform.AndroidA32 => $"{targetDirectory}/assets/bin/Data/Managed/Metadata/global-metadata.dat",
 				GamePlatform.AndroidA64 => $"{targetDirectory}/assets/bin/Data/Managed/Metadata/global-metadata.dat",
-				_                       => throw new (),
+				_                       => throw new UnreachableException(),
 			};
 			var programBackupFile = $"{targetDirectory}/{GameUtility.BackupDirectory}{(backupToken == null ? "" : $"_{backupToken}")}/{GameUtility.BackupProgramFile}";
 			onNotify($"Phase: check game file.");

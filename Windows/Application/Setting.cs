@@ -57,7 +57,7 @@ namespace KairosoftGameManager {
 					ElementTheme.Default => null,
 					ElementTheme.Light   => Colors.Black,
 					ElementTheme.Dark    => Colors.White,
-					_                    => throw new (),
+					_                    => throw new UnreachableException(),
 				};
 				await ControlHelper.IterateDialog(async (it) => {
 					it.RequestedTheme = App.MainWindow.Content.As<FrameworkElement>().RequestedTheme;

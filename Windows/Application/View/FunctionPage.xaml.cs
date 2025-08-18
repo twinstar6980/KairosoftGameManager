@@ -77,7 +77,7 @@ namespace KairosoftGameManager.View {
 				return this.Type switch {
 					FunctionType.EncryptRecord => FluentIconGlyph.Unlock,
 					FunctionType.ModifyProgram => FluentIconGlyph.Repair,
-					_                          => throw new (),
+					_                          => throw new UnreachableException(),
 				};
 			}
 		}
@@ -87,7 +87,7 @@ namespace KairosoftGameManager.View {
 				return this.Type switch {
 					FunctionType.EncryptRecord => "Encrypt Record",
 					FunctionType.ModifyProgram => "Modify Program",
-					_                          => throw new (),
+					_                          => throw new UnreachableException(),
 				};
 			}
 		}
@@ -100,7 +100,7 @@ namespace KairosoftGameManager.View {
 			this.Type = senders.Tag.As<String>() switch {
 				nameof(FunctionType.EncryptRecord) => FunctionType.EncryptRecord,
 				nameof(FunctionType.ModifyProgram) => FunctionType.ModifyProgram,
-				_                                  => throw new (),
+				_                                  => throw new UnreachableException(),
 			};
 			this.NotifyPropertyChanged([
 				nameof(this.uTypeIcon_Glyph),
@@ -323,7 +323,7 @@ namespace KairosoftGameManager.View {
 						);
 						break;
 					}
-					default: throw new ();
+					default: throw new UnreachableException();
 				}
 				PublishMessage($"Done.");
 			}

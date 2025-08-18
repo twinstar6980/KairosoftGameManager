@@ -364,7 +364,7 @@ namespace KairosoftGameManager.View {
 						});
 						break;
 					}
-					default: throw new ();
+					default: throw new UnreachableException();
 				}
 				if (!cancelled) {
 					App.MainWindow.PublishNotification(InfoBarSeverity.Success, "Succeeded.", "");
@@ -423,7 +423,7 @@ namespace KairosoftGameManager.View {
 					}
 					break;
 				}
-				default: throw new ();
+				default: throw new UnreachableException();
 			}
 			return;
 		}
@@ -557,7 +557,7 @@ namespace KairosoftGameManager.View {
 					GameRecordState.Invalid   => "CriticalIconInfoBadgeStyle",
 					GameRecordState.Original  => "CautionIconInfoBadgeStyle",
 					GameRecordState.Decrypted => "SuccessIconInfoBadgeStyle",
-					_                         => throw new (),
+					_                         => throw new UnreachableException(),
 				}).As<Style>();
 			}
 		}
@@ -582,7 +582,7 @@ namespace KairosoftGameManager.View {
 					GameProgramState.None     => "InformationalIconInfoBadgeStyle",
 					GameProgramState.Original => "CautionIconInfoBadgeStyle",
 					GameProgramState.Modified => "SuccessIconInfoBadgeStyle",
-					_                         => throw new (),
+					_                         => throw new UnreachableException(),
 				}).As<Style>();
 			}
 		}

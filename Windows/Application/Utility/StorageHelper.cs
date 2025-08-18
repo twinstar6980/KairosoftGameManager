@@ -310,7 +310,7 @@ namespace KairosoftGameManager.Utility {
 							"LoadFile"      => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
 							"LoadDirectory" => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
 							"SaveFile"      => typeof(Win32.UI.Shell.FileSaveDialog).GUID,
-							_               => throw new (),
+							_               => throw new UnreachableException(),
 						},
 						null,
 						Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
@@ -363,7 +363,7 @@ namespace KairosoftGameManager.Utility {
 					"LoadFile"      => StorageHelper.Parent(target).AsNotNull(),
 					"LoadDirectory" => target,
 					"SaveFile"      => StorageHelper.Parent(target).AsNotNull(),
-					_               => throw new (),
+					_               => throw new UnreachableException(),
 				};
 				await App.Setting.Save(apply: false);
 			}

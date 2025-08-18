@@ -96,7 +96,7 @@ namespace KairosoftGameManager.View {
 					"Manager"  => typeof(ManagerPage),
 					"Function" => typeof(FunctionPage),
 					"Setting"  => typeof(SettingPage),
-					_          => throw new (),
+					_          => throw new UnreachableException(),
 				};
 				senders.Content.As<Frame>().NavigateToType(pageType, null, new () { IsNavigationStackEnabled = false, TransitionInfoOverride = new EntranceNavigationTransitionInfo() });
 			}
