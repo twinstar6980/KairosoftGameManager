@@ -58,7 +58,17 @@ public static class GF {
 	public static String GenerateExceptionMessage (
 		Exception exception
 	) {
-		return $"{exception.Message}\n{exception.StackTrace?.ReplaceLineEndings("\n")}";
+		var message = $"{exception.Message}";
+		var stack = new StackTrace(exception);
+		if (exception.StackTrace != null) {
+			foreach (var frame in exception.StackTrace.Split(Environment.NewLine)) {
+				if (!frame.StartsWith("   at ")) {
+					continue;
+				}
+				message += $"\n@ {frame.Substring("   at ".Length)}";
+			}
+		}
+		return message;
 	}
 
 	// ----------------
