@@ -126,7 +126,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadDirectory(WindowHelper.Find(this.View), "@RepositoryDirectory");
+			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@RepositoryDirectory");
 			if (value != null) {
 				App.Setting.Data.RepositoryDirectory = value;
 				this.NotifyPropertyChanged([
@@ -163,7 +163,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadFile(WindowHelper.Find(this.View), "@ProgramFileOfIl2CppDumper");
+			var value = await StorageHelper.PickLoadFile(App.MainWindow, "@ProgramFileOfIl2CppDumper");
 			if (value != null) {
 				App.Setting.Data.ProgramFileOfIl2CppDumper = value;
 				this.NotifyPropertyChanged([

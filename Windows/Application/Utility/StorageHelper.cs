@@ -207,9 +207,7 @@ namespace KairosoftGameManager.Utility {
 			return data;
 		}
 
-		#endregion
-
-		#region file - text
+		// ----------------
 
 		public static async Task<String> ReadFileText (
 			String target
@@ -224,14 +222,6 @@ namespace KairosoftGameManager.Utility {
 			StorageHelper.CreateFile(target);
 			await File.WriteAllTextAsync(target, text);
 			return;
-		}
-
-		// ----------------
-
-		public static String ReadFileTextSync (
-			String target
-		) {
-			return File.ReadAllText(target);
 		}
 
 		#endregion

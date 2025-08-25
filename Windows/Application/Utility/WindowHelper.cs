@@ -9,26 +9,6 @@ namespace KairosoftGameManager.Utility {
 
 		#region utility
 
-		public static List<Window> Current { get; } = [];
-
-		// ----------------
-
-		public static void Track (
-			Window window
-		) {
-			window.Closed += (_, _) => { WindowHelper.Current.Remove(window); };
-			WindowHelper.Current.Add(window);
-			return;
-		}
-
-		public static Window Find (
-			UIElement element
-		) {
-			return WindowHelper.Current.Find((value) => (Object.ReferenceEquals(value.Content.XamlRoot, element.XamlRoot))) ?? throw new ("Could not find window.");
-		}
-
-		// ----------------
-
 		public static IntPtr Handle (
 			Window window
 		) {

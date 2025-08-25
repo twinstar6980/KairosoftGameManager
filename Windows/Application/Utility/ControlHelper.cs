@@ -23,25 +23,25 @@ namespace KairosoftGameManager.Utility {
 
 		#region dialog
 
-		private static List<ContentDialog> CurrentDialog { get; } = [];
+		private static List<ContentDialog> Dialog { get; } = [];
 
 		private static async Task<ContentDialogResult> PushDialog (
 			ContentDialog item
 		) {
-			ControlHelper.CurrentDialog.Add(item);
-			if (ControlHelper.CurrentDialog.Count > 1) {
-				ControlHelper.CurrentDialog[^2].Hide();
+			ControlHelper.Dialog.Add(item);
+			if (ControlHelper.Dialog.Count > 1) {
+				ControlHelper.Dialog[^2].Hide();
 			}
 			var semaphore = new SemaphoreSlim(0, 1);
 			var result = ContentDialogResult.None;
-			var index = ControlHelper.CurrentDialog.Count;
+			var index = ControlHelper.Dialog.Count;
 			item.Closed += (sender, args) => {
-				if (ControlHelper.CurrentDialog.Count == index) {
+				if (ControlHelper.Dialog.Count == index) {
 					result = args.Result;
 					semaphore.Release();
-					ControlHelper.CurrentDialog.RemoveAt(index - 1);
+					ControlHelper.Dialog.RemoveAt(index - 1);
 					if (index > 1) {
-						_ = ControlHelper.CurrentDialog[^1].ShowAsync().AsTask().SelfLet(App.Instance.WithTaskExceptionHandler);
+						_ = ControlHelper.Dialog[^1].ShowAsync().AsTask().SelfLet(App.Instance.WithTaskExceptionHandler);
 					}
 				}
 				return;
@@ -54,7 +54,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task IterateDialog (
 			Func<ContentDialog, Task> action
 		) {
-			foreach (var item in ControlHelper.CurrentDialog) {
+			foreach (var item in ControlHelper.Dialog) {
 				await action(item);
 			}
 			return;

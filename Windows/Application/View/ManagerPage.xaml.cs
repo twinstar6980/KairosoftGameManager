@@ -314,7 +314,7 @@ namespace KairosoftGameManager.View {
 						else {
 							shouldEncrypt = game.Record == GameRecordState.Original;
 						}
-						var archiveFile = await StorageHelper.PickLoadFile(WindowHelper.Find(this.View), "@RecordFile");
+						var archiveFile = await StorageHelper.PickLoadFile(App.MainWindow, "@RecordFile");
 						if (archiveFile == null) {
 							cancelled = true;
 							break;
@@ -349,7 +349,7 @@ namespace KairosoftGameManager.View {
 						else {
 							shouldEncrypt = game.Record == GameRecordState.Original;
 						}
-						var archiveFile = await StorageHelper.PickSaveFile(WindowHelper.Find(this.View), "@RecordFile", $"{game.Name}.{GameUtility.RecordArchiveFileExtension}");
+						var archiveFile = await StorageHelper.PickSaveFile(App.MainWindow, "@RecordFile", $"{game.Name}.{GameUtility.RecordArchiveFileExtension}");
 						if (archiveFile == null) {
 							cancelled = true;
 							break;
@@ -412,7 +412,7 @@ namespace KairosoftGameManager.View {
 					break;
 				}
 				case "Reselect": {
-					var directory = await StorageHelper.PickLoadDirectory(WindowHelper.Find(this.View), "@RepositoryDirectory");
+					var directory = await StorageHelper.PickLoadDirectory(App.MainWindow, "@RepositoryDirectory");
 					if (directory != null) {
 						App.Setting.Data.RepositoryDirectory = directory;
 						this.NotifyPropertyChanged([

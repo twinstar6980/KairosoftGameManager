@@ -146,7 +146,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadDirectory(WindowHelper.Find(this.View), "@EncryptRecord.TargetDirectory");
+			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@EncryptRecord.TargetDirectory");
 			if (value != null) {
 				this.ArgumentOfEncryptRecordOfTargetDirectory = value;
 				this.NotifyPropertyChanged([
@@ -231,7 +231,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadDirectory(WindowHelper.Find(this.View), "@ModifyProgram.TargetDirectory");
+			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@ModifyProgram.TargetDirectory");
 			if (value != null) {
 				this.ArgumentOfModifyProgramOfTargetDirectory = value;
 				this.NotifyPropertyChanged([
