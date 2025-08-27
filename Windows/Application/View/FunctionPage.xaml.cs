@@ -330,7 +330,7 @@ namespace KairosoftGameManager.View {
 			catch (Exception e) {
 				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed to run function.", "");
 				PublishMessage($"Exception!");
-				PublishMessage(GF.GenerateExceptionMessage(e));
+				PublishMessage(ExceptionHelper.GenerateMessage(e));
 			}
 			PublishMessage($"");
 			this.Running = false;

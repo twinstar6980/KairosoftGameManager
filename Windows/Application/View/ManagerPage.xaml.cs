@@ -71,7 +71,7 @@ namespace KairosoftGameManager.View {
 				}
 			}
 			catch (Exception e) {
-				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed to load repository.", GF.GenerateExceptionMessage(e));
+				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed to load repository.", ExceptionHelper.GenerateMessage(e));
 			}
 			await hideDialog();
 			this.NotifyPropertyChanged([
@@ -375,7 +375,7 @@ namespace KairosoftGameManager.View {
 				}
 			}
 			catch (Exception e) {
-				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed.", GF.GenerateExceptionMessage(e));
+				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed.", ExceptionHelper.GenerateMessage(e));
 				state = false;
 			}
 			await hideDialog();

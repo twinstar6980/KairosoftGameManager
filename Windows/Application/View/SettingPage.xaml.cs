@@ -59,7 +59,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			_ = await Windows.System.Launcher.LaunchUriAsync(new ("https://github.com/twinstar6980/KairosoftGameManager"));
+			await Windows.System.Launcher.LaunchUriAsync(new ("https://github.com/twinstar6980/KairosoftGameManager"));
 			return;
 		}
 

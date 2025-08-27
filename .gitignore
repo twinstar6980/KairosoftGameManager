@@ -24,4 +24,5 @@
 
 # Miscellaneous
 /.local
+
 # git clean -fdx -e /.local

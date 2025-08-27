@@ -35,6 +35,7 @@ namespace KairosoftGameManager {
 		) {
 			this.Data = SettingProvider.CreateDefaultData();
 			this.State = SettingProvider.CreateDefaultState();
+			return;
 		}
 
 		#endregion

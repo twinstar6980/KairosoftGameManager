@@ -51,10 +51,9 @@ namespace KairosoftGameManager {
 		protected override async void OnLaunched (
 			LaunchActivatedEventArgs args
 		) {
-			this.UnhandledException += this.OnUnhandledException;
-			TaskScheduler.UnobservedTaskException += this.OnUnobservedTaskException;
 			var window = default(Window);
 			try {
+				ExceptionHelper.RegisterGlobalHandler(this, this.HandleException);
 				App.PackageDirectory = StorageHelper.Parent(Environment.GetCommandLineArgs()[0]).AsNotNull();
 				App.ProgramFile = $"{App.PackageDirectory}/Application.exe";
 				App.SharedDirectory = StorageHelper.Regularize(Windows.Storage.ApplicationData.Current.LocalFolder.Path);
@@ -84,7 +83,7 @@ namespace KairosoftGameManager {
 								VerticalAlignment = VerticalAlignment.Center,
 								IsTextSelectionEnabled = true,
 								TextWrapping = TextWrapping.Wrap,
-								Text = GF.GenerateExceptionMessage(e),
+								Text = ExceptionHelper.GenerateMessage(e),
 							},
 						},
 					},
@@ -93,26 +92,6 @@ namespace KairosoftGameManager {
 			WindowHelper.Title(window, Package.Current.DisplayName);
 			WindowHelper.Icon(window, $"{App.PackageDirectory}/Asset/Logo.ico");
 			WindowHelper.Activate(window);
-			return;
-		}
-
-		// ----------------
-
-		private void OnUnhandledException (
-			Object                                        sender,
-			Microsoft.UI.Xaml.UnhandledExceptionEventArgs args
-		) {
-			args.Handled = true;
-			this.HandleException(args.Exception);
-			return;
-		}
-
-		private void OnUnobservedTaskException (
-			Object?                          sender,
-			UnobservedTaskExceptionEventArgs args
-		) {
-			args.SetObserved();
-			this.HandleException(args.Exception);
 			return;
 		}
 
@@ -131,7 +110,7 @@ namespace KairosoftGameManager {
 							VerticalAlignment = VerticalAlignment.Stretch,
 							IsTextSelectionEnabled = true,
 							TextWrapping = TextWrapping.Wrap,
-							Text = GF.GenerateExceptionMessage(exception),
+							Text = ExceptionHelper.GenerateMessage(exception),
 						}, null);
 					}
 					catch (Exception) {
@@ -140,17 +119,6 @@ namespace KairosoftGameManager {
 				});
 			}
 			return;
-		}
-
-		public Task WithTaskExceptionHandler (
-			Task task
-		) {
-			return task.ContinueWith((it) => {
-				if (task.Exception?.InnerException != null) {
-					this.HandleException(task.Exception.InnerException);
-				}
-				return;
-			});
 		}
 
 		#endregion

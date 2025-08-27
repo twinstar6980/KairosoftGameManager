@@ -292,7 +292,7 @@ namespace KairosoftGameManager.Utility {
 			await Task.Run(() => {
 				unsafe {
 					Win32.PInvoke.CoInitialize(null);
-					using var comFinalizer = new DisposableWrapper(() => {
+					using var comFinalizer = new Finalizer(() => {
 						Win32.PInvoke.CoUninitialize();
 					});
 					Win32.PInvoke.CoCreateInstance<Win32.UI.Shell.IFileDialog>(
@@ -306,7 +306,7 @@ namespace KairosoftGameManager.Utility {
 						Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
 						out var dialog
 					).ThrowOnFailure();
-					using var dialogFinalizer = new DisposableWrapper(() => {
+					using var dialogFinalizer = new Finalizer(() => {
 						dialog->Release();
 					});
 					dialog->GetOptions(out var option).ThrowOnFailure();
@@ -322,7 +322,7 @@ namespace KairosoftGameManager.Utility {
 						typeof(Win32.UI.Shell.IShellItem).GUID,
 						out var locationItem
 					).ThrowOnFailure();
-					using var locationItemFinalizer = new DisposableWrapper(() => {
+					using var locationItemFinalizer = new Finalizer(() => {
 						((Win32.UI.Shell.IShellItem*)locationItem)->Release();
 					});
 					dialog->SetFolder((Win32.UI.Shell.IShellItem*)locationItem).ThrowOnFailure();
@@ -337,11 +337,11 @@ namespace KairosoftGameManager.Utility {
 						var targetItem = default(Win32.UI.Shell.IShellItem*);
 						dialog->GetResult(&targetItem).ThrowOnFailure();
 						var targetItemPointer = &targetItem;
-						using var targetItemFinalizer = new DisposableWrapper(() => {
+						using var targetItemFinalizer = new Finalizer(() => {
 							(*targetItemPointer)->Release();
 						});
 						targetItem->GetDisplayName(Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, out var targetPath).ThrowOnFailure();
-						using var targetPathFinalizer = new DisposableWrapper(() => {
+						using var targetPathFinalizer = new Finalizer(() => {
 							Win32.PInvoke.CoTaskMemFree(targetPath.Value);
 						});
 						target = targetPath == null ? null : StorageHelper.Regularize(targetPath.ToString());
