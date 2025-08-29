@@ -8,6 +8,63 @@ namespace KairosoftGameManager.Control {
 
 	public partial class Stack : Panel {
 
+		#region life
+
+		public Stack (
+		) {
+			return;
+		}
+
+		#endregion
+
+		#region property
+
+		public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
+			nameof(Stack.Orientation),
+			typeof(Orientation),
+			typeof(Stack),
+			new (Orientation.Horizontal, (o, e) => { o.As<Stack>().InvalidateMeasure(); })
+		);
+
+		public Orientation Orientation {
+			get => this.GetValue(Stack.OrientationProperty).As<Orientation>();
+			set => this.SetValue(Stack.OrientationProperty, value);
+		}
+
+		// ----------------
+
+		public static readonly DependencyProperty SpacingProperty = DependencyProperty.Register(
+			nameof(Stack.Spacing),
+			typeof(Floater),
+			typeof(Stack),
+			new (0.0, (o, e) => { o.As<Stack>().InvalidateMeasure(); })
+		);
+
+		public Floater Spacing {
+			get => this.GetValue(Stack.SpacingProperty).As<Floater>();
+			set => this.SetValue(Stack.SpacingProperty, value);
+		}
+
+		// ----------------
+
+		public static readonly DependencyProperty WeightProperty = DependencyProperty.RegisterAttached(
+			"Weight",
+			typeof(Floater),
+			typeof(Stack),
+			new (Floater.NaN, (o, e) => { o.As<FrameworkElement>().Parent?.As<Stack>()?.InvalidateMeasure(); })
+		);
+
+		public static Floater GetWeight (
+			DependencyObject element
+		) => element.GetValue(Stack.WeightProperty).As<Floater>();
+
+		public static void SetWeight (
+			DependencyObject element,
+			Floater          value
+		) => element.SetValue(Stack.WeightProperty, value);
+
+		#endregion
+
 		#region measure & arrange
 
 		protected override Windows.Foundation.Size MeasureWithoutPadding (
@@ -142,54 +199,6 @@ namespace KairosoftGameManager.Control {
 			}
 			return finalSize;
 		}
-
-		#endregion
-
-		#region property
-
-		public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
-			nameof(Stack.Orientation),
-			typeof(Orientation),
-			typeof(Stack),
-			new (Orientation.Horizontal, (o, e) => { o.As<Stack>().InvalidateMeasure(); })
-		);
-
-		public Orientation Orientation {
-			get => this.GetValue(Stack.OrientationProperty).As<Orientation>();
-			set => this.SetValue(Stack.OrientationProperty, value);
-		}
-
-		// ----------------
-
-		public static readonly DependencyProperty SpacingProperty = DependencyProperty.Register(
-			nameof(Stack.Spacing),
-			typeof(Floater),
-			typeof(Stack),
-			new (0.0, (o, e) => { o.As<Stack>().InvalidateMeasure(); })
-		);
-
-		public Floater Spacing {
-			get => this.GetValue(Stack.SpacingProperty).As<Floater>();
-			set => this.SetValue(Stack.SpacingProperty, value);
-		}
-
-		// ----------------
-
-		public static readonly DependencyProperty WeightProperty = DependencyProperty.RegisterAttached(
-			"Weight",
-			typeof(Floater),
-			typeof(Stack),
-			new (Floater.NaN, (o, e) => { o.As<FrameworkElement>().Parent?.As<Stack>()?.InvalidateMeasure(); })
-		);
-
-		public static Floater GetWeight (
-			DependencyObject element
-		) => element.GetValue(Stack.WeightProperty).As<Floater>();
-
-		public static void SetWeight (
-			DependencyObject element,
-			Floater          value
-		) => element.SetValue(Stack.WeightProperty, value);
 
 		#endregion
 

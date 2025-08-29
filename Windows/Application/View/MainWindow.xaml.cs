@@ -3,7 +3,6 @@
 
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
-using Microsoft.UI.Windowing;
 using Windows.ApplicationModel;
 using Microsoft.UI.Xaml.Media.Animation;
 
@@ -13,28 +12,32 @@ namespace KairosoftGameManager.View {
 
 		#region life
 
+		private MainWindowController Controller { get; } = default!;
+
+		// ----------------
+
 		public MainWindow (
 		) {
 			this.InitializeComponent();
-			this.ExtendsContentIntoTitleBar = true;
-			this.SetTitleBar(this.uTitle.As<UIElement>());
-			this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+			WindowHelper.SetTitleBar(this, true, this.uTitle, true);
 			this.Controller = new () { View = this };
-			this.Controller.Initialize();
+			this.Controller.InitializeView();
+			return;
 		}
 
-		// ----------------
+		#endregion
 
-		private MainWindowController Controller { get; }
+		#region action
 
-		// ----------------
-
-		public async void PublishNotification (
+		public async Task PushNotification (
 			InfoBarSeverity severity,
 			String          title,
 			String          message,
 			Size            duration = 4000
-		) => this.Controller.PublishNotification(severity, title, message, duration);
+		) {
+			await this.Controller.PushNotification(severity, title, message, duration);
+			return;
+		}
 
 		#endregion
 
@@ -48,16 +51,18 @@ namespace KairosoftGameManager.View {
 
 		#endregion
 
-		#region initialize
+		#region life
 
-		public void Initialize (
+		public void InitializeView (
 		) {
 			return;
 		}
 
-		// ----------------
+		#endregion
 
-		public async void PublishNotification (
+		#region action
+
+		public async Task PushNotification (
 			InfoBarSeverity severity,
 			String          title,
 			String          message,

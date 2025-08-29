@@ -44,6 +44,7 @@ namespace KairosoftGameManager {
 			App.Instance = this;
 			App.Setting = new ();
 			this.InitializeComponent();
+			return;
 		}
 
 		// ----------------
@@ -53,7 +54,7 @@ namespace KairosoftGameManager {
 		) {
 			var window = default(Window);
 			try {
-				ExceptionHelper.RegisterGlobalHandler(this, this.HandleException);
+				ExceptionHelper.Initialize(this, this.HandleException);
 				App.PackageDirectory = StorageHelper.Parent(Environment.GetCommandLineArgs()[0]).AsNotNull();
 				App.ProgramFile = $"{App.PackageDirectory}/Application.exe";
 				App.SharedDirectory = StorageHelper.Regularize(Windows.Storage.ApplicationData.Current.LocalFolder.Path);
@@ -65,14 +66,13 @@ namespace KairosoftGameManager {
 					await App.Setting.Reset();
 				}
 				await App.Setting.Save();
-				window = new View.MainWindow();
-				WindowHelper.Size(window, 720, 640);
-				App.MainWindow = window.As<View.MainWindow>();
+				App.MainWindow = new ();
+				WindowHelper.SetSize(App.MainWindow, 720, 640);
 				await App.Setting.Apply();
+				window = App.MainWindow;
 			}
 			catch (Exception e) {
-				window = new () {
-					ExtendsContentIntoTitleBar = true,
+				window = new Window() {
 					SystemBackdrop = new MicaBackdrop(),
 					Content = new Control.Box() {
 						RequestedTheme = ElementTheme.Default,
@@ -87,10 +87,18 @@ namespace KairosoftGameManager {
 							},
 						},
 					},
-				};
+				}.SelfAlso((it) => {
+					WindowHelper.SetTitleBar(it, true, null, false);
+					it.Closed += (_, _) => {
+						if (App.MainWindowIsInitialized) {
+							WindowHelper.Close(App.MainWindow);
+						}
+						return;
+					};
+				});
 			}
-			WindowHelper.Title(window, Package.Current.DisplayName);
-			WindowHelper.Icon(window, $"{App.PackageDirectory}/Asset/Logo.ico");
+			WindowHelper.SetIcon(window, $"{App.PackageDirectory}/Asset/Logo.ico");
+			WindowHelper.SetTitle(window, Package.Current.DisplayName);
 			WindowHelper.Activate(window);
 			return;
 		}

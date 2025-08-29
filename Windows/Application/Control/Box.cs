@@ -8,6 +8,19 @@ namespace KairosoftGameManager.Control {
 
 	public partial class Box : Panel {
 
+		#region life
+
+		public Box (
+		) {
+			return;
+		}
+
+		#endregion
+
+		#region property
+
+		#endregion
+
 		#region measure & arrange
 
 		protected override Windows.Foundation.Size MeasureWithoutPadding (
@@ -33,10 +46,6 @@ namespace KairosoftGameManager.Control {
 			}
 			return finalSize;
 		}
-
-		#endregion
-
-		#region property
 
 		#endregion
 

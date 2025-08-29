@@ -8,6 +8,31 @@ namespace KairosoftGameManager.Control {
 
 	public abstract class Panel : Microsoft.UI.Xaml.Controls.Panel {
 
+		#region life
+
+		public Panel (
+		) {
+			return;
+		}
+
+		#endregion
+
+		#region property
+
+		public static readonly DependencyProperty PaddingProperty = DependencyProperty.Register(
+			nameof(Panel.Padding),
+			typeof(Thickness),
+			typeof(Panel),
+			new (new Thickness(0.0), (o, e) => { o.As<Panel>().InvalidateMeasure(); })
+		);
+
+		public Thickness Padding {
+			get => this.GetValue(Panel.PaddingProperty).As<Thickness>();
+			set => this.SetValue(Panel.PaddingProperty, value);
+		}
+
+		#endregion
+
 		#region measure & arrange
 
 		protected override Windows.Foundation.Size MeasureOverride (
@@ -41,22 +66,6 @@ namespace KairosoftGameManager.Control {
 			Windows.Foundation.Point finalOffset,
 			Windows.Foundation.Size  finalSize
 		);
-
-		#endregion
-
-		#region property
-
-		public static readonly DependencyProperty PaddingProperty = DependencyProperty.Register(
-			nameof(Panel.Padding),
-			typeof(Thickness),
-			typeof(Panel),
-			new (new Thickness(0.0), (o, e) => { o.As<Panel>().InvalidateMeasure(); })
-		);
-
-		public Thickness Padding {
-			get => this.GetValue(Panel.PaddingProperty).As<Thickness>();
-			set => this.SetValue(Panel.PaddingProperty, value);
-		}
 
 		#endregion
 

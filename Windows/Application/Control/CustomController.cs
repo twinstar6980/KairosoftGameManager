@@ -8,7 +8,16 @@ namespace KairosoftGameManager {
 
 	public partial class CustomController : INotifyPropertyChanged {
 
-		#region implement
+		#region structor
+
+		public CustomController (
+		) {
+			return;
+		}
+
+		#endregion
+
+		#region implement INotifyPropertyChanged
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 

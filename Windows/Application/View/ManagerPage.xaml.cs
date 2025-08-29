@@ -4,6 +4,7 @@
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace KairosoftGameManager.View {
 
@@ -11,16 +12,30 @@ namespace KairosoftGameManager.View {
 
 		#region life
 
+		private ManagerPageController Controller { get; } = default!;
+
+		// ----------------
+
 		public ManagerPage (
 		) {
 			this.InitializeComponent();
 			this.Controller = new () { View = this };
-			this.Controller.Initialize();
+			this.Controller.InitializeView();
+			return;
 		}
 
 		// ----------------
 
-		private ManagerPageController Controller { get; }
+		protected override void OnNavigatedTo (
+			NavigationEventArgs args
+		) {
+			_ = ((Func<Task>)(async () => {
+				await ControlHelper.WaitUntilLoaded(this);
+				await this.Controller.UpdateView();
+			}))().SelfLet(ExceptionHelper.WrapTask);
+			base.OnNavigatedTo(args);
+			return;
+		}
 
 		#endregion
 
@@ -34,20 +49,29 @@ namespace KairosoftGameManager.View {
 
 		#endregion
 
-		#region initialize
+		#region life
 
-		public void Initialize (
+		public void InitializeView (
 		) {
-			var task = async () => {
-				await ControlHelper.WaitUntilLoaded(this.View);
-				await this.LoadRepository();
-				return;
-			};
-			task();
 			return;
 		}
 
-		// ----------------
+		public async Task UpdateView (
+		) {
+			await Task.Delay(200); // wait for LostFocus event on SettingPage
+			if (App.Setting.State.CurrentRepositoryDirectory != App.Setting.Data.RepositoryDirectory) {
+				this.NotifyPropertyChanged([
+					nameof(this.uRepositoryDirectoryText_Text),
+				]);
+				await this.LoadRepository();
+				App.Setting.State.CurrentRepositoryDirectory = App.Setting.Data.RepositoryDirectory;
+			}
+			return;
+		}
+
+		#endregion
+
+		#region action
 
 		public async Task LoadRepository (
 		) {
@@ -71,7 +95,7 @@ namespace KairosoftGameManager.View {
 				}
 			}
 			catch (Exception e) {
-				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed to load repository.", ExceptionHelper.GenerateMessage(e));
+				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed to load repository.", ExceptionHelper.GenerateMessage(e));
 			}
 			await hideDialog();
 			this.NotifyPropertyChanged([
@@ -367,15 +391,15 @@ namespace KairosoftGameManager.View {
 					default: throw new UnreachableException();
 				}
 				if (!cancelled) {
-					App.MainWindow.PublishNotification(InfoBarSeverity.Success, "Succeeded.", "");
+					await App.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
 				}
 				else {
-					App.MainWindow.PublishNotification(InfoBarSeverity.Warning, "Cancelled.", "");
+					await App.MainWindow.PushNotification(InfoBarSeverity.Warning, "Cancelled.", "");
 					state = null;
 				}
 			}
 			catch (Exception e) {
-				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed.", ExceptionHelper.GenerateMessage(e));
+				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", ExceptionHelper.GenerateMessage(e));
 				state = false;
 			}
 			await hideDialog();

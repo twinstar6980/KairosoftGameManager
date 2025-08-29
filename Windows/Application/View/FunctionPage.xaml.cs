@@ -4,6 +4,7 @@
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
 using System.Buffers.Binary;
+using Microsoft.UI.Xaml.Navigation;
 using FluentIconGlyph = KairosoftGameManager.Control.FluentIconGlyph;
 
 namespace KairosoftGameManager.View {
@@ -12,16 +13,30 @@ namespace KairosoftGameManager.View {
 
 		#region life
 
+		private FunctionPageController Controller { get; } = default!;
+
+		// ----------------
+
 		public FunctionPage (
 		) {
 			this.InitializeComponent();
 			this.Controller = new () { View = this };
-			this.Controller.Initialize();
+			this.Controller.InitializeView();
+			return;
 		}
 
 		// ----------------
 
-		private FunctionPageController Controller { get; }
+		protected override void OnNavigatedTo (
+			NavigationEventArgs args
+		) {
+			_ = ((Func<Task>)(async () => {
+				await ControlHelper.WaitUntilLoaded(this);
+				await this.Controller.UpdateView();
+			}))().SelfLet(ExceptionHelper.WrapTask);
+			base.OnNavigatedTo(args);
+			return;
+		}
 
 		#endregion
 
@@ -61,9 +76,14 @@ namespace KairosoftGameManager.View {
 
 		#endregion
 
-		#region initialize
+		#region life
 
-		public void Initialize (
+		public void InitializeView (
+		) {
+			return;
+		}
+
+		public async Task UpdateView (
 		) {
 			return;
 		}
@@ -328,7 +348,7 @@ namespace KairosoftGameManager.View {
 				PublishMessage($"Done.");
 			}
 			catch (Exception e) {
-				App.MainWindow.PublishNotification(InfoBarSeverity.Error, "Failed to run function.", "");
+				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed to run function.", "");
 				PublishMessage($"Exception!");
 				PublishMessage(ExceptionHelper.GenerateMessage(e));
 			}

@@ -18,7 +18,8 @@ namespace KairosoftGameManager {
 	}
 
 	public record SettingState {
-		public ElementTheme? ThemeMode = default!;
+		public ElementTheme? ThemeMode                  = default!;
+		public String        CurrentRepositoryDirectory = default!;
 	}
 
 	public class SettingProvider {
@@ -121,6 +122,7 @@ namespace KairosoftGameManager {
 		) {
 			return new () {
 				ThemeMode = null,
+				CurrentRepositoryDirectory = "",
 			};
 		}
 

@@ -329,7 +329,7 @@ namespace KairosoftGameManager.Utility {
 					if (type == "SaveFile") {
 						dialog->SetFileName(name).ThrowOnFailure();
 					}
-					var dialogResult = dialog->Show(new (WindowHelper.Handle(host)));
+					var dialogResult = dialog->Show(new (WindowHelper.GetHandle(host)));
 					if (dialogResult.Failed && dialogResult != unchecked((IntegerS32)0x800704C7)) {
 						dialogResult.ThrowOnFailure();
 					}

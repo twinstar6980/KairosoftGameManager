@@ -6,10 +6,15 @@ WIN32_ERROR
 GetLongPathName
 
 // Window
+MONITOR_FROM_FLAGS
+MonitorFromWindow
+MONITORINFO
+GetMonitorInfo
+GetWindowRect
 GetDpiForWindow
+SHOW_WINDOW_CMD
 ShowWindow
 SetForegroundWindow
-SHOW_WINDOW_CMD
 
 // COM
 CoInitialize

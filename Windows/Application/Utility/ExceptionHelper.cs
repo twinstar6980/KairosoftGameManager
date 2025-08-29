@@ -13,7 +13,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static void RegisterGlobalHandler (
+		public static void Initialize (
 			App               application,
 			Action<Exception> handler
 		) {
@@ -31,7 +31,9 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static Task WithTaskExceptionHandler (
+		// ----------------
+
+		public static Task WrapTask (
 			Task task
 		) {
 			return task.ContinueWith((it) => {
@@ -41,8 +43,6 @@ namespace KairosoftGameManager.Utility {
 				return;
 			});
 		}
-
-		// ----------------
 
 		public static String GenerateMessage (
 			Exception exception

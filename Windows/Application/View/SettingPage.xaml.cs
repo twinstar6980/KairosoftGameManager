@@ -3,6 +3,7 @@
 
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
+using Microsoft.UI.Xaml.Navigation;
 using Windows.ApplicationModel;
 using CommunityToolkit.WinUI.Controls;
 
@@ -12,16 +13,30 @@ namespace KairosoftGameManager.View {
 
 		#region life
 
+		private SettingPageController Controller { get; } = default!;
+
+		// ----------------
+
 		public SettingPage (
 		) {
 			this.InitializeComponent();
 			this.Controller = new () { View = this };
-			this.Controller.Initialize();
+			this.Controller.InitializeView();
+			return;
 		}
 
 		// ----------------
 
-		private SettingPageController Controller { get; }
+		protected override void OnNavigatedTo (
+			NavigationEventArgs args
+		) {
+			_ = ((Func<Task>)(async () => {
+				await ControlHelper.WaitUntilLoaded(this);
+				await this.Controller.UpdateView();
+			}))().SelfLet(ExceptionHelper.WrapTask);
+			base.OnNavigatedTo(args);
+			return;
+		}
 
 		#endregion
 
@@ -35,9 +50,14 @@ namespace KairosoftGameManager.View {
 
 		#endregion
 
-		#region initialize
+		#region life
 
-		public void Initialize (
+		public void InitializeView (
+		) {
+			return;
+		}
+
+		public async Task UpdateView (
 		) {
 			return;
 		}
