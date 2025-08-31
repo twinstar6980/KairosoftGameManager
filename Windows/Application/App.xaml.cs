@@ -52,9 +52,11 @@ namespace KairosoftGameManager {
 		protected override async void OnLaunched (
 			LaunchActivatedEventArgs args
 		) {
-			var window = default(Window);
 			try {
-				ExceptionHelper.Initialize(this, this.HandleException);
+				ExceptionHelper.Initialize(this, async (exception) => {
+					_ = this.HandleException(exception, App.MainWindow);
+					return;
+				});
 				App.PackageDirectory = StorageHelper.Parent(Environment.GetCommandLineArgs()[0]).AsNotNull();
 				App.ProgramFile = $"{App.PackageDirectory}/Application.exe";
 				App.SharedDirectory = StorageHelper.Regularize(Windows.Storage.ApplicationData.Current.LocalFolder.Path);
@@ -69,37 +71,11 @@ namespace KairosoftGameManager {
 				App.MainWindow = new ();
 				WindowHelper.SetSize(App.MainWindow, 720, 640);
 				await App.Setting.Apply();
-				window = App.MainWindow;
+				WindowHelper.Activate(App.MainWindow);
 			}
 			catch (Exception e) {
-				window = new Window() {
-					SystemBackdrop = new MicaBackdrop(),
-					Content = new Control.Box() {
-						RequestedTheme = ElementTheme.Default,
-						Padding = new (16),
-						Children = {
-							new TextBlock() {
-								HorizontalAlignment = HorizontalAlignment.Center,
-								VerticalAlignment = VerticalAlignment.Center,
-								IsTextSelectionEnabled = true,
-								TextWrapping = TextWrapping.Wrap,
-								Text = ExceptionHelper.GenerateMessage(e),
-							},
-						},
-					},
-				}.SelfAlso((it) => {
-					WindowHelper.SetTitleBar(it, true, null, false);
-					it.Closed += (_, _) => {
-						if (App.MainWindowIsInitialized) {
-							WindowHelper.Close(App.MainWindow);
-						}
-						return;
-					};
-				});
+				_ = this.HandleExceptionFatal(e);
 			}
-			WindowHelper.SetIcon(window, $"{App.PackageDirectory}/Asset/Logo.ico");
-			WindowHelper.SetTitle(window, Package.Current.DisplayName);
-			WindowHelper.Activate(window);
 			return;
 		}
 
@@ -107,24 +83,55 @@ namespace KairosoftGameManager {
 
 		#region utility
 
-		private void HandleException (
+		private async Task HandleException (
+			Exception exception,
+			Window?   window
+		) {
+			try {
+				if (window != null) {
+					await window.DispatcherQueue.EnqueueAsync(async () => {
+						await ControlHelper.PostTask(window.Content.As<FrameworkElement>(), async () => {
+							await ControlHelper.ShowDialogAsAutomatic(window.Content, "Unhandled Exception", new TextBlock() {
+								HorizontalAlignment = HorizontalAlignment.Stretch,
+								VerticalAlignment = VerticalAlignment.Stretch,
+								IsTextSelectionEnabled = true,
+								TextWrapping = TextWrapping.Wrap,
+								Text = ExceptionHelper.GenerateMessage(exception),
+							}, null);
+						});
+					});
+				}
+			}
+			catch (Exception) {
+				// ignored
+			}
+			return;
+		}
+
+		private async Task HandleExceptionFatal (
 			Exception exception
 		) {
-			if (App.MainWindowIsInitialized) {
-				App.MainWindow.DispatcherQueue.EnqueueAsync(() => {
-					try {
-						_ = ControlHelper.ShowDialogAsAutomatic(App.MainWindow.Content, "Unhandled Exception", new TextBlock() {
-							HorizontalAlignment = HorizontalAlignment.Stretch,
-							VerticalAlignment = VerticalAlignment.Stretch,
-							IsTextSelectionEnabled = true,
-							TextWrapping = TextWrapping.Wrap,
-							Text = ExceptionHelper.GenerateMessage(exception),
-						}, null);
+			try {
+				var window = new Window() {
+					SystemBackdrop = new MicaBackdrop(),
+					Content = new Grid(),
+				};
+				window.Closed += async (_, _) => {
+					// if the user close the window externally, the dialog task will not complete, so put the step to close MainWindow in the Closed event
+					if (App.MainWindowIsInitialized) {
+						WindowHelper.Close(App.MainWindow);
 					}
-					catch (Exception) {
-						// ignored
-					}
-				});
+					return;
+				};
+				WindowHelper.SetIcon(window, $"{App.PackageDirectory}/Asset/Logo.ico");
+				WindowHelper.SetTitle(window, Package.Current.DisplayName);
+				WindowHelper.SetTitleBar(window, true, null, false);
+				WindowHelper.Activate(window);
+				await this.HandleException(exception, window);
+				WindowHelper.Close(window);
+			}
+			catch (Exception) {
+				// ignored
 			}
 			return;
 		}

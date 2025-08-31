@@ -13,7 +13,7 @@ namespace KairosoftGameManager.View {
 
 		#region life
 
-		private FunctionPageController Controller { get; } = default!;
+		private FunctionPageController Controller { get; }
 
 		// ----------------
 
@@ -30,10 +30,9 @@ namespace KairosoftGameManager.View {
 		protected override void OnNavigatedTo (
 			NavigationEventArgs args
 		) {
-			_ = ((Func<Task>)(async () => {
-				await ControlHelper.WaitUntilLoaded(this);
+			ControlHelper.PostTask(this, async () => {
 				await this.Controller.UpdateView();
-			}))().SelfLet(ExceptionHelper.WrapTask);
+			}).SelfLet(ExceptionHelper.WrapTask);
 			base.OnNavigatedTo(args);
 			return;
 		}

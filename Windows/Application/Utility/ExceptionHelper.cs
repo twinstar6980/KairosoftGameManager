@@ -18,12 +18,12 @@ namespace KairosoftGameManager.Utility {
 			Action<Exception> handler
 		) {
 			ExceptionHelper.Handler = handler;
-			application.UnhandledException += (_, args) => {
+			application.UnhandledException += async (_, args) => {
 				args.Handled = true;
 				ExceptionHelper.Handler(args.Exception);
 				return;
 			};
-			TaskScheduler.UnobservedTaskException += (_, args) => {
+			TaskScheduler.UnobservedTaskException += async (_, args) => {
 				args.SetObserved();
 				ExceptionHelper.Handler(args.Exception);
 				return;

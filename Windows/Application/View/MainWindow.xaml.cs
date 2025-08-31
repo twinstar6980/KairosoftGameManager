@@ -12,13 +12,15 @@ namespace KairosoftGameManager.View {
 
 		#region life
 
-		private MainWindowController Controller { get; } = default!;
+		private MainWindowController Controller { get; }
 
 		// ----------------
 
 		public MainWindow (
 		) {
 			this.InitializeComponent();
+			WindowHelper.SetIcon(this, $"{App.PackageDirectory}/Asset/Logo.ico");
+			WindowHelper.SetTitle(this, Package.Current.DisplayName);
 			WindowHelper.SetTitleBar(this, true, this.uTitle, true);
 			this.Controller = new () { View = this };
 			this.Controller.InitializeView();
