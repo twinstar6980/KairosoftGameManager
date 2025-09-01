@@ -10,6 +10,8 @@ using Microsoft.UI.Xaml.Media;
 
 namespace KairosoftGameManager.Utility {
 
+	#region type
+
 	public enum GamePlatform {
 		WindowsX32,
 		AndroidA32,
@@ -29,6 +31,8 @@ namespace KairosoftGameManager.Utility {
 		Modified,
 	}
 
+	// ----------------
+
 	public record class GameConfiguration {
 		public String           Path     = "";
 		public String           Identity = "";
@@ -46,7 +50,27 @@ namespace KairosoftGameManager.Utility {
 		public String Version  = "";
 	}
 
+	#endregion
+
 	public static class GameUtility {
+
+		#region common
+
+		public const String ExecutableFile = "KairoGames.exe";
+
+		public const String ProgramFile = "GameAssembly.dll";
+
+		public const String RecordBundleDirectory = "saves";
+
+		public const String RecordArchiveFileExtension = "kgra";
+
+		public const String BackupDirectory = ".backup";
+
+		public const String BackupProgramFile = "program";
+
+		#endregion
+
+		#region check
 
 		public static readonly SortedDictionary<String, List<String>> TestedGame = new () {
 			// Hot Springs Story
@@ -107,65 +131,14 @@ namespace KairosoftGameManager.Utility {
 			return table.TryGetValue(identity, out var versionList) && (version == null || versionList.Contains(version));
 		}
 
-		// ----------------
+		#endregion
 
-		public const String ExecutableFile = "KairoGames.exe";
-
-		public const String ProgramFile = "GameAssembly.dll";
-
-		public const String RecordBundleDirectory = "saves";
-
-		public const String RecordArchiveFileExtension = "kgra";
-
-		public const String BackupDirectory = ".backup";
-
-		public const String BackupProgramFile = "program";
-
-		// ----------------
-
-		public static String MakeRecordArchiveConfigurationText (
-			GameRecordArchiveConfiguration value
-		) {
-			return String.Join(':', [value.Platform, value.Identity, value.Version]);
-		}
-
-		public static GameRecordArchiveConfiguration ParseRecordArchiveConfigurationText (
-			String text
-		) {
-			var list = text.Split(':');
-			return new () {
-				Platform = list[0],
-				Identity = list[1],
-				Version = list[2],
-			};
-		}
-
-		// ----------------
-
-		private static GamePlatform? DetectGamePlatform (
-			String gameDirectory
-		) {
-			var type = null as GamePlatform?;
-			if (StorageHelper.ExistFile($"{gameDirectory}/KairoGames.exe")) {
-				if (StorageHelper.ExistFile($"{gameDirectory}/GameAssembly.dll")) {
-					type = GamePlatform.WindowsX32;
-				}
-			}
-			if (StorageHelper.ExistFile($"{gameDirectory}/AndroidManifest.xml")) {
-				if (StorageHelper.ExistFile($"{gameDirectory}/lib/armeabi-v7a/libil2cpp.so")) {
-					type = GamePlatform.AndroidA32;
-				}
-				if (StorageHelper.ExistFile($"{gameDirectory}/lib/arm64-v8a/libil2cpp.so")) {
-					type = GamePlatform.AndroidA64;
-				}
-			}
-			return type;
-		}
+		#region record
 
 		private static List<String> ListRecordFile (
 			String recordDirectory
 		) {
-			return StorageHelper.ListFile(recordDirectory, 0).Where((value) => new Regex(@"^\d{4,4}(_backup)?$").IsMatch(value)).ToList();
+			return StorageHelper.ListDirectory(recordDirectory, 1, true, false).Where((value) => new Regex(@"^\d{4,4}(_backup)?$").IsMatch(value)).ToList();
 		}
 
 		private static async Task<GameRecordState> DetectRecordState (
@@ -245,6 +218,112 @@ namespace KairosoftGameManager.Utility {
 				await GameUtility.EncryptRecordFile($"{targetDirectory}/{itemName}", $"{targetDirectory}/{itemName}", key);
 			}
 			return;
+		}
+
+		// ----------------
+
+		public static String MakeRecordArchiveConfigurationText (
+			GameRecordArchiveConfiguration value
+		) {
+			return String.Join(':', [value.Platform, value.Identity, value.Version]);
+		}
+
+		public static GameRecordArchiveConfiguration ParseRecordArchiveConfigurationText (
+			String text
+		) {
+			var list = text.Split(':');
+			return new () {
+				Platform = list[0],
+				Identity = list[1],
+				Version = list[2],
+			};
+		}
+
+		// ----------------
+
+		public static async Task ImportRecordArchive (
+			String                                              archiveFile,
+			String                                              targetDirectory,
+			Byte[]?                                             key,
+			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
+		) {
+			var archiveDirectory = StorageHelper.Temporary();
+			StorageHelper.CreateDirectory(archiveDirectory);
+			try {
+				// load
+				ZipFile.ExtractToDirectory(archiveFile, archiveDirectory, Encoding.UTF8);
+				// configuration
+				var archiveConfiguration = GameUtility.ParseRecordArchiveConfigurationText(await StorageHelper.ReadFileText($"{archiveDirectory}/configuration.txt"));
+				if (!await doArchiveConfiguration(archiveConfiguration)) {
+					return;
+				}
+				// data
+				StorageHelper.CreateDirectory(targetDirectory);
+				foreach (var dataFile in GameUtility.ListRecordFile($"{archiveDirectory}/data")) {
+					await GameUtility.EncryptRecordFile($"{archiveDirectory}/data/{dataFile}", $"{targetDirectory}/{dataFile}", key);
+				}
+			}
+			catch (Exception) {
+				StorageHelper.Remove(archiveDirectory);
+				throw;
+			}
+			StorageHelper.Remove(archiveDirectory);
+			return;
+		}
+
+		public static async Task ExportRecordArchive (
+			String                                              archiveFile,
+			String                                              targetDirectory,
+			Byte[]?                                             key,
+			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
+		) {
+			var archiveDirectory = StorageHelper.Temporary();
+			StorageHelper.CreateDirectory(archiveDirectory);
+			try {
+				// configuration
+				var archiveConfiguration = new GameRecordArchiveConfiguration();
+				if (!await doArchiveConfiguration(archiveConfiguration)) {
+					return;
+				}
+				await StorageHelper.WriteFileText($"{archiveDirectory}/configuration.txt", GameUtility.MakeRecordArchiveConfigurationText(archiveConfiguration));
+				// data
+				StorageHelper.CreateDirectory($"{archiveDirectory}/data");
+				foreach (var dataFile in GameUtility.ListRecordFile(targetDirectory)) {
+					await GameUtility.EncryptRecordFile($"{targetDirectory}/{dataFile}", $"{archiveDirectory}/data/{dataFile}", key);
+				}
+				// save
+				ZipFile.CreateFromDirectory(archiveDirectory, archiveFile, CompressionLevel.SmallestSize, false, Encoding.UTF8);
+			}
+			catch (Exception) {
+				StorageHelper.Remove(archiveDirectory);
+				throw;
+			}
+			StorageHelper.Remove(archiveDirectory);
+			return;
+		}
+
+		#endregion
+
+		#region program
+
+		private static GamePlatform? DetectGamePlatform (
+			String gameDirectory
+		) {
+			var type = null as GamePlatform?;
+			if (StorageHelper.ExistFile($"{gameDirectory}/KairoGames.exe")) {
+				if (StorageHelper.ExistFile($"{gameDirectory}/GameAssembly.dll")) {
+					type = GamePlatform.WindowsX32;
+				}
+			}
+			if (StorageHelper.ExistFile($"{gameDirectory}/AndroidManifest.xml")) {
+				if (StorageHelper.ExistFile($"{gameDirectory}/lib/armeabi-v7a/libil2cpp.so")) {
+					type = GamePlatform.AndroidA32;
+				}
+				if (StorageHelper.ExistFile($"{gameDirectory}/lib/arm64-v8a/libil2cpp.so")) {
+					type = GamePlatform.AndroidA64;
+				}
+			}
+			return type;
 		}
 
 		// ----------------
@@ -621,70 +700,9 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		// ----------------
+		#endregion
 
-		public static async Task ImportRecordArchive (
-			String                                              archiveFile,
-			String                                              targetDirectory,
-			Byte[]?                                             key,
-			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
-		) {
-			var archiveDirectory = StorageHelper.Temporary();
-			StorageHelper.CreateDirectory(archiveDirectory);
-			try {
-				// load
-				ZipFile.ExtractToDirectory(archiveFile, archiveDirectory, Encoding.UTF8);
-				// configuration
-				var archiveConfiguration = GameUtility.ParseRecordArchiveConfigurationText(await StorageHelper.ReadFileText($"{archiveDirectory}/configuration.txt"));
-				if (!await doArchiveConfiguration(archiveConfiguration)) {
-					return;
-				}
-				// data
-				StorageHelper.CreateDirectory(targetDirectory);
-				foreach (var dataFile in GameUtility.ListRecordFile($"{archiveDirectory}/data")) {
-					await GameUtility.EncryptRecordFile($"{archiveDirectory}/data/{dataFile}", $"{targetDirectory}/{dataFile}", key);
-				}
-			}
-			catch (Exception) {
-				StorageHelper.Remove(archiveDirectory);
-				throw;
-			}
-			StorageHelper.Remove(archiveDirectory);
-			return;
-		}
-
-		public static async Task ExportRecordArchive (
-			String                                              archiveFile,
-			String                                              targetDirectory,
-			Byte[]?                                             key,
-			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
-		) {
-			var archiveDirectory = StorageHelper.Temporary();
-			StorageHelper.CreateDirectory(archiveDirectory);
-			try {
-				// configuration
-				var archiveConfiguration = new GameRecordArchiveConfiguration();
-				if (!await doArchiveConfiguration(archiveConfiguration)) {
-					return;
-				}
-				await StorageHelper.WriteFileText($"{archiveDirectory}/configuration.txt", GameUtility.MakeRecordArchiveConfigurationText(archiveConfiguration));
-				// data
-				StorageHelper.CreateDirectory($"{archiveDirectory}/data");
-				foreach (var dataFile in GameUtility.ListRecordFile(targetDirectory)) {
-					await GameUtility.EncryptRecordFile($"{targetDirectory}/{dataFile}", $"{archiveDirectory}/data/{dataFile}", key);
-				}
-				// save
-				ZipFile.CreateFromDirectory(archiveDirectory, archiveFile, CompressionLevel.SmallestSize, false, Encoding.UTF8);
-			}
-			catch (Exception) {
-				StorageHelper.Remove(archiveDirectory);
-				throw;
-			}
-			StorageHelper.Remove(archiveDirectory);
-			return;
-		}
-
-		// ----------------
+		#region repository
 
 		public static Byte[] ConvertKeyFromUser (
 			String user
@@ -694,6 +712,8 @@ namespace KairosoftGameManager.Utility {
 			BinaryPrimitives.TryWriteUInt64LittleEndian(key, keyValue);
 			return key;
 		}
+
+		// ----------------
 
 		public static async Task<GameConfiguration?> LoadGameConfiguration (
 			String repositoryDirectory,
@@ -750,6 +770,8 @@ namespace KairosoftGameManager.Utility {
 		) {
 			return StorageHelper.ExistFile($"{repositoryDirectory}/steam.exe");
 		}
+
+		#endregion
 
 	}
 

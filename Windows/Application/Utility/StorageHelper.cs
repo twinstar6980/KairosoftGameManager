@@ -235,26 +235,38 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		#endregion
-
-		#region iterate
-
-		public static List<String> ListFile (
-			String target,
-			Size   depth,
-			String pattern = "*"
-		) {
-			var targetFullPath = new DirectoryInfo(target).FullName;
-			return Directory.EnumerateFiles(target, pattern, new EnumerationOptions() { RecurseSubdirectories = true, MaxRecursionDepth = depth }).Select((value) => (StorageHelper.Regularize(value[(targetFullPath.Length + 1)..]))).ToList();
-		}
+		// ----------------
 
 		public static List<String> ListDirectory (
-			String target,
-			Size   depth,
-			String pattern = "*"
+			String  target,
+			Size?   depth,
+			Boolean allowFile,
+			Boolean allowDirectory,
+			String  pattern = "*"
 		) {
+			if (depth == 0) {
+				return [];
+			}
+			var result = new List<String>().AsEnumerable();
+			var option = new EnumerationOptions() {
+				AttributesToSkip = FileAttributes.None,
+				MaxRecursionDepth = depth == null ? Int32.MaxValue : depth.AsNotNull() - 1,
+				RecurseSubdirectories = true,
+			};
+			if (!allowFile && !allowDirectory) {
+				result = [];
+			}
+			if (!allowFile && allowDirectory) {
+				result = Directory.EnumerateDirectories(target, pattern, option);
+			}
+			if (allowFile && !allowDirectory) {
+				result = Directory.EnumerateFiles(target, pattern, option);
+			}
+			if (allowFile && allowDirectory) {
+				result = Directory.EnumerateFileSystemEntries(target, pattern, option);
+			}
 			var targetFullPath = new DirectoryInfo(target).FullName;
-			return Directory.EnumerateDirectories(target, pattern, new EnumerationOptions() { RecurseSubdirectories = true, MaxRecursionDepth = depth }).Select((value) => (StorageHelper.Regularize(value[(targetFullPath.Length + 1)..]))).ToList();
+			return result!.Select((value) => (StorageHelper.Regularize(value[(targetFullPath.Length + 1)..]))).Order().ToList();
 		}
 
 		#endregion
