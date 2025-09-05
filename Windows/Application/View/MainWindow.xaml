@@ -20,6 +20,7 @@
 	<my:Box
 		HorizontalAlignment="Stretch"
 		VerticalAlignment="Stretch"
+		IsTabStop="True"
 		>
 		<my:Stack
 			x:Name="uTitle"

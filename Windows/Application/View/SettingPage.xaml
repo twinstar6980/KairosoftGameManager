@@ -64,7 +64,6 @@
 			my:Stack.Weight="1"
 			HorizontalAlignment="Stretch"
 			VerticalAlignment="Stretch"
-			IsTabStop="True"
 			HorizontalScrollMode="Disabled"
 			HorizontalScrollBarVisibility="Disabled"
 			VerticalScrollMode="Enabled"
