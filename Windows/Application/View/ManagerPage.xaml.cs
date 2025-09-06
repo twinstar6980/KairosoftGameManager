@@ -116,12 +116,12 @@ namespace KairosoftGameManager.View {
 				nameof(gameController.uVersion_ToolTip),
 				nameof(gameController.uVersionBadge_Style),
 				nameof(gameController.uVersionText_Text),
-				nameof(gameController.uRecord_ToolTip),
-				nameof(gameController.uRecordBadge_Style),
-				nameof(gameController.uRecordText_Text),
 				nameof(gameController.uProgram_ToolTip),
 				nameof(gameController.uProgramBadge_Style),
 				nameof(gameController.uProgramText_Text),
+				nameof(gameController.uRecord_ToolTip),
+				nameof(gameController.uRecordBadge_Style),
+				nameof(gameController.uRecordText_Text),
 				nameof(gameController.uActionRestoreProgram_IsEnabled),
 				nameof(gameController.uActionModifyProgram_IsEnabled),
 				nameof(gameController.uActionEncryptRecord_IsEnabled),
@@ -150,13 +150,18 @@ namespace KairosoftGameManager.View {
 					}
 					return await ControlHelper.ShowDialogForConfirm(this.View, "Untested Game", new StackPanel() {
 						HorizontalAlignment = HorizontalAlignment.Stretch,
+						VerticalAlignment = VerticalAlignment.Stretch,
+						Orientation = Orientation.Vertical,
 						Spacing = 8,
 						Children = {
 							new TextBlock() {
+								HorizontalAlignment = HorizontalAlignment.Stretch,
+								VerticalAlignment = VerticalAlignment.Stretch,
 								Text = "Action for this game may cause error, are you confirm?",
 							},
 							new Button() {
 								HorizontalAlignment = HorizontalAlignment.Stretch,
+								VerticalAlignment = VerticalAlignment.Stretch,
 								Content = "Trust This Game",
 							}.SelfAlso((it) => {
 								it.Click += async (_, _) => {
@@ -221,11 +226,13 @@ namespace KairosoftGameManager.View {
 						else {
 							var dialogPanel = new StackPanel() {
 								HorizontalAlignment = HorizontalAlignment.Stretch,
+								VerticalAlignment = VerticalAlignment.Stretch,
 								Orientation = Orientation.Vertical,
 								Spacing = 8,
 								Children = {
 									new ToggleButton() {
 										HorizontalAlignment = HorizontalAlignment.Stretch,
+										VerticalAlignment = VerticalAlignment.Stretch,
 										Content = "Disable Record Encryption",
 										IsChecked = argumentDisableRecordEncryption,
 									}.SelfAlso((it) => {
@@ -236,6 +243,7 @@ namespace KairosoftGameManager.View {
 									}),
 									new ToggleButton() {
 										HorizontalAlignment = HorizontalAlignment.Stretch,
+										VerticalAlignment = VerticalAlignment.Stretch,
 										Content = "Enable Debug Mode",
 										IsChecked = argumentEnableDebugMode,
 									}.SelfAlso((it) => {
@@ -296,36 +304,41 @@ namespace KairosoftGameManager.View {
 								shouldEncrypt = temporaryData.Item1;
 							}
 							else {
-								var controlModeOriginal = new ToggleButton() {
+								var dialogPanel = new StackPanel() {
 									HorizontalAlignment = HorizontalAlignment.Stretch,
-									Content = "Original",
-									IsChecked = shouldEncrypt,
-								};
-								var controlModeDecrypted = new ToggleButton() {
-									HorizontalAlignment = HorizontalAlignment.Stretch,
-									Content = "Decrypted",
-									IsChecked = !shouldEncrypt,
-								};
-								controlModeOriginal.Click += async (_, _) => {
-									shouldEncrypt = controlModeOriginal.IsChecked.AsNotNull();
-									controlModeDecrypted.IsChecked = !shouldEncrypt;
-									return;
-								};
-								controlModeDecrypted.Click += async (_, _) => {
-									shouldEncrypt = !controlModeDecrypted.IsChecked.AsNotNull();
-									controlModeOriginal.IsChecked = shouldEncrypt;
-									return;
-								};
-								var controlPanel = new StackPanel() {
-									HorizontalAlignment = HorizontalAlignment.Stretch,
+									VerticalAlignment = VerticalAlignment.Stretch,
 									Orientation = Orientation.Vertical,
 									Spacing = 8,
 									Children = {
-										controlModeOriginal,
-										controlModeDecrypted,
+										new ToggleButton() {
+											HorizontalAlignment = HorizontalAlignment.Stretch,
+											VerticalAlignment = VerticalAlignment.Stretch,
+											Content = "Original",
+											IsChecked = shouldEncrypt,
+										}.SelfAlso((it) => {
+											it.Click += async (_, _) => {
+												shouldEncrypt = true;
+												it.IsChecked = true;
+												it.Parent.As<StackPanel>().Children[1].As<ToggleButton>().IsChecked = false;
+												return;
+											};
+										}),
+										new ToggleButton() {
+											HorizontalAlignment = HorizontalAlignment.Stretch,
+											VerticalAlignment = VerticalAlignment.Stretch,
+											Content = "Decrypted",
+											IsChecked = !shouldEncrypt,
+										}.SelfAlso((it) => {
+											it.Click += async (_, _) => {
+												shouldEncrypt = false;
+												it.IsChecked = true;
+												it.Parent.As<StackPanel>().Children[0].As<ToggleButton>().IsChecked = false;
+												return;
+											};
+										}),
 									},
 								};
-								if (!await ControlHelper.ShowDialogForConfirm(this.View, "Encryption Mode", controlPanel)) {
+								if (!await ControlHelper.ShowDialogForConfirm(this.View, "Encryption Mode", dialogPanel)) {
 									cancelled = true;
 									break;
 								}
@@ -341,9 +354,6 @@ namespace KairosoftGameManager.View {
 							break;
 						}
 						var recordDirectory = $"{game.Path}/{GameUtility.RecordBundleDirectory}/{game.User}";
-						if (StorageHelper.ExistDirectory(recordDirectory)) {
-							StorageHelper.Trash(recordDirectory);
-						}
 						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.WindowsX32.ToString().ToLower(), Identity = game.Identity, Version = game.Version };
 						await GameUtility.ImportRecordArchive(archiveFile, recordDirectory, !shouldEncrypt ? null : GameUtility.ConvertKeyFromUser(game.User), async (archiveConfiguration) => {
 							if (archiveConfiguration != archiveConfigurationForLocal) {
@@ -351,6 +361,9 @@ namespace KairosoftGameManager.View {
 									cancelled = true;
 									return false;
 								}
+							}
+							if (StorageHelper.ExistDirectory(recordDirectory)) {
+								StorageHelper.Trash(recordDirectory);
 							}
 							return true;
 						});
@@ -565,6 +578,31 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
+		public String uProgram_ToolTip {
+			get {
+				return $"Program {this.Configuration.Program}";
+			}
+		}
+
+		public Style uProgramBadge_Style {
+			get {
+				return this.Host.View.FindResource(this.Configuration.Program switch {
+					GameProgramState.None     => "InformationalIconInfoBadgeStyle",
+					GameProgramState.Original => "CautionIconInfoBadgeStyle",
+					GameProgramState.Modified => "SuccessIconInfoBadgeStyle",
+					_                         => throw new UnreachableException(),
+				}).As<Style>();
+			}
+		}
+
+		public String uProgramText_Text {
+			get {
+				return this.Configuration.Program.ToString();
+			}
+		}
+
+		// ----------------
+
 		public String uRecord_ToolTip {
 			get {
 				return $"Record {this.Configuration.Record}";
@@ -586,31 +624,6 @@ namespace KairosoftGameManager.View {
 		public String uRecordText_Text {
 			get {
 				return this.Configuration.Record.ToString();
-			}
-		}
-
-		// ----------------
-
-		public String uProgram_ToolTip {
-			get {
-				return $"Program {this.Configuration.Program}";
-			}
-		}
-
-		public Style uProgramBadge_Style {
-			get {
-				return this.Host.View.FindResource(this.Configuration.Program switch {
-					GameProgramState.None     => "InformationalIconInfoBadgeStyle",
-					GameProgramState.Original => "CautionIconInfoBadgeStyle",
-					GameProgramState.Modified => "SuccessIconInfoBadgeStyle",
-					_                         => throw new UnreachableException(),
-				}).As<Style>();
-			}
-		}
-
-		public String uProgramText_Text {
-			get {
-				return this.Configuration.Program.ToString();
 			}
 		}
 

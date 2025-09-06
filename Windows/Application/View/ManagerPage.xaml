@@ -288,31 +288,6 @@
 											/>
 									</my:Stack>
 									<my:Stack
-										ToolTipService.ToolTip="{x:Bind uRecord_ToolTip}"
-										HorizontalAlignment="Stretch"
-										VerticalAlignment="Center"
-										Orientation="Horizontal"
-										Spacing="8"
-										>
-										<InfoBadge
-											HorizontalAlignment="Stretch"
-											VerticalAlignment="Center"
-											Width="8"
-											Height="8"
-											Style="{x:Bind uRecordBadge_Style}"
-											/>
-										<TextBlock
-											HorizontalAlignment="Stretch"
-											VerticalAlignment="Center"
-											Width="84"
-											Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-											Style="{ThemeResource BodyTextBlockStyle}"
-											IsTextSelectionEnabled="True"
-											TextWrapping="NoWrap"
-											Text="{x:Bind uRecordText_Text}"
-											/>
-									</my:Stack>
-									<my:Stack
 										ToolTipService.ToolTip="{x:Bind uProgram_ToolTip}"
 										HorizontalAlignment="Stretch"
 										VerticalAlignment="Center"
@@ -335,6 +310,31 @@
 											IsTextSelectionEnabled="True"
 											TextWrapping="NoWrap"
 											Text="{x:Bind uProgramText_Text}"
+											/>
+									</my:Stack>
+									<my:Stack
+										ToolTipService.ToolTip="{x:Bind uRecord_ToolTip}"
+										HorizontalAlignment="Stretch"
+										VerticalAlignment="Center"
+										Orientation="Horizontal"
+										Spacing="8"
+										>
+										<InfoBadge
+											HorizontalAlignment="Stretch"
+											VerticalAlignment="Center"
+											Width="8"
+											Height="8"
+											Style="{x:Bind uRecordBadge_Style}"
+											/>
+										<TextBlock
+											HorizontalAlignment="Stretch"
+											VerticalAlignment="Center"
+											Width="84"
+											Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+											Style="{ThemeResource BodyTextBlockStyle}"
+											IsTextSelectionEnabled="True"
+											TextWrapping="NoWrap"
+											Text="{x:Bind uRecordText_Text}"
 											/>
 									</my:Stack>
 								</my:Stack>

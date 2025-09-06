@@ -249,25 +249,21 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var archiveDirectory = StorageHelper.Temporary();
 			StorageHelper.CreateDirectory(archiveDirectory);
-			try {
-				// load
-				ZipFile.ExtractToDirectory(archiveFile, archiveDirectory, Encoding.UTF8);
-				// configuration
-				var archiveConfiguration = GameUtility.ParseRecordArchiveConfigurationText(await StorageHelper.ReadFileText($"{archiveDirectory}/configuration.txt"));
-				if (!await doArchiveConfiguration(archiveConfiguration)) {
-					return;
-				}
-				// data
-				StorageHelper.CreateDirectory(targetDirectory);
-				foreach (var dataFile in GameUtility.ListRecordFile($"{archiveDirectory}/data")) {
-					await GameUtility.EncryptRecordFile($"{archiveDirectory}/data/{dataFile}", $"{targetDirectory}/{dataFile}", key);
-				}
-			}
-			catch (Exception) {
+			using var archiveDirectoryFinalizer = new Finalizer(() => {
 				StorageHelper.Remove(archiveDirectory);
-				throw;
+			});
+			// load
+			ZipFile.ExtractToDirectory(archiveFile, archiveDirectory, Encoding.UTF8);
+			// configuration
+			var archiveConfiguration = GameUtility.ParseRecordArchiveConfigurationText(await StorageHelper.ReadFileText($"{archiveDirectory}/configuration.txt"));
+			if (!await doArchiveConfiguration(archiveConfiguration)) {
+				return;
 			}
-			StorageHelper.Remove(archiveDirectory);
+			// data
+			StorageHelper.CreateDirectory(targetDirectory);
+			foreach (var dataFile in GameUtility.ListRecordFile($"{archiveDirectory}/data")) {
+				await GameUtility.EncryptRecordFile($"{archiveDirectory}/data/{dataFile}", $"{targetDirectory}/{dataFile}", key);
+			}
 			return;
 		}
 
@@ -279,26 +275,22 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var archiveDirectory = StorageHelper.Temporary();
 			StorageHelper.CreateDirectory(archiveDirectory);
-			try {
-				// configuration
-				var archiveConfiguration = new GameRecordArchiveConfiguration();
-				if (!await doArchiveConfiguration(archiveConfiguration)) {
-					return;
-				}
-				await StorageHelper.WriteFileText($"{archiveDirectory}/configuration.txt", GameUtility.MakeRecordArchiveConfigurationText(archiveConfiguration));
-				// data
-				StorageHelper.CreateDirectory($"{archiveDirectory}/data");
-				foreach (var dataFile in GameUtility.ListRecordFile(targetDirectory)) {
-					await GameUtility.EncryptRecordFile($"{targetDirectory}/{dataFile}", $"{archiveDirectory}/data/{dataFile}", key);
-				}
-				// save
-				ZipFile.CreateFromDirectory(archiveDirectory, archiveFile, CompressionLevel.SmallestSize, false, Encoding.UTF8);
-			}
-			catch (Exception) {
+			using var archiveDirectoryFinalizer = new Finalizer(() => {
 				StorageHelper.Remove(archiveDirectory);
-				throw;
+			});
+			// configuration
+			var archiveConfiguration = new GameRecordArchiveConfiguration();
+			if (!await doArchiveConfiguration(archiveConfiguration)) {
+				return;
 			}
-			StorageHelper.Remove(archiveDirectory);
+			await StorageHelper.WriteFileText($"{archiveDirectory}/configuration.txt", GameUtility.MakeRecordArchiveConfigurationText(archiveConfiguration));
+			// data
+			StorageHelper.CreateDirectory($"{archiveDirectory}/data");
+			foreach (var dataFile in GameUtility.ListRecordFile(targetDirectory)) {
+				await GameUtility.EncryptRecordFile($"{targetDirectory}/{dataFile}", $"{archiveDirectory}/data/{dataFile}", key);
+			}
+			// save
+			ZipFile.CreateFromDirectory(archiveDirectory, archiveFile, CompressionLevel.SmallestSize, false, Encoding.UTF8);
 			return;
 		}
 
