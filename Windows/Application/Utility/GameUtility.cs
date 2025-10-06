@@ -70,69 +70,6 @@ namespace KairosoftGameManager.Utility {
 
 		#endregion
 
-		#region check
-
-		public static readonly SortedDictionary<String, List<String>> TestedGame = new () {
-			// Hot Springs Story
-			{ "1823710", ["9883792", "13332097"] },
-			// Game Dev Story
-			{ "1847240", ["12865314", "13584515"] },
-			// Dungeon Village
-			{ "1859360", ["9882689", "13493523"] },
-			// Dream House Days DX
-			{ "1859370", ["10513663", "13652821"] },
-			// Nanja Village
-			{ "1918520", ["13560678"] },
-			// Pocket Academy
-			{ "1921760", ["11746770", "13652705"] },
-			// Mega Mall Story
-			{ "1923680", ["9259357", "13642430"] },
-			// Pool Slide Story
-			{ "1933980", ["9889731", "13698186"] },
-			// Burger Bistro Story
-			{ "1933990", ["10314100", "13321147", "13698407"] },
-			// Grand Prix Story
-			{ "1978100", ["9835394", "13641093"] },
-			// Forest Camp Story
-			{ "1983690", ["10825670", "13343525"] },
-			// Dungeon Village 2
-			{ "1983710", ["12756185", "13450272"] },
-			// Magazine Mogul
-			{ "2054800", ["13708967"] },
-			// Tennis Club Story
-			{ "2054810", ["9784452", "13735556"] },
-			// Pocket Arcade Story
-			{ "2072130", ["13735337"] },
-			// Shiny Ski Resort
-			{ "2072170", ["9735034", "13515402"] },
-			// 8-Bit Farm
-			{ "2074810", ["13769596"] },
-			// Home Run High
-			{ "2084720", ["9720692", "13652157"] },
-			// Biz Builder Delux
-			{ "2102480", ["13721698"] },
-			// Basketball Club Story
-			{ "2102490", ["10915393", "13628976", "13667306"] },
-			// Dream Park Story
-			{ "2119660", ["12769873", "13494212"] },
-			// Forest Golf Planner
-			{ "2119670", ["11577947", "13664559"] },
-			// Jumbo Airport Story
-			{ "2191480", ["12579631", "13561083"] },
-			// Zoo Park Story
-			{ "2437690", ["12409789", "13333913"] },
-		};
-
-		public static Boolean IsTestedGame (
-			SortedDictionary<String, List<String>> table,
-			String                                 identity,
-			String?                                version
-		) {
-			return table.TryGetValue(identity, out var versionList) && (version == null || versionList.Contains(version));
-		}
-
-		#endregion
-
 		#region record
 
 		private static List<String> ListRecordFile (

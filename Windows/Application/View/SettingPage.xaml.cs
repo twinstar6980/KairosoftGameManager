@@ -193,27 +193,6 @@ namespace KairosoftGameManager.View {
 			return;
 		}
 
-		// ----------------
-
-		public String uTestedGameText_Text {
-			get {
-				return String.Join('\n', App.Setting.Data.TestedGame.Select((value) => ($"{value.Key} - {String.Join(' ', value.Value)}")));
-			}
-		}
-
-		public async void uTestedGameReset_Click (
-			Object          sender,
-			RoutedEventArgs args
-		) {
-			var senders = sender.As<Button>();
-			App.Setting.Data.TestedGame = GameUtility.TestedGame;
-			this.NotifyPropertyChanged([
-				nameof(this.uTestedGameText_Text),
-			]);
-			await App.Setting.Save();
-			return;
-		}
-
 		#endregion
 
 	}

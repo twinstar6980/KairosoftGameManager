@@ -238,7 +238,6 @@
 									Spacing="8"
 									>
 									<my:Stack
-										ToolTipService.ToolTip="{x:Bind uIdentity_ToolTip}"
 										HorizontalAlignment="Stretch"
 										VerticalAlignment="Center"
 										Orientation="Horizontal"
@@ -249,7 +248,7 @@
 											VerticalAlignment="Center"
 											Width="8"
 											Height="8"
-											Style="{x:Bind uIdentityBadge_Style}"
+											Style="{StaticResource SuccessIconInfoBadgeStyle}"
 											/>
 										<TextBlock
 											HorizontalAlignment="Stretch"
@@ -263,7 +262,6 @@
 											/>
 									</my:Stack>
 									<my:Stack
-										ToolTipService.ToolTip="{x:Bind uVersion_ToolTip}"
 										HorizontalAlignment="Stretch"
 										VerticalAlignment="Center"
 										Orientation="Horizontal"
@@ -274,7 +272,7 @@
 											VerticalAlignment="Center"
 											Width="8"
 											Height="8"
-											Style="{x:Bind uVersionBadge_Style}"
+											Style="{StaticResource SuccessIconInfoBadgeStyle}"
 											/>
 										<TextBlock
 											HorizontalAlignment="Stretch"
@@ -288,7 +286,6 @@
 											/>
 									</my:Stack>
 									<my:Stack
-										ToolTipService.ToolTip="{x:Bind uProgram_ToolTip}"
 										HorizontalAlignment="Stretch"
 										VerticalAlignment="Center"
 										Orientation="Horizontal"
@@ -313,7 +310,6 @@
 											/>
 									</my:Stack>
 									<my:Stack
-										ToolTipService.ToolTip="{x:Bind uRecord_ToolTip}"
 										HorizontalAlignment="Stretch"
 										VerticalAlignment="Center"
 										Orientation="Horizontal"

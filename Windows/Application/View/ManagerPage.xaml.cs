@@ -110,16 +110,10 @@ namespace KairosoftGameManager.View {
 			gameController.NotifyPropertyChanged([
 				nameof(gameController.uIcon_Source),
 				nameof(gameController.uName_Text),
-				nameof(gameController.uIdentity_ToolTip),
-				nameof(gameController.uIdentityBadge_Style),
 				nameof(gameController.uIdentityText_Text),
-				nameof(gameController.uVersion_ToolTip),
-				nameof(gameController.uVersionBadge_Style),
 				nameof(gameController.uVersionText_Text),
-				nameof(gameController.uProgram_ToolTip),
 				nameof(gameController.uProgramBadge_Style),
 				nameof(gameController.uProgramText_Text),
-				nameof(gameController.uRecord_ToolTip),
 				nameof(gameController.uRecordBadge_Style),
 				nameof(gameController.uRecordText_Text),
 				nameof(gameController.uActionRestoreProgram_IsEnabled),
@@ -144,42 +138,6 @@ namespace KairosoftGameManager.View {
 				var cancelled = false;
 				var game = gameController.Configuration;
 				var temporaryState = temporaryStateMap.GetValueOrDefault(action);
-				var confirmIfNotTested = async () => {
-					if (GameUtility.IsTestedGame(App.Setting.Data.TestedGame, game.Identity, game.Version)) {
-						return true;
-					}
-					return await ControlHelper.ShowDialogForConfirm(this.View, "Untested Game", new StackPanel() {
-						HorizontalAlignment = HorizontalAlignment.Stretch,
-						VerticalAlignment = VerticalAlignment.Stretch,
-						Orientation = Orientation.Vertical,
-						Spacing = 8,
-						Children = {
-							new TextBlock() {
-								HorizontalAlignment = HorizontalAlignment.Stretch,
-								VerticalAlignment = VerticalAlignment.Stretch,
-								Text = "Action for this game may cause error, are you confirm?",
-							},
-							new Button() {
-								HorizontalAlignment = HorizontalAlignment.Stretch,
-								VerticalAlignment = VerticalAlignment.Stretch,
-								Content = "Trust This Game",
-							}.SelfAlso((it) => {
-								it.Click += async (_, _) => {
-									if (App.Setting.Data.TestedGame.TryGetValue(game.Identity, out var versionList)) {
-										versionList.Add(game.Version);
-									}
-									else {
-										App.Setting.Data.TestedGame.Add(game.Identity, [game.Version]);
-									}
-									await App.Setting.Save();
-									shouldReload = true;
-									it.IsEnabled = false;
-									return;
-								};
-							}),
-						},
-					});
-				};
 				switch (action) {
 					case "ReloadGame": {
 						shouldReload = true;
@@ -194,24 +152,16 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "RestoreProgram": {
-						if (!await confirmIfNotTested()) {
-							cancelled = true;
-							break;
-						}
 						if (game.Program != GameProgramState.Modified) {
 							cancelled = true;
 							break;
 						}
 						StorageHelper.Copy($"{game.Path}/{GameUtility.BackupDirectory}_{game.Version}/{GameUtility.BackupProgramFile}", $"{game.Path}/{GameUtility.ProgramFile}");
-						StorageHelper.Trash($"{game.Path}/{GameUtility.BackupDirectory}_{game.Version}/{GameUtility.BackupProgramFile}");
+						StorageHelper.Trash($"{game.Path}/{GameUtility.BackupDirectory}_{game.Version}");
 						shouldReload = true;
 						break;
 					}
 					case "ModifyProgram": {
-						if (!await confirmIfNotTested()) {
-							cancelled = true;
-							break;
-						}
 						if (game.Program != GameProgramState.Original && game.Program != GameProgramState.Modified) {
 							cancelled = true;
 							break;
@@ -265,10 +215,6 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "EncryptRecord": {
-						if (!await confirmIfNotTested()) {
-							cancelled = true;
-							break;
-						}
 						if (game.Record != GameRecordState.Decrypted) {
 							cancelled = true;
 							break;
@@ -279,10 +225,6 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "DecryptRecord": {
-						if (!await confirmIfNotTested()) {
-							cancelled = true;
-							break;
-						}
 						if (game.Record != GameRecordState.Original) {
 							cancelled = true;
 							break;
@@ -293,10 +235,6 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "ImportRecord": {
-						if (!await confirmIfNotTested()) {
-							cancelled = true;
-							break;
-						}
 						var shouldEncrypt = false;
 						if (!(game.Record == GameRecordState.Original || game.Record == GameRecordState.Decrypted)) {
 							if (temporaryState != null) {
@@ -371,10 +309,6 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "ExportRecord": {
-						if (!await confirmIfNotTested()) {
-							cancelled = true;
-							break;
-						}
 						var shouldEncrypt = false;
 						if (game.Record != GameRecordState.Original && game.Record != GameRecordState.Decrypted) {
 							cancelled = true;
@@ -488,8 +422,11 @@ namespace KairosoftGameManager.View {
 				}
 			}
 			if (result.Count != this.View.uGameList.SelectedItems.Count || !result.All((value) => (value.Item2 != null && value.Item2.AsNotNull()))) {
-				var report = String.Join('\n', result.Select((value) => ($"{(value.Item2 == null ? "Cancelled" : !value.Item2.AsNotNull() ? "Failed" : "Succeeded")} - {value.Item1.Configuration.Name}")));
-				await ControlHelper.ShowDialogAsAutomatic(this.View, "Result Report", report, null);
+				await ControlHelper.ShowDialogAsAutomatic(this.View, "Result Report", new TextBlock() {
+					HorizontalAlignment = HorizontalAlignment.Stretch,
+					VerticalAlignment = VerticalAlignment.Stretch,
+					Text = String.Join('\n', result.Select((value) => ($"{(value.Item2 == null ? "Cancelled" : !value.Item2.AsNotNull() ? "Failed" : "Succeeded")} - {value.Item1.Configuration.Name}"))),
+				}, null);
 			}
 			return;
 		}
@@ -534,20 +471,6 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public String uIdentity_ToolTip {
-			get {
-				var tested = GameUtility.IsTestedGame(App.Setting.Data.TestedGame, this.Configuration.Identity, null);
-				return $"Identity {(!tested ? "Untested" : "Tested")}";
-			}
-		}
-
-		public Style uIdentityBadge_Style {
-			get {
-				var tested = GameUtility.IsTestedGame(App.Setting.Data.TestedGame, this.Configuration.Identity, null);
-				return this.Host.View.FindResource(!tested ? "CautionIconInfoBadgeStyle" : "SuccessIconInfoBadgeStyle").As<Style>();
-			}
-		}
-
 		public String uIdentityText_Text {
 			get {
 				return this.Configuration.Identity;
@@ -556,20 +479,6 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public String uVersion_ToolTip {
-			get {
-				var tested = GameUtility.IsTestedGame(App.Setting.Data.TestedGame, this.Configuration.Identity, this.Configuration.Version);
-				return $"Version {(!tested ? "Untested" : "Tested")}";
-			}
-		}
-
-		public Style uVersionBadge_Style {
-			get {
-				var tested = GameUtility.IsTestedGame(App.Setting.Data.TestedGame, this.Configuration.Identity, this.Configuration.Version);
-				return this.Host.View.FindResource(!tested ? "CautionIconInfoBadgeStyle" : "SuccessIconInfoBadgeStyle").As<Style>();
-			}
-		}
-
 		public String uVersionText_Text {
 			get {
 				return this.Configuration.Version;
@@ -577,12 +486,6 @@ namespace KairosoftGameManager.View {
 		}
 
 		// ----------------
-
-		public String uProgram_ToolTip {
-			get {
-				return $"Program {this.Configuration.Program}";
-			}
-		}
 
 		public Style uProgramBadge_Style {
 			get {
@@ -602,12 +505,6 @@ namespace KairosoftGameManager.View {
 		}
 
 		// ----------------
-
-		public String uRecord_ToolTip {
-			get {
-				return $"Record {this.Configuration.Record}";
-			}
-		}
 
 		public Style uRecordBadge_Style {
 			get {

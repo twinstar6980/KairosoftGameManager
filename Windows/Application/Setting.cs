@@ -9,12 +9,11 @@ using Microsoft.UI;
 namespace KairosoftGameManager {
 
 	public record SettingData {
-		public Integer                                Version                      = default!;
-		public ElementTheme                           ThemeMode                    = default!;
-		public Dictionary<String, String>             StoragePickerHistoryLocation = default!;
-		public String                                 RepositoryDirectory          = default!;
-		public String                                 ProgramFileOfIl2CppDumper    = default!;
-		public SortedDictionary<String, List<String>> TestedGame                   = default!;
+		public Integer                    Version                      = default!;
+		public ElementTheme               ThemeMode                    = default!;
+		public Dictionary<String, String> StoragePickerHistoryLocation = default!;
+		public String                     RepositoryDirectory          = default!;
+		public String                     ProgramFileOfIl2CppDumper    = default!;
 	}
 
 	public record SettingState {
@@ -114,7 +113,6 @@ namespace KairosoftGameManager {
 				StoragePickerHistoryLocation = [],
 				RepositoryDirectory = "C:/Program Files (x86)/Steam",
 				ProgramFileOfIl2CppDumper = "",
-				TestedGame = GameUtility.TestedGame,
 			};
 		}
 
