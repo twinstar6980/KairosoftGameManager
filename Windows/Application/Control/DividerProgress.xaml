@@ -1,0 +1,39 @@
+<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:community="using:CommunityToolkit.WinUI"
+	xmlns:communityControls="using:CommunityToolkit.WinUI.Controls"
+	xmlns:local="using:KairosoftGameManager"
+	xmlns:my="using:KairosoftGameManager.Control"
+	>
+	<Style TargetType="my:DividerProgress">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="my:DividerProgress">
+					<my:Box
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						>
+						<Rectangle
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							MinWidth="{StaticResource DividerThickness}"
+							MinHeight="{StaticResource DividerThickness}"
+							Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+							/>
+						<ProgressBar
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							MinHeight="{StaticResource DividerThickness}"
+							Background="Transparent"
+							Value="{TemplateBinding ProgressValue}"
+							IsIndeterminate="{TemplateBinding ProgressIndeterminate}"
+							ShowPaused="{TemplateBinding ProgressPaused}"
+							ShowError="{TemplateBinding ProgressError}"
+							/>
+					</my:Box>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+</ResourceDictionary>

@@ -36,7 +36,7 @@
 2. 启动应用，应用会检索并列出当前 Steam 账号库中已安装至本地的开罗游戏，点击列表项右下角的的火焰图标会弹出功能选项，选择并等待应用完成工作即可。
 	
 	> 如果你的 Steam 没有安装至默认路径，需要在应用的设置页中的 `Repository Directory` 一栏填写 Steam 的安装路径。\
-	> 如果需要应用对游戏程序进行自动修改，需要下载 [Il2CppDumper v6.7.40 x86](https://github.com/Perfare/Il2CppDumper) ，并在应用的设置页中的 `Program File Of Il2CppDumper` 一栏填写 `Il2CppDumper-x86.exe` 的文件路径。
+	> 如果需要应用对游戏程序进行自动修改，需要下载 [Il2CppDumper v6.7.46](https://github.com/Perfare/Il2CppDumper) ，并在应用的设置页中的 `Program File Of Il2CppDumper` 一栏填写 `Il2CppDumper.exe` 的文件路径。
 
 ## 数据安全
 

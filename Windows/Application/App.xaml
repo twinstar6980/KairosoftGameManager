@@ -11,6 +11,7 @@
 				<ResourceDictionary Source="/Control/FluentIconGlyph.xaml" />
 				<ResourceDictionary Source="/Control/FluentColor.xaml" />
 				<ResourceDictionary Source="/Control/Divider.xaml" />
+				<ResourceDictionary Source="/Control/DividerProgress.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 		</ResourceDictionary>
 	</Application.Resources>

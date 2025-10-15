@@ -13,6 +13,9 @@
 /**/*.cs                                     text eol=lf
 /**/*.xaml                                   text eol=lf
 
+# Language - Python
+/**/*.py                                     text eol=lf
+
 # Environment - Git
 /**/.git*                                    text eol=lf
 

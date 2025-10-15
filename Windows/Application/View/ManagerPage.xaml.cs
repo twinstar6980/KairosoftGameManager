@@ -148,7 +148,7 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "LaunchGame": {
-						await ProcessHelper.SpawnChild($"{game.Path}/{GameUtility.ExecutableFile}", [], false);
+						await ProcessHelper.RunProcess($"{game.Path}/{GameUtility.ExecutableFile}", [], false);
 						break;
 					}
 					case "RestoreProgram": {
@@ -156,8 +156,10 @@ namespace KairosoftGameManager.View {
 							cancelled = true;
 							break;
 						}
-						StorageHelper.Copy($"{game.Path}/{GameUtility.BackupDirectory}_{game.Version}/{GameUtility.BackupProgramFile}", $"{game.Path}/{GameUtility.ProgramFile}");
-						StorageHelper.Trash($"{game.Path}/{GameUtility.BackupDirectory}_{game.Version}");
+						var programFile = $"{game.Path}/{GameUtility.ProgramFile}";
+						var backupFile = $"{game.Path}/{GameUtility.ProgramFile}.{game.Version}.bak";
+						StorageHelper.Trash(programFile);
+						StorageHelper.Rename(backupFile, programFile);
 						shouldReload = true;
 						break;
 					}
@@ -167,7 +169,7 @@ namespace KairosoftGameManager.View {
 							break;
 						}
 						var argumentDisableRecordEncryption = true;
-						var argumentEnableDebugMode = true;
+						var argumentEnableDebugMode = false;
 						if (temporaryState != null) {
 							var temporaryData = temporaryState.As<Tuple<Boolean, Boolean>>();
 							argumentDisableRecordEncryption = temporaryData.Item1;
@@ -210,7 +212,16 @@ namespace KairosoftGameManager.View {
 							}
 							temporaryStateMap.Add(action, new Tuple<Boolean, Boolean>(argumentDisableRecordEncryption, argumentEnableDebugMode));
 						}
-						await GameUtility.ModifyProgram(game.Path, argumentDisableRecordEncryption, argumentEnableDebugMode, App.Setting.Data.ProgramFileOfIl2CppDumper, game.Version, (_) => { });
+						var programFile = $"{game.Path}/{GameUtility.ProgramFile}";
+						var backupFile = $"{game.Path}/{GameUtility.ProgramFile}.{game.Version}.bak";
+						if (!StorageHelper.ExistFile(backupFile)) {
+							StorageHelper.Rename(programFile, backupFile);
+						}
+						if (StorageHelper.ExistFile(programFile)) {
+							StorageHelper.Trash(programFile);
+						}
+						StorageHelper.Copy(backupFile, programFile);
+						await GameUtility.ModifyProgram(game.Path, argumentDisableRecordEncryption, argumentEnableDebugMode, App.Setting.Data.ProgramFileOfIl2CppDumper, (_) => { });
 						shouldReload = true;
 						break;
 					}

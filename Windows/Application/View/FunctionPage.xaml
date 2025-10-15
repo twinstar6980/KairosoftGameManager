@@ -95,7 +95,14 @@
 				</my:Stack>
 			</Button>
 		</my:Stack>
-		<my:Divider />
+		<my:DividerProgress
+			HorizontalAlignment="Stretch"
+			VerticalAlignment="Stretch"
+			ProgressValue="100"
+			ProgressIndeterminate="{x:Bind Controller.uProgress_ProgressIndeterminate}"
+			ProgressPaused="False"
+			ProgressError="{x:Bind Controller.uProgress_ProgressError}"
+			/>
 		<my:Stack
 			my:Stack.Weight="1"
 			HorizontalAlignment="Stretch"
@@ -252,7 +259,7 @@
 									Style="{StaticResource SubtitleTextBlockStyle}"
 									FontSize="16"
 									TextWrapping="NoWrap"
-									Text="Target Directory"
+									Text="Target"
 									/>
 							</my:Stack>
 							<my:Stack
@@ -265,16 +272,32 @@
 									my:Stack.Weight="1"
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Center"
-									LostFocus="{x:Bind Controller.uArgumentOfModifyProgramOfTargetDirectoryEditor_LostFocus}"
-									Text="{x:Bind Controller.uArgumentOfModifyProgramOfTargetDirectoryEditor_Text}"
+									LostFocus="{x:Bind Controller.uArgumentOfModifyProgramOfTargetEditor_LostFocus}"
+									Text="{x:Bind Controller.uArgumentOfModifyProgramOfTargetEditor_Text}"
 									/>
 								<Button
 									ToolTipService.ToolTip="Pick"
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Center"
-									Click="{x:Bind Controller.uArgumentOfModifyProgramOfTargetDirectoryPicker_Click}"
 									Content="{community:FontIcon Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
-									/>
+									>
+									<Button.Flyout>
+										<MenuFlyout Placement="BottomEdgeAlignedRight">
+											<MenuFlyoutItem
+												Tag="File"
+												Click="{x:Bind Controller.uArgumentOfModifyProgramOfTargetPicker_Click}"
+												Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Document}}"
+												Text="File"
+												/>
+											<MenuFlyoutItem
+												Tag="Directory"
+												Click="{x:Bind Controller.uArgumentOfModifyProgramOfTargetPicker_Click}"
+												Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Folder}}"
+												Text="Directory"
+												/>
+										</MenuFlyout>
+									</Button.Flyout>
+								</Button>
 							</my:Stack>
 						</my:Stack>
 						<my:Stack

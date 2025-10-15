@@ -49,7 +49,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public FunctionType Type { get; set; } = FunctionType.EncryptRecord;
+		public GameFunctionType Type { get; set; } = GameFunctionType.EncryptRecord;
 
 		// ----------------
 
@@ -59,15 +59,17 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public String ArgumentOfModifyProgramOfTargetDirectory { get; set; } = "";
+		public String ArgumentOfModifyProgramOfTarget { get; set; } = "";
 
 		public Boolean ArgumentOfModifyProgramOfDisableRecordEncryption { get; set; } = true;
 
-		public Boolean ArgumentOfModifyProgramOfEnableDebugMode { get; set; } = true;
+		public Boolean ArgumentOfModifyProgramOfEnableDebugMode { get; set; } = false;
 
 		// ----------------
 
 		public Boolean Running { get; set; } = false;
+
+		public Boolean RunningFailed { get; set; } = false;
 
 		// ----------------
 
@@ -94,9 +96,9 @@ namespace KairosoftGameManager.View {
 		public String uTypeIcon_Glyph {
 			get {
 				return this.Type switch {
-					FunctionType.EncryptRecord => FluentIconGlyph.Unlock,
-					FunctionType.ModifyProgram => FluentIconGlyph.Repair,
-					_                          => throw new UnreachableException(),
+					GameFunctionType.EncryptRecord => FluentIconGlyph.Unlock,
+					GameFunctionType.ModifyProgram => FluentIconGlyph.Repair,
+					_                              => throw new UnreachableException(),
 				};
 			}
 		}
@@ -104,9 +106,9 @@ namespace KairosoftGameManager.View {
 		public String uTypeName_Text {
 			get {
 				return this.Type switch {
-					FunctionType.EncryptRecord => "Encrypt Record",
-					FunctionType.ModifyProgram => "Modify Program",
-					_                          => throw new UnreachableException(),
+					GameFunctionType.EncryptRecord => "Encrypt Record",
+					GameFunctionType.ModifyProgram => "Modify Program",
+					_                              => throw new UnreachableException(),
 				};
 			}
 		}
@@ -117,9 +119,9 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<MenuFlyoutItem>();
 			this.Type = senders.Tag.As<String>() switch {
-				nameof(FunctionType.EncryptRecord) => FunctionType.EncryptRecord,
-				nameof(FunctionType.ModifyProgram) => FunctionType.ModifyProgram,
-				_                                  => throw new UnreachableException(),
+				nameof(GameFunctionType.EncryptRecord) => GameFunctionType.EncryptRecord,
+				nameof(GameFunctionType.ModifyProgram) => GameFunctionType.ModifyProgram,
+				_                                      => throw new UnreachableException(),
 			};
 			this.NotifyPropertyChanged([
 				nameof(this.uTypeIcon_Glyph),
@@ -136,7 +138,7 @@ namespace KairosoftGameManager.View {
 
 		public Boolean uArgumentOfEncryptRecord_Visibility {
 			get {
-				return this.Type == FunctionType.EncryptRecord;
+				return this.Type == GameFunctionType.EncryptRecord;
 			}
 		}
 
@@ -221,40 +223,40 @@ namespace KairosoftGameManager.View {
 
 		public Boolean uArgumentOfModifyProgram_Visibility {
 			get {
-				return this.Type == FunctionType.ModifyProgram;
+				return this.Type == GameFunctionType.ModifyProgram;
 			}
 		}
 
 		// ----------------
 
-		public async void uArgumentOfModifyProgramOfTargetDirectoryEditor_LostFocus (
+		public async void uArgumentOfModifyProgramOfTargetEditor_LostFocus (
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			this.ArgumentOfModifyProgramOfTargetDirectory = StorageHelper.Regularize(senders.Text);
+			this.ArgumentOfModifyProgramOfTarget = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
-				nameof(this.uArgumentOfModifyProgramOfTargetDirectoryEditor_Text),
+				nameof(this.uArgumentOfModifyProgramOfTargetEditor_Text),
 			]);
 			return;
 		}
 
-		public String uArgumentOfModifyProgramOfTargetDirectoryEditor_Text {
+		public String uArgumentOfModifyProgramOfTargetEditor_Text {
 			get {
-				return this.ArgumentOfModifyProgramOfTargetDirectory;
+				return this.ArgumentOfModifyProgramOfTarget;
 			}
 		}
 
-		public async void uArgumentOfModifyProgramOfTargetDirectoryPicker_Click (
+		public async void uArgumentOfModifyProgramOfTargetPicker_Click (
 			Object          sender,
 			RoutedEventArgs args
 		) {
-			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@ModifyProgram.TargetDirectory");
+			var senders = sender.As<MenuFlyoutItem>();
+			var value = await StorageHelper.Pick($"Load{senders.Tag}", App.MainWindow, "@ModifyProgram.Target", null);
 			if (value != null) {
-				this.ArgumentOfModifyProgramOfTargetDirectory = value;
+				this.ArgumentOfModifyProgramOfTarget = value;
 				this.NotifyPropertyChanged([
-					nameof(this.uArgumentOfModifyProgramOfTargetDirectoryEditor_Text),
+					nameof(this.uArgumentOfModifyProgramOfTargetEditor_Text),
 				]);
 			}
 			return;
@@ -316,14 +318,18 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<Button>();
 			GF.AssertTest(!this.Running);
+			this.Message = "";
 			this.Running = true;
+			this.RunningFailed = false;
 			this.NotifyPropertyChanged([
 				nameof(this.uRun_IsEnabled),
+				nameof(this.uProgress_ProgressIndeterminate),
+				nameof(this.uProgress_ProgressError),
 			]);
 			try {
 				PublishMessage($"Starting at {DateTime.Now:HH:mm:ss}.");
 				switch (this.Type) {
-					case FunctionType.EncryptRecord: {
+					case GameFunctionType.EncryptRecord: {
 						await GameUtility.EncryptRecord(
 							this.ArgumentOfEncryptRecordOfTargetDirectory,
 							this.ArgumentOfEncryptRecordOfKey,
@@ -331,13 +337,12 @@ namespace KairosoftGameManager.View {
 						);
 						break;
 					}
-					case FunctionType.ModifyProgram: {
+					case GameFunctionType.ModifyProgram: {
 						await GameUtility.ModifyProgram(
-							this.ArgumentOfModifyProgramOfTargetDirectory,
+							this.ArgumentOfModifyProgramOfTarget,
 							this.ArgumentOfModifyProgramOfDisableRecordEncryption,
 							this.ArgumentOfModifyProgramOfEnableDebugMode,
 							App.Setting.Data.ProgramFileOfIl2CppDumper,
-							null,
 							PublishMessage
 						);
 						break;
@@ -350,11 +355,14 @@ namespace KairosoftGameManager.View {
 				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed to run function.", "");
 				PublishMessage($"Exception!");
 				PublishMessage(ExceptionHelper.GenerateMessage(e));
+				this.RunningFailed = true;
 			}
 			PublishMessage($"");
 			this.Running = false;
 			this.NotifyPropertyChanged([
 				nameof(this.uRun_IsEnabled),
+				nameof(this.uProgress_ProgressIndeterminate),
+				nameof(this.uProgress_ProgressError),
 			]);
 			return;
 			async void PublishMessage (
@@ -372,6 +380,22 @@ namespace KairosoftGameManager.View {
 
 		#endregion
 
+		#region progress
+
+		public Boolean uProgress_ProgressIndeterminate {
+			get {
+				return this.Running;
+			}
+		}
+
+		public Boolean uProgress_ProgressError {
+			get {
+				return this.RunningFailed;
+			}
+		}
+
+		#endregion
+
 		#region message
 
 		public String uMessage_Text {
@@ -382,11 +406,6 @@ namespace KairosoftGameManager.View {
 
 		#endregion
 
-	}
-
-	public enum FunctionType {
-		EncryptRecord,
-		ModifyProgram,
 	}
 
 }
