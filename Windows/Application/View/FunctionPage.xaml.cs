@@ -328,27 +328,30 @@ namespace KairosoftGameManager.View {
 			]);
 			try {
 				PublishMessage($"Starting at {DateTime.Now:HH:mm:ss}.");
-				switch (this.Type) {
-					case GameFunctionType.EncryptRecord: {
-						await GameUtility.EncryptRecord(
-							this.ArgumentOfEncryptRecordOfTargetDirectory,
-							this.ArgumentOfEncryptRecordOfKey,
-							PublishMessage
-						);
-						break;
+				await Task.Run(async () => {
+					switch (this.Type) {
+						case GameFunctionType.EncryptRecord: {
+							await GameUtility.EncryptRecord(
+								this.ArgumentOfEncryptRecordOfTargetDirectory,
+								this.ArgumentOfEncryptRecordOfKey,
+								PublishMessage
+							);
+							break;
+						}
+						case GameFunctionType.ModifyProgram: {
+							await GameUtility.ModifyProgram(
+								this.ArgumentOfModifyProgramOfTarget,
+								this.ArgumentOfModifyProgramOfDisableRecordEncryption,
+								this.ArgumentOfModifyProgramOfEnableDebugMode,
+								App.Setting.Data.ProgramFileOfIl2CppDumper,
+								PublishMessage
+							);
+							break;
+						}
+						default: throw new UnreachableException();
 					}
-					case GameFunctionType.ModifyProgram: {
-						await GameUtility.ModifyProgram(
-							this.ArgumentOfModifyProgramOfTarget,
-							this.ArgumentOfModifyProgramOfDisableRecordEncryption,
-							this.ArgumentOfModifyProgramOfEnableDebugMode,
-							App.Setting.Data.ProgramFileOfIl2CppDumper,
-							PublishMessage
-						);
-						break;
-					}
-					default: throw new UnreachableException();
-				}
+					return;
+				});
 				PublishMessage($"Done.");
 			}
 			catch (Exception e) {
@@ -368,12 +371,15 @@ namespace KairosoftGameManager.View {
 			async void PublishMessage (
 				String message
 			) {
-				this.Message += message + "\n";
-				this.NotifyPropertyChanged([
-					nameof(this.uMessage_Text),
-				]);
-				await Task.Delay(40);
-				this.View.uMessageScrollViewer.ChangeView(null, this.View.uMessageScrollViewer.ScrollableHeight, null, true);
+				await App.MainWindow.DispatcherQueue.EnqueueAsync(async () => {
+					this.Message += message + "\n";
+					this.NotifyPropertyChanged([
+						nameof(this.uMessage_Text),
+					]);
+					await Task.Delay(40);
+					this.View.uMessageScrollViewer.ChangeView(null, this.View.uMessageScrollViewer.ScrollableHeight, null, true);
+					return;
+				});
 				return;
 			}
 		}

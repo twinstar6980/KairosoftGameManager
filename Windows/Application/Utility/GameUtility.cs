@@ -13,9 +13,9 @@ namespace KairosoftGameManager.Utility {
 	#region type
 
 	public enum GamePlatform {
-		WindowsX32,
-		AndroidA32,
-		AndroidA64,
+		WindowsIntel32,
+		AndroidArm32,
+		AndroidArm64,
 	}
 
 	public enum GameRecordState {
@@ -249,10 +249,10 @@ namespace KairosoftGameManager.Utility {
 			GamePlatform platform
 		) {
 			return platform switch {
-				GamePlatform.WindowsX32 => "GameAssembly.dll",
-				GamePlatform.AndroidA32 => "lib/armeabi-v7a/libil2cpp.so",
-				GamePlatform.AndroidA64 => "lib/arm64-v8a/libil2cpp.so",
-				_                       => throw new UnreachableException(),
+				GamePlatform.WindowsIntel32 => "GameAssembly.dll",
+				GamePlatform.AndroidArm32   => "lib/armeabi-v7a/libil2cpp.so",
+				GamePlatform.AndroidArm64   => "lib/arm64-v8a/libil2cpp.so",
+				_                           => throw new UnreachableException(),
 			};
 		}
 
@@ -260,10 +260,10 @@ namespace KairosoftGameManager.Utility {
 			GamePlatform platform
 		) {
 			return platform switch {
-				GamePlatform.WindowsX32 => "KairoGames_Data/il2cpp_data/Metadata/global-metadata.dat",
-				GamePlatform.AndroidA32 => "assets/bin/Data/Managed/Metadata/global-metadata.dat",
-				GamePlatform.AndroidA64 => "assets/bin/Data/Managed/Metadata/global-metadata.dat",
-				_                       => throw new UnreachableException(),
+				GamePlatform.WindowsIntel32 => "KairoGames_Data/il2cpp_data/Metadata/global-metadata.dat",
+				GamePlatform.AndroidArm32   => "assets/bin/Data/Managed/Metadata/global-metadata.dat",
+				GamePlatform.AndroidArm64   => "assets/bin/Data/Managed/Metadata/global-metadata.dat",
+				_                           => throw new UnreachableException(),
 			};
 		}
 
@@ -349,11 +349,11 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		private const IntegerU8 InstructionCodeNopX32 = 0x90;
+		private const IntegerU8 InstructionCodeNopIntel32 = 0x90;
 
-		private const IntegerU32 InstructionCodeNopA32 = 0xE320F000;
+		private const IntegerU32 InstructionCodeNopArm32 = 0xE320F000;
 
-		private const IntegerU32 InstructionCodeNopA64 = 0xD503201F;
+		private const IntegerU32 InstructionCodeNopArm64 = 0xD503201F;
 
 		private static Boolean FindCallInstruction (
 			Span<Byte>   data,
@@ -365,7 +365,7 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var state = false;
 			var end = Math.Min(data.Length, position + limit);
-			if (platform == GamePlatform.WindowsX32) {
+			if (platform == GamePlatform.WindowsIntel32) {
 				while (position < end) {
 					var instructionCode = data[position];
 					position += 1;
@@ -382,17 +382,17 @@ namespace KairosoftGameManager.Utility {
 					}
 					if (overwrite) {
 						position -= 5;
-						data[position++] = GameUtility.InstructionCodeNopX32;
-						data[position++] = GameUtility.InstructionCodeNopX32;
-						data[position++] = GameUtility.InstructionCodeNopX32;
-						data[position++] = GameUtility.InstructionCodeNopX32;
-						data[position++] = GameUtility.InstructionCodeNopX32;
+						data[position++] = GameUtility.InstructionCodeNopIntel32;
+						data[position++] = GameUtility.InstructionCodeNopIntel32;
+						data[position++] = GameUtility.InstructionCodeNopIntel32;
+						data[position++] = GameUtility.InstructionCodeNopIntel32;
+						data[position++] = GameUtility.InstructionCodeNopIntel32;
 					}
 					state = true;
 					break;
 				}
 			}
-			if (platform == GamePlatform.AndroidA32) {
+			if (platform == GamePlatform.AndroidArm32) {
 				while (position < end) {
 					var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(data.Slice(position, 4));
 					position += 4;
@@ -409,13 +409,13 @@ namespace KairosoftGameManager.Utility {
 						continue;
 					}
 					if (overwrite) {
-						BinaryPrimitives.TryWriteUInt32LittleEndian(data.Slice(position - 4, 4), GameUtility.InstructionCodeNopA32);
+						BinaryPrimitives.TryWriteUInt32LittleEndian(data.Slice(position - 4, 4), GameUtility.InstructionCodeNopArm32);
 					}
 					state = true;
 					break;
 				}
 			}
-			if (platform == GamePlatform.AndroidA64) {
+			if (platform == GamePlatform.AndroidArm64) {
 				while (position < end) {
 					var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(data.Slice(position, 4));
 					position += 4;
@@ -432,7 +432,7 @@ namespace KairosoftGameManager.Utility {
 						continue;
 					}
 					if (overwrite) {
-						BinaryPrimitives.TryWriteUInt32LittleEndian(data.Slice(position - 4, 4), GameUtility.InstructionCodeNopA64);
+						BinaryPrimitives.TryWriteUInt32LittleEndian(data.Slice(position - 4, 4), GameUtility.InstructionCodeNopArm64);
 					}
 					state = true;
 					break;
@@ -531,7 +531,7 @@ namespace KairosoftGameManager.Utility {
 				GF.AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Decode, true, platform));
 				GF.AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Decode, true, platform));
 				GF.AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.CRC64.GetValue, false, platform));
-				if (platform == GamePlatform.WindowsX32) {
+				if (platform == GamePlatform.WindowsIntel32) {
 					// add esp, .. = 83 C4 XX
 					GF.AssertTest(programData[programPosition] == 0x83);
 					programPosition++;
@@ -540,26 +540,26 @@ namespace KairosoftGameManager.Utility {
 					programPosition++;
 					// cmp eax, .. = 3B XX XX
 					GF.AssertTest(programData[programPosition] == 0x3B);
-					programData[programPosition++] = GameUtility.InstructionCodeNopX32;
-					programData[programPosition++] = GameUtility.InstructionCodeNopX32;
-					programData[programPosition++] = GameUtility.InstructionCodeNopX32;
+					programData[programPosition++] = GameUtility.InstructionCodeNopIntel32;
+					programData[programPosition++] = GameUtility.InstructionCodeNopIntel32;
+					programData[programPosition++] = GameUtility.InstructionCodeNopIntel32;
 					// jnz .. = 75 XX
 					GF.AssertTest(programData[programPosition] == 0x75);
-					programData[programPosition++] = GameUtility.InstructionCodeNopX32;
-					programData[programPosition++] = GameUtility.InstructionCodeNopX32;
+					programData[programPosition++] = GameUtility.InstructionCodeNopIntel32;
+					programData[programPosition++] = GameUtility.InstructionCodeNopIntel32;
 				}
-				if (platform == GamePlatform.AndroidA32) {
+				if (platform == GamePlatform.AndroidArm32) {
 					programPosition += 12;
 					// bne #X = 1A XX XX XX
 					GF.AssertTest((BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4)) & 0xFF000000) == 0x1A000000);
-					BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4), GameUtility.InstructionCodeNopA32);
+					BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4), GameUtility.InstructionCodeNopArm32);
 					programPosition += 4;
 				}
-				if (platform == GamePlatform.AndroidA64) {
+				if (platform == GamePlatform.AndroidArm64) {
 					programPosition += 8;
 					// bne #X = 54 XX XX XX
 					GF.AssertTest((BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4)) & 0xFF000000) == 0x54000000);
-					BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4), GameUtility.InstructionCodeNopA64);
+					BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4), GameUtility.InstructionCodeNopArm64);
 					programPosition += 4;
 				}
 			}
@@ -573,7 +573,7 @@ namespace KairosoftGameManager.Utility {
 				onNotify($"Phase: modify method 'MyConfig..cctor'.");
 				programPosition = symbolAddress.MyConfig._cctor[0];
 				var searchLimit = 512;
-				if (platform == GamePlatform.WindowsX32) {
+				if (platform == GamePlatform.WindowsIntel32) {
 					while (programPosition < symbolAddress.MyConfig._cctor[0] + searchLimit) {
 						// mov byte ptr [eax+X], 0 = C6 40 XX 00
 						if (programData[programPosition] != 0xC6) {
@@ -598,7 +598,7 @@ namespace KairosoftGameManager.Utility {
 					}
 					GF.AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
 				}
-				if (platform == GamePlatform.AndroidA32) {
+				if (platform == GamePlatform.AndroidArm32) {
 					while (programPosition < symbolAddress.MyConfig._cctor[0] + searchLimit) {
 						// strb rX, [rY, #Z] = 111001011100 YYYY XXXX ZZZZZZZZZZZZ
 						var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4));
@@ -615,7 +615,7 @@ namespace KairosoftGameManager.Utility {
 					}
 					GF.AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
 				}
-				if (platform == GamePlatform.AndroidA64) {
+				if (platform == GamePlatform.AndroidArm64) {
 					while (programPosition < symbolAddress.MyConfig._cctor[0] + searchLimit) {
 						// strb wX, [xY, #Z] = 0011100100 ZZZZZZZZZZZZ YYYYY XXXXX
 						var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4));
@@ -712,9 +712,9 @@ namespace KairosoftGameManager.Utility {
 					}
 					if (packageType == GamePackageType.Apks) {
 						var architectureName = platform switch {
-							GamePlatform.AndroidA32 => "armeabi_v7a",
-							GamePlatform.AndroidA64 => "arm64_v8a",
-							_                       => throw new UnreachableException(),
+							GamePlatform.AndroidArm32 => "armeabi_v7a",
+							GamePlatform.AndroidArm64 => "arm64_v8a",
+							_                         => throw new UnreachableException(),
 						};
 						var subPackageName = $"split_config.{architectureName}.apk";
 						var subPackageFile = $"{temporaryDirectory}/apks/{subPackageName}";

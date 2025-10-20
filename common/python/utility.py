@@ -20,6 +20,8 @@ def fs_copy(source: str, destination: str) -> None:
     return
 
 def fs_remove(source: str) -> None:
+    if pathlib.Path(source).is_symlink():
+        os.remove(source)
     if pathlib.Path(source).is_file():
         os.remove(source)
     if pathlib.Path(source).is_dir():
