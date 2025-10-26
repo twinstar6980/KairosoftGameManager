@@ -25,4 +25,4 @@
 # Miscellaneous
 /.local
 
-# git clean -fdx -e /.local
+# git clean -fdx -e /.local -e /.vscode
