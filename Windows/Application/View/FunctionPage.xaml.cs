@@ -317,7 +317,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			GF.AssertTest(!this.Running);
+			AssertTest(!this.Running);
 			this.Message = "";
 			this.Running = true;
 			this.RunningFailed = false;
@@ -352,13 +352,14 @@ namespace KairosoftGameManager.View {
 					}
 					return;
 				});
-				PublishMessage($"Done.");
+				PublishMessage($"Succeeded.");
+				await App.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
 			}
 			catch (Exception e) {
-				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed to run function.", "");
-				PublishMessage($"Exception!");
+				PublishMessage($"Failed.");
 				PublishMessage(ExceptionHelper.GenerateMessage(e));
 				this.RunningFailed = true;
+				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", "");
 			}
 			PublishMessage($"");
 			this.Running = false;

@@ -258,7 +258,7 @@
 											Style="{ThemeResource BodyTextBlockStyle}"
 											IsTextSelectionEnabled="True"
 											TextWrapping="NoWrap"
-											Text="{x:Bind uIdentityText_Text}"
+											Text="{x:Bind uIdentifierText_Text}"
 											/>
 									</my:Stack>
 									<my:Stack

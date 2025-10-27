@@ -57,7 +57,7 @@ namespace KairosoftGameManager {
 					_ = this.HandleException(exception, App.MainWindow);
 					return;
 				});
-				App.PackageDirectory = StorageHelper.Parent(Environment.GetCommandLineArgs()[0]).AsNotNull();
+				App.PackageDirectory = StorageHelper.Regularize(Package.Current.InstalledPath);
 				App.ProgramFile = $"{App.PackageDirectory}/Application.exe";
 				App.SharedDirectory = StorageHelper.Regularize(Windows.Storage.ApplicationData.Current.LocalFolder.Path);
 				App.CacheDirectory = $"{App.SharedDirectory}/Cache";
@@ -124,7 +124,7 @@ namespace KairosoftGameManager {
 					return;
 				};
 				WindowHelper.SetIcon(window, $"{App.PackageDirectory}/Asset/Logo.ico");
-				WindowHelper.SetTitle(window, Package.Current.DisplayName);
+				WindowHelper.SetTitle(window, ApplicationInformation.Name);
 				WindowHelper.SetTitleBar(window, true, null, false);
 				WindowHelper.Activate(window);
 				await this.HandleException(exception, window);

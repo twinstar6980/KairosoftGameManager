@@ -9,7 +9,7 @@ using Microsoft.UI;
 namespace KairosoftGameManager {
 
 	public record SettingData {
-		public Integer                    Version                      = default!;
+		public String                     Version                      = default!;
 		public ElementTheme               ThemeMode                    = default!;
 		public Dictionary<String, String> StoragePickerHistoryLocation = default!;
 		public String                     RepositoryDirectory          = default!;
@@ -85,7 +85,7 @@ namespace KairosoftGameManager {
 		) {
 			file ??= this.File;
 			this.Data = await JsonHelper.DeserializeFile<SettingData>(file);
-			GF.AssertTest(this.Data.Version == Package.Current.Id.Version.Major);
+			AssertTest(this.Data.Version == ApplicationInformation.VersionMainly);
 			return;
 		}
 
@@ -108,7 +108,7 @@ namespace KairosoftGameManager {
 		private static SettingData CreateDefaultData (
 		) {
 			return new () {
-				Version = Package.Current.Id.Version.Major,
+				Version = ApplicationInformation.VersionMainly,
 				ThemeMode = ElementTheme.Default,
 				StoragePickerHistoryLocation = [],
 				RepositoryDirectory = "C:/Program Files (x86)/Steam",

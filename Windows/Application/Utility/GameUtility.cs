@@ -41,20 +41,20 @@ namespace KairosoftGameManager.Utility {
 	// ----------------
 
 	public record class GameConfiguration {
-		public String           Path     = "";
-		public String           Identity = "";
-		public String           Version  = "";
-		public String           Name     = "";
-		public ImageSource?     Icon     = null;
-		public String           User     = "";
-		public GameRecordState  Record   = GameRecordState.None;
-		public GameProgramState Program  = GameProgramState.None;
+		public String           Path       = "";
+		public String           Identifier = "";
+		public String           Version    = "";
+		public String           Name       = "";
+		public ImageSource?     Icon       = null;
+		public String           User       = "";
+		public GameRecordState  Record     = GameRecordState.None;
+		public GameProgramState Program    = GameProgramState.None;
 	}
 
 	public record class GameRecordArchiveConfiguration {
-		public String Platform = "";
-		public String Identity = "";
-		public String Version  = "";
+		public String Platform   = "";
+		public String Identifier = "";
+		public String Version    = "";
 	}
 
 	// ----------------
@@ -172,7 +172,7 @@ namespace KairosoftGameManager.Utility {
 		public static String MakeRecordArchiveConfigurationText (
 			GameRecordArchiveConfiguration value
 		) {
-			return String.Join(':', [value.Platform, value.Identity, value.Version]);
+			return String.Join(':', [value.Platform, value.Identifier, value.Version]);
 		}
 
 		public static GameRecordArchiveConfiguration ParseRecordArchiveConfigurationText (
@@ -181,7 +181,7 @@ namespace KairosoftGameManager.Utility {
 			var list = text.Split(':');
 			return new () {
 				Platform = list[0],
-				Identity = list[1],
+				Identifier = list[1],
 				Version = list[2],
 			};
 		}
@@ -331,7 +331,7 @@ namespace KairosoftGameManager.Utility {
 						var methodMatch = new Regex(@"^\t(private|protected|public)?( static)? (.+) (.+)\((.*)\) \{ \}$").Match(source[index]);
 						if (methodMatch.Success && methodMatch.Groups[4].Value == methodName) {
 							var commentMatch = new Regex(@"^\t\/\/ RVA: 0x(.+) Offset: 0x(.+) VA: 0x(.+)$").Match(source[index - 1]);
-							GF.AssertTest(commentMatch.Success);
+							AssertTest(commentMatch.Success);
 							result.Add(new (
 								Size.Parse(commentMatch.Groups[2].Value, NumberStyles.HexNumber),
 								methodMatch.Groups[1].Value,
@@ -456,10 +456,10 @@ namespace KairosoftGameManager.Utility {
 			onNotify($"Phase: dump program information.");
 			{
 				onNotify($"The Il2CppDumper path is '{programFileOfIl2CppDumper}'.");
-				GF.AssertTest(StorageHelper.ExistFile(programFileOfIl2CppDumper));
+				AssertTest(StorageHelper.ExistFile(programFileOfIl2CppDumper));
 				var dumpResult = await ProcessHelper.RunProcess(programFileOfIl2CppDumper, [programFile, metadataFile], true);
-				GF.AssertTest(dumpResult != null);
-				GF.AssertTest(dumpResult.Item2.ReplaceLineEndings("\n").EndsWith("Done!\nPress any key to exit...\n"));
+				AssertTest(dumpResult != null);
+				AssertTest(dumpResult.Item2.ReplaceLineEndings("\n").EndsWith("Done!\nPress any key to exit...\n"));
 				dumpData = (await StorageHelper.ReadFileText($"{StorageHelper.Parent(programFileOfIl2CppDumper)}/dump.cs")).Split('\n').ToList();
 			}
 			var symbolAddress = new {
@@ -482,43 +482,43 @@ namespace KairosoftGameManager.Utility {
 			onNotify($"Phase: parse symbol address.");
 			{
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "CRC64", "GetValue");
-				GF.AssertTest(searchResult.Count == 1);
+				AssertTest(searchResult.Count == 1);
 				symbolAddress.CRC64.GetValue.AddRange(searchResult.Select((value) => value.Item1));
 				onNotify($"The symbol 'CRC64.GetValue' at {String.Join(',', symbolAddress.CRC64.GetValue.Select((value) => ($"{value:x}")))}.");
 			}
 			{
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "Encrypter", "Encode");
-				GF.AssertTest(searchResult.Count == 3);
+				AssertTest(searchResult.Count == 3);
 				symbolAddress.Encrypter.Encode.AddRange(searchResult.Select((value) => value.Item1));
 				onNotify($"The symbol 'Encrypter.Encode' at {String.Join(',', symbolAddress.Encrypter.Encode.Select((value) => ($"{value:x}")))}.");
 			}
 			{
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "Encrypter", "Decode");
-				GF.AssertTest(searchResult.Count == 3);
+				AssertTest(searchResult.Count == 3);
 				symbolAddress.Encrypter.Decode.AddRange(searchResult.Select((value) => value.Item1));
 				onNotify($"The symbol 'Encrypter.Decode' at {String.Join(',', symbolAddress.Encrypter.Decode.Select((value) => ($"{value:x}")))}.");
 			}
 			{
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "RecordStore", "ReadRecord").Where((value) => (!value.Item3 && value.Item5 == "int rcId")).ToList();
-				GF.AssertTest(searchResult.Count == 1);
+				AssertTest(searchResult.Count == 1);
 				symbolAddress.RecordStore.ReadRecord.Add(searchResult[0].Item1);
 				onNotify($"The symbol 'RecordStore.ReadRecord' at {symbolAddress.RecordStore.ReadRecord[0]:x}.");
 			}
 			{
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "RecordStore", "WriteRecord").Where((value) => (!value.Item3 && value.Item5 == "int rcId, byte[][] data")).ToList();
-				GF.AssertTest(searchResult.Count == 1);
+				AssertTest(searchResult.Count == 1);
 				symbolAddress.RecordStore.WriteRecord.Add(searchResult[0].Item1);
 				onNotify($"The symbol 'RecordStore.WriteRecord' at {symbolAddress.RecordStore.WriteRecord[0]:x}.");
 			}
 			{
 				var searchResult = GameUtility.SearchMethodFromDumpData(dumpData, "MyConfig", ".cctor");
-				GF.AssertTest(searchResult.Count == 1);
+				AssertTest(searchResult.Count == 1);
 				symbolAddress.MyConfig._cctor.Add(searchResult[0].Item1);
 				onNotify($"The symbol 'MyConfig..cctor' at {symbolAddress.MyConfig._cctor[0]:x}.");
 			}
 			{
 				var searchResult = GameUtility.SearchFieldFromDumpData(dumpData, "MyConfig", "DEBUG");
-				GF.AssertTest(searchResult != null);
+				AssertTest(searchResult != null);
 				symbolAddress.MyConfig.DEBUG.Add(searchResult.Item1);
 				onNotify($"The symbol 'MyConfig.DEBUG' at +{symbolAddress.MyConfig.DEBUG[0]:x}.");
 			}
@@ -528,37 +528,37 @@ namespace KairosoftGameManager.Utility {
 			if (disableRecordEncryption) {
 				onNotify($"Phase: modify method 'RecordStore.ReadRecord'.");
 				programPosition = symbolAddress.RecordStore.ReadRecord[0];
-				GF.AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Decode, true, platform));
-				GF.AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Decode, true, platform));
-				GF.AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.CRC64.GetValue, false, platform));
+				AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Decode, true, platform));
+				AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Decode, true, platform));
+				AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.CRC64.GetValue, false, platform));
 				if (platform == GamePlatform.WindowsIntel32) {
 					// add esp, .. = 83 C4 XX
-					GF.AssertTest(programData[programPosition] == 0x83);
+					AssertTest(programData[programPosition] == 0x83);
 					programPosition++;
-					GF.AssertTest(programData[programPosition] == 0xC4);
+					AssertTest(programData[programPosition] == 0xC4);
 					programPosition++;
 					programPosition++;
 					// cmp eax, .. = 3B XX XX
-					GF.AssertTest(programData[programPosition] == 0x3B);
+					AssertTest(programData[programPosition] == 0x3B);
 					programData[programPosition++] = GameUtility.InstructionCodeNopIntel32;
 					programData[programPosition++] = GameUtility.InstructionCodeNopIntel32;
 					programData[programPosition++] = GameUtility.InstructionCodeNopIntel32;
 					// jnz .. = 75 XX
-					GF.AssertTest(programData[programPosition] == 0x75);
+					AssertTest(programData[programPosition] == 0x75);
 					programData[programPosition++] = GameUtility.InstructionCodeNopIntel32;
 					programData[programPosition++] = GameUtility.InstructionCodeNopIntel32;
 				}
 				if (platform == GamePlatform.AndroidArm32) {
 					programPosition += 12;
 					// bne #X = 1A XX XX XX
-					GF.AssertTest((BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4)) & 0xFF000000) == 0x1A000000);
+					AssertTest((BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4)) & 0xFF000000) == 0x1A000000);
 					BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4), GameUtility.InstructionCodeNopArm32);
 					programPosition += 4;
 				}
 				if (platform == GamePlatform.AndroidArm64) {
 					programPosition += 8;
 					// bne #X = 54 XX XX XX
-					GF.AssertTest((BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4)) & 0xFF000000) == 0x54000000);
+					AssertTest((BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4)) & 0xFF000000) == 0x54000000);
 					BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4), GameUtility.InstructionCodeNopArm64);
 					programPosition += 4;
 				}
@@ -566,8 +566,8 @@ namespace KairosoftGameManager.Utility {
 			if (disableRecordEncryption) {
 				onNotify($"Phase: modify method 'RecordStore.WriteRecord'.");
 				programPosition = symbolAddress.RecordStore.WriteRecord[0];
-				GF.AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Encode, true, platform));
-				GF.AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Encode, true, platform));
+				AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Encode, true, platform));
+				AssertTest(GameUtility.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Encode, true, platform));
 			}
 			if (enableDebugMode) {
 				onNotify($"Phase: modify method 'MyConfig..cctor'.");
@@ -596,7 +596,7 @@ namespace KairosoftGameManager.Utility {
 						onNotify($"Warning: the STR instruction for 'MyConfig.DEBUG' was found at {(programPosition - 4):x}, but this modification may cause error.");
 						break;
 					}
-					GF.AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
+					AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
 				}
 				if (platform == GamePlatform.AndroidArm32) {
 					while (programPosition < symbolAddress.MyConfig._cctor[0] + searchLimit) {
@@ -613,7 +613,7 @@ namespace KairosoftGameManager.Utility {
 						onNotify($"Warning: the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
 						break;
 					}
-					GF.AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
+					AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
 				}
 				if (platform == GamePlatform.AndroidArm64) {
 					while (programPosition < symbolAddress.MyConfig._cctor[0] + searchLimit) {
@@ -630,7 +630,7 @@ namespace KairosoftGameManager.Utility {
 						onNotify($"Warning: the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
 						break;
 					}
-					GF.AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
+					AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
 				}
 			}
 			onNotify($"Phase: save modified program.");
@@ -666,7 +666,7 @@ namespace KairosoftGameManager.Utility {
 					packageType = GamePackageType.Apks;
 				}
 			}
-			GF.AssertTest(packageType != null);
+			AssertTest(packageType != null);
 			onNotify($"The package type is '{packageType}'.");
 			var targetDirectory = default(String?);
 			if (packageType == GamePackageType.Flat) {
@@ -675,19 +675,34 @@ namespace KairosoftGameManager.Utility {
 			else {
 				onNotify($"Phase: unpack package file.");
 				targetDirectory = $"{temporaryDirectory}/flat";
+				var fileNameList = Enum.GetValues<GamePlatform>().SelectMany((it) => new[] { GameUtility.GetProgramFilePath(it), GameUtility.GetMetadataFilePath(it) }).Distinct();
+				var unpackSingleArchive = (
+					ZipArchive package
+				) => {
+					foreach (var fileName in fileNameList) {
+						var entry = package.GetEntry(fileName);
+						if (entry != null) {
+							StorageHelper.CreateDirectory(StorageHelper.Parent($"{targetDirectory}/{fileName}").AsNotNull());
+							entry.ExtractToFile($"{targetDirectory}/{fileName}");
+						}
+					}
+					return;
+				};
+				using var package = ZipFile.Open(target, ZipArchiveMode.Read);
 				if (packageType == GamePackageType.Zip || packageType == GamePackageType.Apk) {
-					ZipFile.ExtractToDirectory(target, targetDirectory);
+					unpackSingleArchive(package);
 				}
 				if (packageType == GamePackageType.Apks) {
 					ZipFile.ExtractToDirectory(target, $"{temporaryDirectory}/apks");
-					foreach (var apk in StorageHelper.ListDirectory($"{temporaryDirectory}/apks", 1, true, false, "*.apk")) {
-						ZipFile.ExtractToDirectory($"{temporaryDirectory}/apks/{apk}", targetDirectory, true);
+					foreach (var subPackageName in StorageHelper.ListDirectory($"{temporaryDirectory}/apks", 1, true, false, "*.apk")) {
+						using var subPackage = ZipFile.Open($"{temporaryDirectory}/apks/{subPackageName}", ZipArchiveMode.Read);
+						unpackSingleArchive(subPackage);
 					}
 				}
 			}
 			onNotify($"Phase: detect platform.");
 			var platformList = GameUtility.DetectPlatform(targetDirectory);
-			GF.AssertTest(platformList.Count != 0);
+			AssertTest(platformList.Count != 0);
 			onNotify($"The platform is '{String.Join('|', platformList)}'.");
 			foreach (var platform in platformList) {
 				onNotify($"Phase: modify program of '{platform}'.");
@@ -703,12 +718,19 @@ namespace KairosoftGameManager.Utility {
 			}
 			if (packageType != GamePackageType.Flat) {
 				onNotify($"Phase: repack package file.");
+				var repackSingleArchive = (
+					ZipArchive   package,
+					GamePlatform platform
+				) => {
+					var fileName = GameUtility.GetProgramFilePath(platform);
+					package.GetEntry(fileName).AsNotNull().Delete();
+					package.CreateEntryFromFile($"{targetDirectory}/{fileName}", fileName);
+					return;
+				};
 				using var package = ZipFile.Open(target, ZipArchiveMode.Update);
 				foreach (var platform in platformList) {
-					var programFile = $"{targetDirectory}/{GameUtility.GetProgramFilePath(platform)}";
 					if (packageType == GamePackageType.Zip || packageType == GamePackageType.Apk) {
-						package.GetEntry(GameUtility.GetProgramFilePath(platform)).AsNotNull().Delete();
-						package.CreateEntryFromFile(programFile, GameUtility.GetProgramFilePath(platform));
+						repackSingleArchive(package, platform);
 					}
 					if (packageType == GamePackageType.Apks) {
 						var architectureName = platform switch {
@@ -720,8 +742,7 @@ namespace KairosoftGameManager.Utility {
 						var subPackageFile = $"{temporaryDirectory}/apks/{subPackageName}";
 						{
 							using var subPackage = ZipFile.Open(subPackageFile, ZipArchiveMode.Update);
-							subPackage.GetEntry(GameUtility.GetProgramFilePath(platform)).AsNotNull().Delete();
-							subPackage.CreateEntryFromFile(programFile, GameUtility.GetProgramFilePath(platform));
+							repackSingleArchive(subPackage, platform);
 						}
 						package.GetEntry(subPackageName).AsNotNull().Delete();
 						package.CreateEntryFromFile(subPackageFile, subPackageName);
@@ -748,22 +769,22 @@ namespace KairosoftGameManager.Utility {
 
 		public static async Task<GameConfiguration?> LoadGameConfiguration (
 			String repositoryDirectory,
-			String gameIdentity
+			String gameIdentifier
 		) {
-			var gameManifestFile = $"{repositoryDirectory}/steamapps/appmanifest_{gameIdentity}.acf";
+			var gameManifestFile = $"{repositoryDirectory}/steamapps/appmanifest_{gameIdentifier}.acf";
 			if (!StorageHelper.ExistFile(gameManifestFile)) {
 				return null;
 			}
 			var gameManifest = VdfConvert.Deserialize(await StorageHelper.ReadFileText(gameManifestFile));
-			GF.AssertTest(gameManifest.Key == "AppState");
-			GF.AssertTest(gameManifest.Value["appid"].AsNotNull().Value<String>() == gameIdentity);
+			AssertTest(gameManifest.Key == "AppState");
+			AssertTest(gameManifest.Value["appid"].AsNotNull().Value<String>() == gameIdentifier);
 			var gameDirectory = $"{repositoryDirectory}/steamapps/common/{gameManifest.Value["installdir"].AsNotNull().Value<String>()}";
 			if (!StorageHelper.ExistFile($"{gameDirectory}/{GameUtility.ExecutableFile}")) {
 				return null;
 			}
 			var configuration = new GameConfiguration();
 			configuration.Path = gameDirectory;
-			configuration.Identity = gameIdentity;
+			configuration.Identifier = gameIdentifier;
 			configuration.Version = gameManifest.Value["buildid"].AsNotNull().Value<String>();
 			configuration.Name = gameManifest.Value["name"].AsNotNull().Value<String>();
 			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon($"{gameDirectory}/{GameUtility.ExecutableFile}", 0, 48).AsNotNull().ToBitmap());
@@ -792,7 +813,7 @@ namespace KairosoftGameManager.Utility {
 			String repositoryDirectory
 		) {
 			var steamLibrary = VdfConvert.Deserialize(await StorageHelper.ReadFileText($"{repositoryDirectory}/steamapps/libraryfolders.vdf"));
-			GF.AssertTest(steamLibrary.Key == "libraryfolders");
+			AssertTest(steamLibrary.Key == "libraryfolders");
 			return steamLibrary.Value["0"].AsNotNull()["apps"].AsNotNull().Children().Select((value) => value.Value<VProperty>().Key).ToList();
 		}
 

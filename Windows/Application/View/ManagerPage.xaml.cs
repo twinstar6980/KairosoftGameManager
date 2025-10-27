@@ -80,10 +80,10 @@ namespace KairosoftGameManager.View {
 			]);
 			var hideDialog = await ControlHelper.ShowDialogForWait(this.View);
 			try {
-				GF.AssertTest(await GameUtility.CheckRepositoryDirectory(App.Setting.Data.RepositoryDirectory));
+				AssertTest(await GameUtility.CheckRepositoryDirectory(App.Setting.Data.RepositoryDirectory));
 				var gameConfigurationList = new List<GameConfiguration>();
-				foreach (var gameIdentity in await GameUtility.ListGameInRepository(App.Setting.Data.RepositoryDirectory)) {
-					var gameConfiguration = await GameUtility.LoadGameConfiguration(App.Setting.Data.RepositoryDirectory, gameIdentity);
+				foreach (var gameIdentifier in await GameUtility.ListGameInRepository(App.Setting.Data.RepositoryDirectory)) {
+					var gameConfiguration = await GameUtility.LoadGameConfiguration(App.Setting.Data.RepositoryDirectory, gameIdentifier);
 					if (gameConfiguration != null) {
 						gameConfigurationList.Add(gameConfiguration);
 					}
@@ -106,11 +106,11 @@ namespace KairosoftGameManager.View {
 		public async Task ReloadGame (
 			ManagerPageGameItemController gameController
 		) {
-			gameController.Configuration = (await GameUtility.LoadGameConfiguration(App.Setting.Data.RepositoryDirectory, gameController.Configuration.Identity)).AsNotNull();
+			gameController.Configuration = (await GameUtility.LoadGameConfiguration(App.Setting.Data.RepositoryDirectory, gameController.Configuration.Identifier)).AsNotNull();
 			gameController.NotifyPropertyChanged([
 				nameof(gameController.uIcon_Source),
 				nameof(gameController.uName_Text),
-				nameof(gameController.uIdentityText_Text),
+				nameof(gameController.uIdentifierText_Text),
 				nameof(gameController.uVersionText_Text),
 				nameof(gameController.uProgramBadge_Style),
 				nameof(gameController.uProgramText_Text),
@@ -303,7 +303,7 @@ namespace KairosoftGameManager.View {
 							break;
 						}
 						var recordDirectory = $"{game.Path}/{GameUtility.RecordBundleDirectory}/{game.User}";
-						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.WindowsIntel32.ToString().ToLower(), Identity = game.Identity, Version = game.Version };
+						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.WindowsIntel32.ToString().ToLower(), Identifier = game.Identifier, Version = game.Version };
 						await GameUtility.ImportRecordArchive(archiveFile, recordDirectory, !shouldEncrypt ? null : GameUtility.ConvertKeyFromUser(game.User), async (archiveConfiguration) => {
 							if (archiveConfiguration != archiveConfigurationForLocal) {
 								if (!await ControlHelper.ShowDialogForConfirm(this.View, "Record Incompatible", $"This archive may not work with the current game.\nProvided: {GameUtility.MakeRecordArchiveConfigurationText(archiveConfiguration)}\nExpected: {GameUtility.MakeRecordArchiveConfigurationText(archiveConfigurationForLocal)}")) {
@@ -334,10 +334,10 @@ namespace KairosoftGameManager.View {
 							break;
 						}
 						var recordDirectory = $"{game.Path}/{GameUtility.RecordBundleDirectory}/{game.User}";
-						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.WindowsIntel32.ToString().ToLower(), Identity = game.Identity, Version = game.Version };
+						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.WindowsIntel32.ToString().ToLower(), Identifier = game.Identifier, Version = game.Version };
 						await GameUtility.ExportRecordArchive(archiveFile, recordDirectory, !shouldEncrypt ? null : GameUtility.ConvertKeyFromUser(game.User), async (archiveConfiguration) => {
 							archiveConfiguration.Platform = archiveConfigurationForLocal.Platform;
-							archiveConfiguration.Identity = archiveConfigurationForLocal.Identity;
+							archiveConfiguration.Identifier = archiveConfigurationForLocal.Identifier;
 							archiveConfiguration.Version = archiveConfigurationForLocal.Version;
 							return true;
 						});
@@ -423,7 +423,7 @@ namespace KairosoftGameManager.View {
 			var action = senders.Tag.As<String>();
 			var actionTemporaryState = new Dictionary<String, Object>();
 			var result = new List<Tuple<ManagerPageGameItemController, Boolean?>>();
-			foreach (var item in this.View.uGameList.SelectedItems.Select(GF.As<ManagerPageGameItemController>)) {
+			foreach (var item in this.View.uGameList.SelectedItems.Select(CommonUtility.As<ManagerPageGameItemController>)) {
 				var state = await this.ActionGame(item, action, actionTemporaryState);
 				result.Add(new (item, state));
 				if (state != null && !state.AsNotNull()) {
@@ -482,9 +482,9 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public String uIdentityText_Text {
+		public String uIdentifierText_Text {
 			get {
-				return this.Configuration.Identity;
+				return this.Configuration.Identifier;
 			}
 		}
 

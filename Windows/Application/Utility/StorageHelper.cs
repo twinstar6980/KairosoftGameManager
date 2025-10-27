@@ -82,7 +82,7 @@ namespace KairosoftGameManager.Utility {
 			var destinationLength = Win32.PInvoke.GetLongPathName(source, []);
 			var destination = new Character[destinationLength];
 			var destinationLengthCheck = Win32.PInvoke.GetLongPathName(source, destination.AsSpan());
-			GF.AssertTest(destinationLengthCheck == destinationLength - 1);
+			AssertTest(destinationLengthCheck == destinationLength - 1);
 			return StorageHelper.Regularize(new (destination.AsSpan(0, destinationLength.CastPrimitive<Size>() - 1)));
 		}
 
@@ -116,7 +116,7 @@ namespace KairosoftGameManager.Utility {
 			String source,
 			String destination
 		) {
-			GF.AssertTest(StorageHelper.Exist(source));
+			AssertTest(StorageHelper.Exist(source));
 			if (StorageHelper.ExistFile(source)) {
 				StorageHelper.CreateFile(destination);
 				File.Copy(source, destination, true);
@@ -137,7 +137,7 @@ namespace KairosoftGameManager.Utility {
 			String source,
 			String destination
 		) {
-			GF.AssertTest(StorageHelper.Exist(source));
+			AssertTest(StorageHelper.Exist(source));
 			StorageHelper.CreateDirectory(StorageHelper.Parent(destination).AsNotNull());
 			if (StorageHelper.ExistFile(source)) {
 				File.Move(source, destination);
@@ -151,7 +151,7 @@ namespace KairosoftGameManager.Utility {
 		public static void Remove (
 			String source
 		) {
-			GF.AssertTest(StorageHelper.Exist(source));
+			AssertTest(StorageHelper.Exist(source));
 			if (StorageHelper.ExistFile(source)) {
 				File.Delete(source);
 			}
@@ -203,7 +203,7 @@ namespace KairosoftGameManager.Utility {
 			var size = Math.Min(stream.Length.CastPrimitive<Size>(), limit);
 			var data = new Byte[size];
 			var sizeActual = await stream.ReadAsync(data, 0, size);
-			GF.AssertTest(sizeActual == size);
+			AssertTest(sizeActual == size);
 			return data;
 		}
 
@@ -277,7 +277,7 @@ namespace KairosoftGameManager.Utility {
 			String target
 		) {
 			var result = Win32.PInvoke.ShellExecute(new (IntPtr.Zero), "open", $"file://{target}", null, null, Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOWNORMAL);
-			GF.AssertTest(result >= 32);
+			AssertTest(result >= 32);
 			return;
 		}
 
@@ -289,7 +289,7 @@ namespace KairosoftGameManager.Utility {
 			String? location,
 			String? name
 		) {
-			GF.AssertTest(type == "LoadFile" || type == "LoadDirectory" || type == "SaveFile");
+			AssertTest(type == "LoadFile" || type == "LoadDirectory" || type == "SaveFile");
 			var target = null as String;
 			var locationTag = location == null ? null : !location.StartsWith('@') ? null : location[1..];
 			var locationPath = location;
@@ -399,7 +399,7 @@ namespace KairosoftGameManager.Utility {
 		public static void Trash (
 			String target
 		) {
-			GF.AssertTest(StorageHelper.Exist(target));
+			AssertTest(StorageHelper.Exist(target));
 			if (StorageHelper.ExistFile(target)) {
 				Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
 			}

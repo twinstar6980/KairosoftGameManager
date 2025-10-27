@@ -84,8 +84,8 @@ namespace KairosoftGameManager.Utility {
 			var monitorInformation = new Win32.Graphics.Gdi.MONITORINFO() {
 				cbSize = 40u,
 			};
-			GF.AssertTest(Win32.PInvoke.GetMonitorInfo(monitor, ref monitorInformation));
-			GF.AssertTest(Win32.PInvoke.GetWindowRect(new (handle), out var rect));
+			AssertTest(Win32.PInvoke.GetMonitorInfo(monitor, ref monitorInformation));
+			AssertTest(Win32.PInvoke.GetWindowRect(new (handle), out var rect));
 			var x = (monitorInformation.rcMonitor.left + monitorInformation.rcMonitor.right - (rect.right - rect.left)) / 2;
 			var y = (monitorInformation.rcMonitor.bottom + monitorInformation.rcMonitor.top - (rect.bottom - rect.top)) / 2;
 			window.AppWindow.Move(new (x, y));
@@ -98,8 +98,8 @@ namespace KairosoftGameManager.Utility {
 			Window window
 		) {
 			var handle = WindowHelper.GetHandle(window);
-			GF.AssertTest(Win32.PInvoke.ShowWindow(new (handle), Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_RESTORE));
-			GF.AssertTest(Win32.PInvoke.SetForegroundWindow(new (handle)));
+			AssertTest(Win32.PInvoke.ShowWindow(new (handle), Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_RESTORE));
+			AssertTest(Win32.PInvoke.SetForegroundWindow(new (handle)));
 			return;
 		}
 

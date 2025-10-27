@@ -67,7 +67,13 @@ namespace KairosoftGameManager.View {
 
 		public String uVersion_Text {
 			get {
-				return $"Version {Package.Current.Id.Version.Major}.{Package.Current.Id.Version.Minor}";
+				return $"Version {ApplicationInformation.Version}";
+			}
+		}
+
+		public String uCopyrightLabel_Text {
+			get {
+				return $"\u00A9 {ApplicationInformation.Year} {ApplicationInformation.Developer}. All rights reserved.";
 			}
 		}
 

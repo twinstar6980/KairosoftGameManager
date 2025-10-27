@@ -20,7 +20,7 @@ namespace KairosoftGameManager.View {
 		) {
 			this.InitializeComponent();
 			WindowHelper.SetIcon(this, $"{App.PackageDirectory}/Asset/Logo.ico");
-			WindowHelper.SetTitle(this, Package.Current.DisplayName);
+			WindowHelper.SetTitle(this, ApplicationInformation.Name);
 			WindowHelper.SetTitleBar(this, true, this.uTitle, true);
 			this.Controller = new () { View = this };
 			this.Controller.InitializeView();
@@ -85,7 +85,7 @@ namespace KairosoftGameManager.View {
 
 		public String uTitleText_Text {
 			get {
-				return Package.Current.DisplayName;
+				return ApplicationInformation.Name;
 			}
 		}
 

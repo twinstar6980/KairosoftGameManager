@@ -23,7 +23,7 @@ namespace KairosoftGameManager.Utility {
 			process.StartInfo.RedirectStandardOutput = true;
 			process.StartInfo.RedirectStandardError = true;
 			var state = process.Start();
-			GF.AssertTest(state);
+			AssertTest(state);
 			if (!waitForExit) {
 				return null;
 			}

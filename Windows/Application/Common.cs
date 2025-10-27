@@ -42,8 +42,28 @@ global using IntegerS64 = System.Int64;
 global using IntegerSN = System.IntPtr;
 global using FloaterS32 = System.Single;
 global using FloaterS64 = System.Double;
+global using static CommonUtility;
+using Windows.ApplicationModel;
 
-public static class GF {
+// ----------------
+
+public static class ApplicationInformation {
+
+	public static readonly String Identifier = Package.Current.Id.Name;
+
+	public static readonly String Version = $"{Package.Current.Id.Version.Major}.{Package.Current.Id.Version.Minor}";
+
+	public static readonly String VersionMainly = $"{Package.Current.Id.Version.Major}";
+
+	public static readonly String Name = Package.Current.DisplayName;
+
+	public static readonly String Developer = Package.Current.PublisherDisplayName;
+
+	public static readonly String Year = "2024-2025";
+
+}
+
+public static class CommonUtility {
 
 	public static void AssertTest (
 		[DoesNotReturnIf(false)]                      Boolean condition,

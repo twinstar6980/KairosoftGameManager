@@ -183,13 +183,13 @@ namespace KairosoftGameManager.Utility {
 			) {
 				var types = typeof(TValue).GetGenericArguments();
 				var values = Enumerable.Repeat<Object?>(null, types.Length).ToArray();
-				GF.AssertTest(reader.TokenType == JsonTokenType.StartArray);
+				AssertTest(reader.TokenType == JsonTokenType.StartArray);
 				for (var index = 0; index < types.Length; index++) {
 					reader.Read();
 					values[index] = JsonSerializer.Deserialize(ref reader, types[index], options);
 				}
 				reader.Read();
-				GF.AssertTest(reader.TokenType == JsonTokenType.EndArray);
+				AssertTest(reader.TokenType == JsonTokenType.EndArray);
 				return typeToConvert.GetConstructor(types).AsNotNull().Invoke(values).As<TValue>();
 			}
 
