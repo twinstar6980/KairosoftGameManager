@@ -60,7 +60,7 @@ namespace KairosoftGameManager {
 				App.PackageDirectory = StorageHelper.Regularize(Package.Current.InstalledPath);
 				App.ProgramFile = $"{App.PackageDirectory}/Application.exe";
 				App.SharedDirectory = StorageHelper.Regularize(Windows.Storage.ApplicationData.Current.LocalFolder.Path);
-				App.CacheDirectory = $"{App.SharedDirectory}/Cache";
+				App.CacheDirectory = $"{App.SharedDirectory}/cache";
 				try {
 					await App.Setting.Load();
 				}

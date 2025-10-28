@@ -3,7 +3,6 @@
 
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
-using Windows.ApplicationModel;
 using Microsoft.UI;
 
 namespace KairosoftGameManager {
@@ -13,7 +12,7 @@ namespace KairosoftGameManager {
 		public ElementTheme               ThemeMode                    = default!;
 		public Dictionary<String, String> StoragePickerHistoryLocation = default!;
 		public String                     RepositoryDirectory          = default!;
-		public String                     ProgramFileOfIl2CppDumper    = default!;
+		public ExternalToolSetting        ExternalTool                 = default!;
 	}
 
 	public record SettingState {
@@ -74,7 +73,7 @@ namespace KairosoftGameManager {
 
 		public String File {
 			get {
-				return StorageHelper.ToWindowsStyle($"{App.SharedDirectory}/Setting.json");
+				return $"{App.SharedDirectory}/setting.json";
 			}
 		}
 
@@ -112,7 +111,13 @@ namespace KairosoftGameManager {
 				ThemeMode = ElementTheme.Default,
 				StoragePickerHistoryLocation = [],
 				RepositoryDirectory = "C:/Program Files (x86)/Steam",
-				ProgramFileOfIl2CppDumper = "",
+				ExternalTool = new () {
+					Il2cppdumperPath = "Il2CppDumper",
+					ZipalignPath = "zipalign",
+					ApksignerPath = "apksigner",
+					ApkCertificateFile = "",
+					ApkCertificatePassword = "",
+				},
 			};
 		}
 

@@ -33,6 +33,28 @@ namespace KairosoftGameManager.Utility {
 
 		#endregion
 
+		#region program
+
+		public static String? SearchProgram (
+			String name
+		) {
+			var result = default(String?);
+			var pathList = Environment.GetEnvironmentVariable("PATH").AsNotNull().Split(";").Select(StorageHelper.Regularize).ToList();
+			var pathExtensionList = Environment.GetEnvironmentVariable("PATHEXT").AsNotNull().Split(";").ToList();
+			pathExtensionList.Insert(0, "");
+			foreach (var path in pathList) {
+				var pathBase = $"{path}/{name}";
+				var pathExtension = pathExtensionList.FirstOrDefault((value) => (StorageHelper.ExistFile($"{pathBase}{value}")));
+				if (pathExtension != null) {
+					result = $"{pathBase}{pathExtension}";
+					break;
+				}
+			}
+			return result;
+		}
+
+		#endregion
+
 		#region command
 
 		private static void EncodeCommandProgramString (

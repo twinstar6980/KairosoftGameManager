@@ -16,6 +16,7 @@ namespace KairosoftGameManager.Utility {
 	[JsonSerializable(typeof(Dictionary<String, String>))]
 	[JsonSerializable(typeof(SortedDictionary<String, List<String>>))]
 	[JsonSerializable(typeof(ElementTheme), TypeInfoPropertyName = "ElementTheme")]
+	[JsonSerializable(typeof(ExternalToolSetting), TypeInfoPropertyName = "KairosoftGameManager_ExternalToolSetting")]
 	[JsonSerializable(typeof(SettingData), TypeInfoPropertyName = "KairosoftGameManager_SettingData")]
 	public partial class JsonSourceGenerationContext : JsonSerializerContext {
 	}

@@ -135,34 +135,143 @@
 							/>
 					</my:Stack>
 				</communityControls:SettingsCard>
-				<communityControls:SettingsCard
+				<communityControls:SettingsExpander
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
-					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.OpenFile}}"
-					Header="Program File Of Il2CppDumper"
+					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.DeveloperTools}}"
+					Header="External Tool"
 					>
-					<my:Stack
-						HorizontalAlignment="Stretch"
-						VerticalAlignment="Stretch"
-						Orientation="Horizontal"
-						Spacing="8"
-						>
-						<TextBox
+					<communityControls:SettingsExpander.Items>
+						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"
-							VerticalAlignment="Top"
-							Width="208"
-							LostFocus="{x:Bind Controller.uProgramFileOfIl2CppDumper_LostFocus}"
-							Text="{x:Bind Controller.uProgramFileOfIl2CppDumper_Text}"
-							/>
-						<Button
-							ToolTipService.ToolTip="Pick"
+							VerticalAlignment="Stretch"
+							Header="Il2CppDumper Path"
+							>
+							<my:Stack
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								Orientation="Horizontal"
+								Spacing="8"
+								>
+								<TextBox
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Top"
+									Width="208"
+									LostFocus="{x:Bind Controller.uExternalToolOfIl2cppdumperPath_LostFocus}"
+									Text="{x:Bind Controller.uExternalToolOfIl2cppdumperPath_Text}"
+									/>
+								<Button
+									ToolTipService.ToolTip="Pick"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Top"
+									Click="{x:Bind Controller.uExternalToolOfIl2cppdumperPathPick_Click}"
+									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
+									/>
+							</my:Stack>
+						</communityControls:SettingsCard>
+						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"
-							VerticalAlignment="Top"
-							Click="{x:Bind Controller.uProgramFileOfIl2CppDumperPick_Click}"
-							Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
-							/>
-					</my:Stack>
-				</communityControls:SettingsCard>
+							VerticalAlignment="Stretch"
+							Header="zipalign Path"
+							>
+							<my:Stack
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								Orientation="Horizontal"
+								Spacing="8"
+								>
+								<TextBox
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Top"
+									Width="208"
+									LostFocus="{x:Bind Controller.uExternalToolOfZipalignPath_LostFocus}"
+									Text="{x:Bind Controller.uExternalToolOfZipalignPath_Text}"
+									/>
+								<Button
+									ToolTipService.ToolTip="Pick"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Top"
+									Click="{x:Bind Controller.uExternalToolOfZipalignPathPick_Click}"
+									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
+									/>
+							</my:Stack>
+						</communityControls:SettingsCard>
+						<communityControls:SettingsCard
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							Header="apksigner Path"
+							>
+							<my:Stack
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								Orientation="Horizontal"
+								Spacing="8"
+								>
+								<TextBox
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Top"
+									Width="208"
+									LostFocus="{x:Bind Controller.uExternalToolOfApksignerPath_LostFocus}"
+									Text="{x:Bind Controller.uExternalToolOfApksignerPath_Text}"
+									/>
+								<Button
+									ToolTipService.ToolTip="Pick"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Top"
+									Click="{x:Bind Controller.uExternalToolOfApksignerPathPick_Click}"
+									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
+									/>
+							</my:Stack>
+						</communityControls:SettingsCard>
+						<communityControls:SettingsCard
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							Header="Apk Certificate File"
+							>
+							<my:Stack
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								Orientation="Horizontal"
+								Spacing="8"
+								>
+								<TextBox
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Top"
+									Width="208"
+									LostFocus="{x:Bind Controller.uExternalToolOfApkCertificateFile_LostFocus}"
+									Text="{x:Bind Controller.uExternalToolOfApkCertificateFile_Text}"
+									/>
+								<Button
+									ToolTipService.ToolTip="Pick"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Top"
+									Click="{x:Bind Controller.uExternalToolOfApkCertificateFilePick_Click}"
+									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
+									/>
+							</my:Stack>
+						</communityControls:SettingsCard>
+						<communityControls:SettingsCard
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							Header="Apk Certificate Password"
+							>
+							<my:Stack
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								Orientation="Horizontal"
+								Spacing="8"
+								>
+								<TextBox
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Top"
+									Width="260"
+									LostFocus="{x:Bind Controller.uExternalToolOfApkCertificatePassword_LostFocus}"
+									Text="{x:Bind Controller.uExternalToolOfApkCertificatePassword_Text}"
+									/>
+							</my:Stack>
+						</communityControls:SettingsCard>
+					</communityControls:SettingsExpander.Items>
+				</communityControls:SettingsExpander>
 				<TextBlock
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"

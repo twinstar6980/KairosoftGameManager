@@ -164,39 +164,171 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uProgramFileOfIl2CppDumper_LostFocus (
+		public async void uExternalToolOfIl2cppdumperPath_LostFocus (
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Setting.Data.ProgramFileOfIl2CppDumper = StorageHelper.Regularize(senders.Text);
+			App.Setting.Data.ExternalTool.Il2cppdumperPath = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
-				nameof(this.uProgramFileOfIl2CppDumper_Text),
+				nameof(this.uExternalToolOfIl2cppdumperPath_Text),
 			]);
 			await App.Setting.Save();
 			return;
 		}
 
-		public String uProgramFileOfIl2CppDumper_Text {
+		public String uExternalToolOfIl2cppdumperPath_Text {
 			get {
-				return App.Setting.Data.ProgramFileOfIl2CppDumper;
+				return App.Setting.Data.ExternalTool.Il2cppdumperPath;
 			}
 		}
 
-		public async void uProgramFileOfIl2CppDumperPick_Click (
+		public async void uExternalToolOfIl2cppdumperPathPick_Click (
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadFile(App.MainWindow, "@ProgramFileOfIl2CppDumper");
+			var value = await StorageHelper.PickLoadFile(App.MainWindow, "@ExternalToolOfIl2cppdumperPath");
 			if (value != null) {
-				App.Setting.Data.ProgramFileOfIl2CppDumper = value;
+				App.Setting.Data.ExternalTool.Il2cppdumperPath = value;
 				this.NotifyPropertyChanged([
-					nameof(this.uProgramFileOfIl2CppDumper_Text),
+					nameof(this.uExternalToolOfIl2cppdumperPath_Text),
 				]);
 				await App.Setting.Save();
 			}
 			return;
+		}
+
+		// ----------------
+
+		public async void uExternalToolOfZipalignPath_LostFocus (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<TextBox>();
+			App.Setting.Data.ExternalTool.ZipalignPath = StorageHelper.Regularize(senders.Text);
+			this.NotifyPropertyChanged([
+				nameof(this.uExternalToolOfZipalignPath_Text),
+			]);
+			await App.Setting.Save();
+			return;
+		}
+
+		public String uExternalToolOfZipalignPath_Text {
+			get {
+				return App.Setting.Data.ExternalTool.ZipalignPath;
+			}
+		}
+
+		public async void uExternalToolOfZipalignPathPick_Click (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<Button>();
+			var value = await StorageHelper.PickLoadFile(App.MainWindow, "@ExternalToolOfZipalignPath");
+			if (value != null) {
+				App.Setting.Data.ExternalTool.ZipalignPath = value;
+				this.NotifyPropertyChanged([
+					nameof(this.uExternalToolOfZipalignPath_Text),
+				]);
+				await App.Setting.Save();
+			}
+			return;
+		}
+
+		// ----------------
+
+		public async void uExternalToolOfApksignerPath_LostFocus (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<TextBox>();
+			App.Setting.Data.ExternalTool.ApksignerPath = StorageHelper.Regularize(senders.Text);
+			this.NotifyPropertyChanged([
+				nameof(this.uExternalToolOfApksignerPath_Text),
+			]);
+			await App.Setting.Save();
+			return;
+		}
+
+		public String uExternalToolOfApksignerPath_Text {
+			get {
+				return App.Setting.Data.ExternalTool.ApksignerPath;
+			}
+		}
+
+		public async void uExternalToolOfApksignerPathPick_Click (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<Button>();
+			var value = await StorageHelper.PickLoadFile(App.MainWindow, "@ExternalToolOfApksignerPath");
+			if (value != null) {
+				App.Setting.Data.ExternalTool.ApksignerPath = value;
+				this.NotifyPropertyChanged([
+					nameof(this.uExternalToolOfApksignerPath_Text),
+				]);
+				await App.Setting.Save();
+			}
+			return;
+		}
+
+		// ----------------
+
+		public async void uExternalToolOfApkCertificateFile_LostFocus (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<TextBox>();
+			App.Setting.Data.ExternalTool.ApkCertificateFile = StorageHelper.Regularize(senders.Text);
+			this.NotifyPropertyChanged([
+				nameof(this.uExternalToolOfApkCertificateFile_Text),
+			]);
+			await App.Setting.Save();
+			return;
+		}
+
+		public String uExternalToolOfApkCertificateFile_Text {
+			get {
+				return App.Setting.Data.ExternalTool.ApkCertificateFile;
+			}
+		}
+
+		public async void uExternalToolOfApkCertificateFilePick_Click (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<Button>();
+			var value = await StorageHelper.PickLoadFile(App.MainWindow, "@ExternalToolOfApkCertificateFile");
+			if (value != null) {
+				App.Setting.Data.ExternalTool.ApkCertificateFile = value;
+				this.NotifyPropertyChanged([
+					nameof(this.uExternalToolOfApkCertificateFile_Text),
+				]);
+				await App.Setting.Save();
+			}
+			return;
+		}
+
+		// ----------------
+
+		public async void uExternalToolOfApkCertificatePassword_LostFocus (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<TextBox>();
+			App.Setting.Data.ExternalTool.ApkCertificatePassword = StorageHelper.Regularize(senders.Text);
+			this.NotifyPropertyChanged([
+				nameof(this.uExternalToolOfApkCertificatePassword_Text),
+			]);
+			await App.Setting.Save();
+			return;
+		}
+
+		public String uExternalToolOfApkCertificatePassword_Text {
+			get {
+				return App.Setting.Data.ExternalTool.ApkCertificatePassword;
+			}
 		}
 
 		#endregion

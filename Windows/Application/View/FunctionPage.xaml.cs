@@ -331,7 +331,7 @@ namespace KairosoftGameManager.View {
 				await Task.Run(async () => {
 					switch (this.Type) {
 						case GameFunctionType.EncryptRecord: {
-							await GameUtility.EncryptRecord(
+							await GameHelper.EncryptRecord(
 								this.ArgumentOfEncryptRecordOfTargetDirectory,
 								this.ArgumentOfEncryptRecordOfKey,
 								PublishMessage
@@ -339,11 +339,11 @@ namespace KairosoftGameManager.View {
 							break;
 						}
 						case GameFunctionType.ModifyProgram: {
-							await GameUtility.ModifyProgram(
+							await GameHelper.ModifyProgram(
 								this.ArgumentOfModifyProgramOfTarget,
 								this.ArgumentOfModifyProgramOfDisableRecordEncryption,
 								this.ArgumentOfModifyProgramOfEnableDebugMode,
-								App.Setting.Data.ProgramFileOfIl2CppDumper,
+								ExternalToolHelper.ParseSetting(App.Setting.Data.ExternalTool),
 								PublishMessage
 							);
 							break;
