@@ -713,7 +713,7 @@ namespace KairosoftGameManager.Utility {
 				var targetFile = $"{temporaryDirectory}/package";
 				StorageHelper.Copy(target, targetFile);
 				using var package = ZipFile.Open(targetFile, ZipArchiveMode.Update);
-				var repackSingleArchive = (
+				var replaceProgramFile = (
 					ZipArchive   package,
 					GamePlatform platform
 				) => {
@@ -724,7 +724,7 @@ namespace KairosoftGameManager.Utility {
 				};
 				foreach (var platform in platformList) {
 					if (packageType == GamePackageType.Zip || packageType == GamePackageType.Apk) {
-						repackSingleArchive(package, platform);
+						replaceProgramFile(package, platform);
 					}
 					if (packageType == GamePackageType.Apks) {
 						var architectureName = platform switch {
@@ -735,10 +735,7 @@ namespace KairosoftGameManager.Utility {
 						var subPackageName = $"split_config.{architectureName}.apk";
 						var subPackageFile = $"{temporaryDirectory}/apks/{subPackageName}";
 						using var subPackage = ZipFile.Open(subPackageFile, ZipArchiveMode.Update);
-						repackSingleArchive(subPackage, platform);
-						subPackage.Dispose();
-						package.GetEntry(subPackageName).AsNotNull().Delete();
-						package.CreateEntryFromFile(subPackageFile, subPackageName);
+						replaceProgramFile(subPackage, platform);
 					}
 				}
 				if (packageType == GamePackageType.Zip) {
@@ -749,16 +746,22 @@ namespace KairosoftGameManager.Utility {
 					var enableAlign = true;
 					var enableSign = true;
 					if (!StorageHelper.ExistFile(externalToolSetting.ZipalignPath)) {
-						onNotify($"Skip apk align.");
+						onNotify($"Skipping apk align, the external tool 'zipalign' not found.");
 						enableAlign = false;
 					}
-					if (!StorageHelper.ExistFile(externalToolSetting.ApksignerPath) ||
-						!StorageHelper.ExistFile(externalToolSetting.ApkCertificateFile) ||
-						externalToolSetting.ApkCertificatePassword == "") {
-						onNotify($"Skip apk sign.");
+					if (!StorageHelper.ExistFile(externalToolSetting.ApksignerPath)) {
+						onNotify($"Skipping apk sign, the external tool 'apksigner' not found.");
 						enableSign = false;
 					}
-					var tryAlignAndSignApkFile = async (
+					if (!StorageHelper.ExistFile(externalToolSetting.ApkCertificateFile)) {
+						onNotify($"Skipping apk sign, the custom apk certificate file not found.");
+						enableSign = false;
+					}
+					if (externalToolSetting.ApkCertificatePassword == "") {
+						onNotify($"Skipping apk sign, the custom apk certificate password not set.");
+						enableSign = false;
+					}
+					var postProcessingApkFile = async (
 						String apk
 					) => {
 						if (enableAlign) {
@@ -771,12 +774,12 @@ namespace KairosoftGameManager.Utility {
 					};
 					if (packageType == GamePackageType.Apk) {
 						package.Dispose();
-						await tryAlignAndSignApkFile(target);
+						await postProcessingApkFile(targetFile);
 					}
 					if (packageType == GamePackageType.Apks) {
 						foreach (var subPackageName in StorageHelper.ListDirectory($"{temporaryDirectory}/apks", 1, true, false, "*.apk")) {
 							var subPackageFile = $"{temporaryDirectory}/apks/{subPackageName}";
-							await tryAlignAndSignApkFile(subPackageFile);
+							await postProcessingApkFile(subPackageFile);
 							package.GetEntry(subPackageName).AsNotNull().Delete();
 							package.CreateEntryFromFile(subPackageFile, subPackageName);
 						}

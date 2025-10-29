@@ -11,7 +11,7 @@
 	mc:Ignorable="d"
 	x:DefaultBindMode="OneWay"
 	x:Class="KairosoftGameManager.View.SettingPage"
-	NavigationCacheMode="Disabled"
+	NavigationCacheMode="Enabled"
 	>
 	<my:Stack
 		HorizontalAlignment="Stretch"
