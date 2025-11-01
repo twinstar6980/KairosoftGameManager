@@ -148,7 +148,7 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "LaunchGame": {
-						await ProcessHelper.RunProcess($"{game.Path}/{GameHelper.ExecutableFile}", [], false);
+						await ProcessHelper.RunProcess($"{game.Path}/{GameHelper.ExecutableFile}", [], null, false);
 						break;
 					}
 					case "RestoreProgram": {

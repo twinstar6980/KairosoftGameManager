@@ -42,11 +42,16 @@ namespace KairosoftGameManager.Utility {
 			String              programFile,
 			String              metadataFile
 		) {
-			var programResult = (await ProcessHelper.RunProcess(setting.Il2cppdumperPath, [
-				programFile,
-				metadataFile,
-			], true)).AsNotNull();
-			AssertTest(programResult.Item2.ReplaceLineEndings("\n").EndsWith("Done!\nPress any key to exit...\n"));
+			var processResult = (await ProcessHelper.RunProcess(
+				setting.Il2cppdumperPath,
+				[
+					programFile,
+					metadataFile,
+				],
+				null,
+				true
+			)).AsNotNull();
+			AssertTest(processResult.Item2.ReplaceLineEndings("\n").EndsWith("Done!\nPress any key to exit...\n"));
 			var result = (await StorageHelper.ReadFileText($"{StorageHelper.Parent(setting.Il2cppdumperPath)}/dump.cs")).Split('\n').ToList();
 			return result;
 		}
@@ -62,15 +67,20 @@ namespace KairosoftGameManager.Utility {
 			using var alignedFileFinalizer = new Finalizer(() => {
 				StorageHelper.Remove(alignedFile);
 			});
-			var programResult = (await ProcessHelper.RunProcess(setting.ZipalignPath, [
-				"-P", "16",
-				"-f",
-				"4",
-				$"{file}",
-				$"{alignedFile}",
-			], true)).AsNotNull();
-			if (programResult.Item1 != 0) {
-				throw new ($"External tool 'zipalign' error.\n{programResult.Item3}\n");
+			var processResult = (await ProcessHelper.RunProcess(
+				setting.ZipalignPath,
+				[
+					"-P", "16",
+					"-f",
+					"4",
+					$"{file}",
+					$"{alignedFile}",
+				],
+				null,
+				true
+			)).AsNotNull();
+			if (processResult.Item1 != 0) {
+				throw new ($"External tool 'zipalign' error.\n{processResult.Item3}\n");
 			}
 			StorageHelper.Copy(alignedFile, file);
 			return;
@@ -82,18 +92,23 @@ namespace KairosoftGameManager.Utility {
 			ExternalToolSetting setting,
 			String              file
 		) {
-			var programResult = (await ProcessHelper.RunProcess(setting.ApksignerPath, [
-				"sign",
-				"--v1-signing-enabled", "true",
-				"--v2-signing-enabled", "true",
-				"--v3-signing-enabled", "true",
-				"--v4-signing-enabled", "false",
-				"--ks", $"{setting.ApkCertificateFile}",
-				"--ks-pass", $"pass:{setting.ApkCertificatePassword}",
-				$"{file}",
-			], true)).AsNotNull();
-			if (programResult.Item1 != 0) {
-				throw new ($"External tool 'apksigner' error.\n{programResult.Item3}\n");
+			var processResult = (await ProcessHelper.RunProcess(
+				setting.ApksignerPath,
+				[
+					"sign",
+					"--v1-signing-enabled", "true",
+					"--v2-signing-enabled", "true",
+					"--v3-signing-enabled", "true",
+					"--v4-signing-enabled", "false",
+					"--ks", $"{setting.ApkCertificateFile}",
+					"--ks-pass", $"pass:{setting.ApkCertificatePassword}",
+					$"{file}",
+				],
+				null,
+				true
+			)).AsNotNull();
+			if (processResult.Item1 != 0) {
+				throw new ($"External tool 'apksigner' error.\n{processResult.Item3}\n");
 			}
 			return;
 		}

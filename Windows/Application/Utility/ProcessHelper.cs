@@ -7,17 +7,47 @@ namespace KairosoftGameManager.Utility {
 
 	public static class ProcessHelper {
 
+		#region environment
+
+		public static String? QueryEnvironment (
+			String name
+		) {
+			return Environment.GetEnvironmentVariable(name);
+		}
+
+		// ----------------
+
+		public static Dictionary<String, String> ListEnvironment (
+		) {
+			return Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(
+				(item) => item.Key.As<String>(),
+				(item) => item.Value.AsNotNull().As<String>()
+			);
+		}
+
+		#endregion
+
 		#region process
 
 		public static async Task<Tuple<Size, String, String>?> RunProcess (
-			String       program,
-			List<String> argument,
-			Boolean      waitForExit
+			String                      program,
+			List<String>                argument,
+			Dictionary<String, String>? environment,
+			Boolean                     waitForExit
 		) {
+			if (environment == null) {
+				environment = ProcessHelper.ListEnvironment();
+			}
 			using var process = new Process();
 			process.StartInfo.UseShellExecute = false;
 			process.StartInfo.FileName = program;
-			process.StartInfo.Arguments = ProcessHelper.EncodeCommandString(null, argument);
+			foreach (var argumentItem in argument) {
+				process.StartInfo.ArgumentList.Add(argumentItem);
+			}
+			process.StartInfo.Environment.Clear();
+			foreach (var environmentItem in environment) {
+				process.StartInfo.Environment.Add(environmentItem.Key, environmentItem.Value);
+			}
 			process.StartInfo.CreateNoWindow = true;
 			process.StartInfo.RedirectStandardInput = true;
 			process.StartInfo.RedirectStandardOutput = true;
@@ -39,8 +69,8 @@ namespace KairosoftGameManager.Utility {
 			String name
 		) {
 			var result = default(String?);
-			var pathList = Environment.GetEnvironmentVariable("PATH").AsNotNull().Split(";").Select(StorageHelper.Regularize).ToList();
-			var pathExtensionList = Environment.GetEnvironmentVariable("PATHEXT").AsNotNull().Split(";").ToList();
+			var pathList = ProcessHelper.QueryEnvironment("PATH").AsNotNull().Split(";").Select(StorageHelper.Regularize).ToList();
+			var pathExtensionList = ProcessHelper.QueryEnvironment("PATHEXT").AsNotNull().Split(";").ToList();
 			pathExtensionList.Insert(0, "");
 			foreach (var path in pathList) {
 				var pathBase = $"{path}/{name}";
