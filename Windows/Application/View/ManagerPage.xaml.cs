@@ -81,13 +81,7 @@ namespace KairosoftGameManager.View {
 			var hideDialog = await ControlHelper.ShowDialogForWait(this.View);
 			try {
 				AssertTest(await GameHelper.CheckRepositoryDirectory(App.Setting.Data.RepositoryDirectory));
-				var gameConfigurationList = new List<GameConfiguration>();
-				foreach (var gameIdentifier in await GameHelper.ListGameInRepository(App.Setting.Data.RepositoryDirectory)) {
-					var gameConfiguration = await GameHelper.LoadGameConfiguration(App.Setting.Data.RepositoryDirectory, gameIdentifier);
-					if (gameConfiguration != null) {
-						gameConfigurationList.Add(gameConfiguration);
-					}
-				}
+				var gameConfigurationList = await GameHelper.ListGameInRepository(App.Setting.Data.RepositoryDirectory);
 				gameConfigurationList.Sort((left, right) => (String.CompareOrdinal(left.Name, right.Name)));
 				foreach (var gameConfiguration in gameConfigurationList) {
 					this.uGameList_ItemsSource.Add(new () { Host = this, Configuration = gameConfiguration });
@@ -106,7 +100,7 @@ namespace KairosoftGameManager.View {
 		public async Task ReloadGame (
 			ManagerPageGameItemController gameController
 		) {
-			gameController.Configuration = (await GameHelper.LoadGameConfiguration(App.Setting.Data.RepositoryDirectory, gameController.Configuration.Identifier)).AsNotNull();
+			gameController.Configuration = (await GameHelper.LoadGameConfiguration(gameController.Configuration.Library, gameController.Configuration.Identifier)).AsNotNull();
 			gameController.NotifyPropertyChanged([
 				nameof(gameController.uIcon_Source),
 				nameof(gameController.uName_Text),

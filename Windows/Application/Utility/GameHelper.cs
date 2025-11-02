@@ -40,8 +40,9 @@ namespace KairosoftGameManager.Utility {
 
 	// ----------------
 
-	public record class GameConfiguration {
+	public record GameConfiguration {
 		public String           Path       = "";
+		public String           Library    = "";
 		public String           Identifier = "";
 		public String           Version    = "";
 		public String           Name       = "";
@@ -51,7 +52,7 @@ namespace KairosoftGameManager.Utility {
 		public GameProgramState Program    = GameProgramState.None;
 	}
 
-	public record class GameRecordArchiveConfiguration {
+	public record GameRecordArchiveConfiguration {
 		public String Platform   = "";
 		public String Identifier = "";
 		public String Version    = "";
@@ -808,22 +809,23 @@ namespace KairosoftGameManager.Utility {
 		// ----------------
 
 		public static async Task<GameConfiguration?> LoadGameConfiguration (
-			String repositoryDirectory,
+			String libraryDirectory,
 			String gameIdentifier
 		) {
-			var gameManifestFile = $"{repositoryDirectory}/steamapps/appmanifest_{gameIdentifier}.acf";
+			var gameManifestFile = $"{libraryDirectory}/steamapps/appmanifest_{gameIdentifier}.acf";
 			if (!StorageHelper.ExistFile(gameManifestFile)) {
 				return null;
 			}
 			var gameManifest = VdfConvert.Deserialize(await StorageHelper.ReadFileText(gameManifestFile));
 			AssertTest(gameManifest.Key == "AppState");
 			AssertTest(gameManifest.Value["appid"].AsNotNull().Value<String>() == gameIdentifier);
-			var gameDirectory = $"{repositoryDirectory}/steamapps/common/{gameManifest.Value["installdir"].AsNotNull().Value<String>()}";
+			var gameDirectory = $"{libraryDirectory}/steamapps/common/{gameManifest.Value["installdir"].AsNotNull().Value<String>()}";
 			if (!StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.ExecutableFile}")) {
 				return null;
 			}
 			var configuration = new GameConfiguration();
 			configuration.Path = gameDirectory;
+			configuration.Library = libraryDirectory;
 			configuration.Identifier = gameIdentifier;
 			configuration.Version = gameManifest.Value["buildid"].AsNotNull().Value<String>();
 			configuration.Name = gameManifest.Value["name"].AsNotNull().Value<String>();
@@ -849,12 +851,23 @@ namespace KairosoftGameManager.Utility {
 			return configuration;
 		}
 
-		public static async Task<List<String>> ListGameInRepository (
+		public static async Task<List<GameConfiguration>> ListGameInRepository (
 			String repositoryDirectory
 		) {
-			var steamLibrary = VdfConvert.Deserialize(await StorageHelper.ReadFileText($"{repositoryDirectory}/steamapps/libraryfolders.vdf"));
-			AssertTest(steamLibrary.Key == "libraryfolders");
-			return steamLibrary.Value["0"].AsNotNull()["apps"].AsNotNull().Children().Select((value) => value.Value<VProperty>().Key).ToList();
+			var libraryList = VdfConvert.Deserialize(await StorageHelper.ReadFileText($"{repositoryDirectory}/steamapps/libraryfolders.vdf"));
+			AssertTest(libraryList.Key == "libraryfolders");
+			var result = new List<GameConfiguration>();
+			foreach (var library in libraryList.Value.Children<VProperty>()) {
+				var libraryDirectory = StorageHelper.Regularize(library.Value["path"].AsNotNull().Value<String>());
+				foreach (var game in library.Value["apps"].AsNotNull().Children<VProperty>()) {
+					var gameIdentifier = game.Key;
+					var gameConfiguration = await GameHelper.LoadGameConfiguration(libraryDirectory, gameIdentifier);
+					if (gameConfiguration != null) {
+						result.Add(gameConfiguration);
+					}
+				}
+			}
+			return result;
 		}
 
 		public static async Task<Boolean> CheckRepositoryDirectory (
