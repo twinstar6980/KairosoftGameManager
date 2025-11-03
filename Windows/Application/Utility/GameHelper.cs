@@ -62,6 +62,8 @@ namespace KairosoftGameManager.Utility {
 
 	public enum GameFunctionType {
 		EncryptRecord,
+		ExportRecord,
+		ImportRecord,
 		ModifyProgram,
 	}
 
@@ -78,6 +80,19 @@ namespace KairosoftGameManager.Utility {
 		public const String RecordBundleDirectory = "saves";
 
 		public const String RecordArchiveFileExtension = "kgra";
+
+		// ----------------
+
+		public static String GetPlatformSystemName (
+			GamePlatform value
+		) {
+			return value switch {
+				GamePlatform.WindowsIntel32 => "windows",
+				GamePlatform.AndroidArm32   => "android",
+				GamePlatform.AndroidArm64   => "android",
+				_                           => throw new UnreachableException(),
+			};
+		}
 
 		#endregion
 
@@ -189,35 +204,9 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task ImportRecordArchive (
-			String                                              archiveFile,
-			String                                              targetDirectory,
-			Byte[]?                                             key,
-			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
-		) {
-			var archiveDirectory = StorageHelper.Temporary();
-			StorageHelper.CreateDirectory(archiveDirectory);
-			using var archiveDirectoryFinalizer = new Finalizer(() => {
-				StorageHelper.Remove(archiveDirectory);
-			});
-			// load
-			ZipFile.ExtractToDirectory(archiveFile, archiveDirectory, Encoding.UTF8);
-			// configuration
-			var archiveConfiguration = GameHelper.ParseRecordArchiveConfigurationText(await StorageHelper.ReadFileText($"{archiveDirectory}/configuration.txt"));
-			if (!await doArchiveConfiguration(archiveConfiguration)) {
-				return;
-			}
-			// data
-			StorageHelper.CreateDirectory(targetDirectory);
-			foreach (var dataFile in GameHelper.ListRecordFile($"{archiveDirectory}/data")) {
-				await GameHelper.EncryptRecordFile($"{archiveDirectory}/data/{dataFile}", $"{targetDirectory}/{dataFile}", key);
-			}
-			return;
-		}
-
 		public static async Task ExportRecordArchive (
-			String                                              archiveFile,
 			String                                              targetDirectory,
+			String                                              archiveFile,
 			Byte[]?                                             key,
 			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
 		) {
@@ -238,7 +227,39 @@ namespace KairosoftGameManager.Utility {
 				await GameHelper.EncryptRecordFile($"{targetDirectory}/{dataFile}", $"{archiveDirectory}/data/{dataFile}", key);
 			}
 			// save
+			if (StorageHelper.ExistFile(archiveFile)) {
+				StorageHelper.Trash(archiveFile);
+			}
 			ZipFile.CreateFromDirectory(archiveDirectory, archiveFile, CompressionLevel.SmallestSize, false, Encoding.UTF8);
+			return;
+		}
+
+		public static async Task ImportRecordArchive (
+			String                                              targetDirectory,
+			String                                              archiveFile,
+			Byte[]?                                             key,
+			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
+		) {
+			var archiveDirectory = StorageHelper.Temporary();
+			StorageHelper.CreateDirectory(archiveDirectory);
+			using var archiveDirectoryFinalizer = new Finalizer(() => {
+				StorageHelper.Remove(archiveDirectory);
+			});
+			// load
+			ZipFile.ExtractToDirectory(archiveFile, archiveDirectory, Encoding.UTF8);
+			// configuration
+			var archiveConfiguration = GameHelper.ParseRecordArchiveConfigurationText(await StorageHelper.ReadFileText($"{archiveDirectory}/configuration.txt"));
+			if (!await doArchiveConfiguration(archiveConfiguration)) {
+				return;
+			}
+			// data
+			if (StorageHelper.ExistDirectory(targetDirectory)) {
+				StorageHelper.Trash(targetDirectory);
+			}
+			StorageHelper.CreateDirectory(targetDirectory);
+			foreach (var dataFile in GameHelper.ListRecordFile($"{archiveDirectory}/data")) {
+				await GameHelper.EncryptRecordFile($"{archiveDirectory}/data/{dataFile}", $"{targetDirectory}/{dataFile}", key);
+			}
 			return;
 		}
 

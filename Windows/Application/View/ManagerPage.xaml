@@ -120,16 +120,16 @@
 							/>
 						<MenuFlyoutSeparator />
 						<MenuFlyoutItem
-							Tag="RestoreProgram"
-							Click="{x:Bind Controller.uGameAction_Click}"
-							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.History}}"
-							Text="Restore Program"
-							/>
-						<MenuFlyoutItem
 							Tag="ModifyProgram"
 							Click="{x:Bind Controller.uGameAction_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Repair}}"
 							Text="Modify Program"
+							/>
+						<MenuFlyoutItem
+							Tag="RestoreProgram"
+							Click="{x:Bind Controller.uGameAction_Click}"
+							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.History}}"
+							Text="Restore Program"
 							/>
 						<MenuFlyoutSeparator />
 						<MenuFlyoutItem
@@ -141,21 +141,21 @@
 						<MenuFlyoutItem
 							Tag="DecryptRecord"
 							Click="{x:Bind Controller.uGameAction_Click}"
-							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Permissions}}"
+							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Unlock}}"
 							Text="Decrypt Record"
 							/>
 						<MenuFlyoutSeparator />
-						<MenuFlyoutItem
-							Tag="ImportRecord"
-							Click="{x:Bind Controller.uGameAction_Click}"
-							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Import}}"
-							Text="Import Record"
-							/>
 						<MenuFlyoutItem
 							Tag="ExportRecord"
 							Click="{x:Bind Controller.uGameAction_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Export}}"
 							Text="Export Record"
+							/>
+						<MenuFlyoutItem
+							Tag="ImportRecord"
+							Click="{x:Bind Controller.uGameAction_Click}"
+							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Import}}"
+							Text="Import Record"
 							/>
 					</MenuFlyout>
 				</Button.Flyout>
@@ -364,18 +364,18 @@
 											/>
 										<MenuFlyoutSeparator />
 										<MenuFlyoutItem
-											Tag="RestoreProgram"
-											IsEnabled="{x:Bind uActionRestoreProgram_IsEnabled}"
-											Click="{x:Bind uAction_Click}"
-											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.History}}"
-											Text="Restore Program"
-											/>
-										<MenuFlyoutItem
 											Tag="ModifyProgram"
 											IsEnabled="{x:Bind uActionModifyProgram_IsEnabled}"
 											Click="{x:Bind uAction_Click}"
 											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Repair}}"
 											Text="Modify Program"
+											/>
+										<MenuFlyoutItem
+											Tag="RestoreProgram"
+											IsEnabled="{x:Bind uActionRestoreProgram_IsEnabled}"
+											Click="{x:Bind uAction_Click}"
+											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.History}}"
+											Text="Restore Program"
 											/>
 										<MenuFlyoutSeparator />
 										<MenuFlyoutItem
@@ -389,23 +389,23 @@
 											Tag="DecryptRecord"
 											IsEnabled="{x:Bind uActionDecryptRecord_IsEnabled}"
 											Click="{x:Bind uAction_Click}"
-											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Permissions}}"
+											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Unlock}}"
 											Text="Decrypt Record"
 											/>
 										<MenuFlyoutSeparator />
-										<MenuFlyoutItem
-											Tag="ImportRecord"
-											IsEnabled="{x:Bind uActionImportRecord_IsEnabled}"
-											Click="{x:Bind uAction_Click}"
-											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Import}}"
-											Text="Import Record"
-											/>
 										<MenuFlyoutItem
 											Tag="ExportRecord"
 											IsEnabled="{x:Bind uActionExportRecord_IsEnabled}"
 											Click="{x:Bind uAction_Click}"
 											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Export}}"
 											Text="Export Record"
+											/>
+										<MenuFlyoutItem
+											Tag="ImportRecord"
+											IsEnabled="{x:Bind uActionImportRecord_IsEnabled}"
+											Click="{x:Bind uAction_Click}"
+											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Import}}"
+											Text="Import Record"
 											/>
 									</MenuFlyout>
 								</Button.Flyout>

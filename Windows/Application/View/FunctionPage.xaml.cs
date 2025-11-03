@@ -53,9 +53,11 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public String ArgumentOfEncryptRecordOfTargetDirectory { get; set; } = "";
+		public String ArgumentOfRecordOfTargetDirectory { get; set; } = "";
 
-		public Byte[] ArgumentOfEncryptRecordOfKey { get; set; } = [0x00];
+		public String ArgumentOfRecordOfArchiveFile { get; set; } = "";
+
+		public Byte[] ArgumentOfRecordOfKey { get; set; } = [0x00];
 
 		// ----------------
 
@@ -97,6 +99,8 @@ namespace KairosoftGameManager.View {
 			get {
 				return this.Type switch {
 					GameFunctionType.EncryptRecord => FluentIconGlyph.Unlock,
+					GameFunctionType.ExportRecord  => FluentIconGlyph.Export,
+					GameFunctionType.ImportRecord  => FluentIconGlyph.Import,
 					GameFunctionType.ModifyProgram => FluentIconGlyph.Repair,
 					_                              => throw new UnreachableException(),
 				};
@@ -107,6 +111,8 @@ namespace KairosoftGameManager.View {
 			get {
 				return this.Type switch {
 					GameFunctionType.EncryptRecord => "Encrypt Record",
+					GameFunctionType.ExportRecord  => "Export Record",
+					GameFunctionType.ImportRecord  => "Import Record",
 					GameFunctionType.ModifyProgram => "Modify Program",
 					_                              => throw new UnreachableException(),
 				};
@@ -120,14 +126,20 @@ namespace KairosoftGameManager.View {
 			var senders = sender.As<MenuFlyoutItem>();
 			this.Type = senders.Tag.As<String>() switch {
 				nameof(GameFunctionType.EncryptRecord) => GameFunctionType.EncryptRecord,
+				nameof(GameFunctionType.ExportRecord)  => GameFunctionType.ExportRecord,
+				nameof(GameFunctionType.ImportRecord)  => GameFunctionType.ImportRecord,
 				nameof(GameFunctionType.ModifyProgram) => GameFunctionType.ModifyProgram,
 				_                                      => throw new UnreachableException(),
 			};
 			this.NotifyPropertyChanged([
 				nameof(this.uTypeIcon_Glyph),
 				nameof(this.uTypeName_Text),
-				nameof(this.uArgumentOfEncryptRecord_Visibility),
-				nameof(this.uArgumentOfModifyProgram_Visibility),
+				nameof(this.uArgumentOfRecordOfTargetDirectory_Visibility),
+				nameof(this.uArgumentOfRecordOfArchiveFile_Visibility),
+				nameof(this.uArgumentOfRecordOfKey_Visibility),
+				nameof(this.uArgumentOfModifyProgramOfTarget_Visibility),
+				nameof(this.uArgumentOfModifyProgramOfDisableRecordEncryption_Visibility),
+				nameof(this.uArgumentOfModifyProgramOfEnableDebugMode_Visibility),
 			]);
 			return;
 		}
@@ -136,42 +148,42 @@ namespace KairosoftGameManager.View {
 
 		#region argument
 
-		public Boolean uArgumentOfEncryptRecord_Visibility {
+		public Boolean uArgumentOfRecordOfTargetDirectory_Visibility {
 			get {
-				return this.Type == GameFunctionType.EncryptRecord;
+				return this.Type == GameFunctionType.EncryptRecord
+					|| this.Type == GameFunctionType.ExportRecord
+					|| this.Type == GameFunctionType.ImportRecord;
 			}
 		}
 
-		// ----------------
-
-		public async void uArgumentOfEncryptRecordOfTargetDirectoryEditor_LostFocus (
+		public async void uArgumentOfRecordOfTargetDirectoryEditor_LostFocus (
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			this.ArgumentOfEncryptRecordOfTargetDirectory = StorageHelper.Regularize(senders.Text);
+			this.ArgumentOfRecordOfTargetDirectory = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
-				nameof(this.uArgumentOfEncryptRecordOfTargetDirectoryEditor_Text),
+				nameof(this.uArgumentOfRecordOfTargetDirectoryEditor_Text),
 			]);
 			return;
 		}
 
-		public String uArgumentOfEncryptRecordOfTargetDirectoryEditor_Text {
+		public String uArgumentOfRecordOfTargetDirectoryEditor_Text {
 			get {
-				return this.ArgumentOfEncryptRecordOfTargetDirectory;
+				return this.ArgumentOfRecordOfTargetDirectory;
 			}
 		}
 
-		public async void uArgumentOfEncryptRecordOfTargetDirectoryPicker_Click (
+		public async void uArgumentOfRecordOfTargetDirectoryPicker_Click (
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@EncryptRecord.TargetDirectory");
+			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@Record.TargetDirectory");
 			if (value != null) {
-				this.ArgumentOfEncryptRecordOfTargetDirectory = value;
+				this.ArgumentOfRecordOfTargetDirectory = value;
 				this.NotifyPropertyChanged([
-					nameof(this.uArgumentOfEncryptRecordOfTargetDirectoryEditor_Text),
+					nameof(this.uArgumentOfRecordOfTargetDirectoryEditor_Text),
 				]);
 			}
 			return;
@@ -179,21 +191,75 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uArgumentOfEncryptRecordOfKeyEditor_LostFocus (
+		public Boolean uArgumentOfRecordOfArchiveFile_Visibility {
+			get {
+				return this.Type == GameFunctionType.ExportRecord
+					|| this.Type == GameFunctionType.ImportRecord;
+			}
+		}
+
+		public async void uArgumentOfRecordOfArchiveFileEditor_LostFocus (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<TextBox>();
+			this.ArgumentOfRecordOfArchiveFile = StorageHelper.Regularize(senders.Text);
+			this.NotifyPropertyChanged([
+				nameof(this.uArgumentOfRecordOfArchiveFileEditor_Text),
+			]);
+			return;
+		}
+
+		public String uArgumentOfRecordOfArchiveFileEditor_Text {
+			get {
+				return this.ArgumentOfRecordOfArchiveFile;
+			}
+		}
+
+		public async void uArgumentOfRecordOfArchiveFilePicker_Click (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<Button>();
+			var value = this.Type switch {
+				GameFunctionType.ExportRecord => await StorageHelper.PickSaveFile(App.MainWindow, "@Record.ArchiveFile", $"game.{GameHelper.RecordArchiveFileExtension}"),
+				GameFunctionType.ImportRecord => await StorageHelper.PickLoadFile(App.MainWindow, "@Record.ArchiveFile"),
+				_                             => throw new UnreachableException(),
+			};
+			if (value != null) {
+				this.ArgumentOfRecordOfArchiveFile = value;
+				this.NotifyPropertyChanged([
+					nameof(this.uArgumentOfRecordOfArchiveFileEditor_Text),
+				]);
+			}
+			return;
+		}
+
+		// ----------------
+
+		public Boolean uArgumentOfRecordOfKey_Visibility {
+			get {
+				return this.Type == GameFunctionType.EncryptRecord
+					|| this.Type == GameFunctionType.ExportRecord
+					|| this.Type == GameFunctionType.ImportRecord;
+			}
+		}
+
+		public async void uArgumentOfRecordOfKeyEditor_LostFocus (
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
 			if (senders.Text.Length == 0) {
-				this.ArgumentOfEncryptRecordOfKey = [0x00];
+				this.ArgumentOfRecordOfKey = [0x00];
 			}
 			else if (senders.Text.StartsWith("d32:") && IntegerU32.TryParse(senders.Text["d32:".Length..], out var value32)) {
-				this.ArgumentOfEncryptRecordOfKey = new Byte[4];
-				BinaryPrimitives.WriteUInt32LittleEndian(this.ArgumentOfEncryptRecordOfKey, value32);
+				this.ArgumentOfRecordOfKey = new Byte[4];
+				BinaryPrimitives.WriteUInt32LittleEndian(this.ArgumentOfRecordOfKey, value32);
 			}
 			else if (senders.Text.StartsWith("d64:") && IntegerU64.TryParse(senders.Text["d64:".Length..], out var value64)) {
-				this.ArgumentOfEncryptRecordOfKey = new Byte[8];
-				BinaryPrimitives.WriteUInt64LittleEndian(this.ArgumentOfEncryptRecordOfKey, value64);
+				this.ArgumentOfRecordOfKey = new Byte[8];
+				BinaryPrimitives.WriteUInt64LittleEndian(this.ArgumentOfRecordOfKey, value64);
 			}
 			else {
 				var text = senders.Text.Replace(" ", "");
@@ -201,33 +267,31 @@ namespace KairosoftGameManager.View {
 					if (text.Length % 2 == 1) {
 						text += "0";
 					}
-					this.ArgumentOfEncryptRecordOfKey = new Byte[text.Length / 2];
+					this.ArgumentOfRecordOfKey = new Byte[text.Length / 2];
 					for (var index = 0; index < text.Length / 2; index++) {
-						this.ArgumentOfEncryptRecordOfKey[index] = IntegerU8.Parse(text.Substring(index * 2, 2), NumberStyles.HexNumber);
+						this.ArgumentOfRecordOfKey[index] = IntegerU8.Parse(text.Substring(index * 2, 2), NumberStyles.HexNumber);
 					}
 				}
 			}
 			this.NotifyPropertyChanged([
-				nameof(this.uArgumentOfEncryptRecordOfKeyEditor_Text),
+				nameof(this.uArgumentOfRecordOfKeyEditor_Text),
 			]);
 			return;
 		}
 
-		public String uArgumentOfEncryptRecordOfKeyEditor_Text {
+		public String uArgumentOfRecordOfKeyEditor_Text {
 			get {
-				return String.Join(' ', this.ArgumentOfEncryptRecordOfKey.Select((value) => ($"{value:x2}")));
+				return String.Join(' ', this.ArgumentOfRecordOfKey.Select((value) => ($"{value:x2}")));
 			}
 		}
 
 		// ----------------
 
-		public Boolean uArgumentOfModifyProgram_Visibility {
+		public Boolean uArgumentOfModifyProgramOfTarget_Visibility {
 			get {
 				return this.Type == GameFunctionType.ModifyProgram;
 			}
 		}
-
-		// ----------------
 
 		public async void uArgumentOfModifyProgramOfTargetEditor_LostFocus (
 			Object          sender,
@@ -264,6 +328,12 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
+		public Boolean uArgumentOfModifyProgramOfDisableRecordEncryption_Visibility {
+			get {
+				return this.Type == GameFunctionType.ModifyProgram;
+			}
+		}
+
 		public async void uArgumentOfModifyProgramOfDisableRecordEncryptionEditor_Click (
 			Object          sender,
 			RoutedEventArgs args
@@ -283,6 +353,12 @@ namespace KairosoftGameManager.View {
 		}
 
 		// ----------------
+
+		public Boolean uArgumentOfModifyProgramOfEnableDebugMode_Visibility {
+			get {
+				return this.Type == GameFunctionType.ModifyProgram;
+			}
+		}
 
 		public async void uArgumentOfModifyProgramOfEnableDebugModeEditor_Click (
 			Object          sender,
@@ -332,9 +408,34 @@ namespace KairosoftGameManager.View {
 					switch (this.Type) {
 						case GameFunctionType.EncryptRecord: {
 							await GameHelper.EncryptRecord(
-								this.ArgumentOfEncryptRecordOfTargetDirectory,
-								this.ArgumentOfEncryptRecordOfKey,
+								this.ArgumentOfRecordOfTargetDirectory,
+								this.ArgumentOfRecordOfKey,
 								PublishMessage
+							);
+							break;
+						}
+						case GameFunctionType.ExportRecord: {
+							await GameHelper.ExportRecordArchive(
+								this.ArgumentOfRecordOfTargetDirectory,
+								this.ArgumentOfRecordOfArchiveFile,
+								this.ArgumentOfRecordOfKey,
+								async (archiveConfiguration) => {
+									archiveConfiguration.Platform = "unknown";
+									archiveConfiguration.Identifier = "unknown";
+									archiveConfiguration.Version = "unknown";
+									return true;
+								}
+							);
+							break;
+						}
+						case GameFunctionType.ImportRecord: {
+							await GameHelper.ImportRecordArchive(
+								this.ArgumentOfRecordOfTargetDirectory,
+								this.ArgumentOfRecordOfArchiveFile,
+								this.ArgumentOfRecordOfKey,
+								async (archiveConfiguration) => {
+									return true;
+								}
 							);
 							break;
 						}

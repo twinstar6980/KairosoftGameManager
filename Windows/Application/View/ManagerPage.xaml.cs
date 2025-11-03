@@ -80,11 +80,15 @@ namespace KairosoftGameManager.View {
 			]);
 			var hideDialog = await ControlHelper.ShowDialogForWait(this.View);
 			try {
-				AssertTest(await GameHelper.CheckRepositoryDirectory(App.Setting.Data.RepositoryDirectory));
-				var gameConfigurationList = await GameHelper.ListGameInRepository(App.Setting.Data.RepositoryDirectory);
-				gameConfigurationList.Sort((left, right) => (String.CompareOrdinal(left.Name, right.Name)));
-				foreach (var gameConfiguration in gameConfigurationList) {
-					this.uGameList_ItemsSource.Add(new () { Host = this, Configuration = gameConfiguration });
+				if (!await GameHelper.CheckRepositoryDirectory(App.Setting.Data.RepositoryDirectory)) {
+					await App.MainWindow.PushNotification(InfoBarSeverity.Warning, "The specified repository directory is not the Steam root.", "");
+				}
+				else {
+					var gameConfigurationList = await GameHelper.ListGameInRepository(App.Setting.Data.RepositoryDirectory);
+					gameConfigurationList.Sort((left, right) => (String.CompareOrdinal(left.Name, right.Name)));
+					foreach (var gameConfiguration in gameConfigurationList) {
+						this.uGameList_ItemsSource.Add(new () { Host = this, Configuration = gameConfiguration });
+					}
 				}
 			}
 			catch (Exception e) {
@@ -110,12 +114,12 @@ namespace KairosoftGameManager.View {
 				nameof(gameController.uProgramText_Text),
 				nameof(gameController.uRecordBadge_Style),
 				nameof(gameController.uRecordText_Text),
-				nameof(gameController.uActionRestoreProgram_IsEnabled),
 				nameof(gameController.uActionModifyProgram_IsEnabled),
+				nameof(gameController.uActionRestoreProgram_IsEnabled),
 				nameof(gameController.uActionEncryptRecord_IsEnabled),
 				nameof(gameController.uActionDecryptRecord_IsEnabled),
-				nameof(gameController.uActionImportRecord_IsEnabled),
 				nameof(gameController.uActionExportRecord_IsEnabled),
+				nameof(gameController.uActionImportRecord_IsEnabled),
 			]);
 			return;
 		}
@@ -143,18 +147,6 @@ namespace KairosoftGameManager.View {
 					}
 					case "LaunchGame": {
 						await ProcessHelper.RunProcess($"{game.Path}/{GameHelper.ExecutableFile}", [], null, false);
-						break;
-					}
-					case "RestoreProgram": {
-						if (game.Program != GameProgramState.Modified) {
-							cancelled = true;
-							break;
-						}
-						var programFile = $"{game.Path}/{GameHelper.ProgramFile}";
-						var backupFile = $"{game.Path}/{GameHelper.ProgramFile}.{game.Version}.bak";
-						StorageHelper.Trash(programFile);
-						StorageHelper.Rename(backupFile, programFile);
-						shouldReload = true;
 						break;
 					}
 					case "ModifyProgram": {
@@ -225,6 +217,18 @@ namespace KairosoftGameManager.View {
 						shouldReload = true;
 						break;
 					}
+					case "RestoreProgram": {
+						if (game.Program != GameProgramState.Modified) {
+							cancelled = true;
+							break;
+						}
+						var programFile = $"{game.Path}/{GameHelper.ProgramFile}";
+						var backupFile = $"{game.Path}/{GameHelper.ProgramFile}.{game.Version}.bak";
+						StorageHelper.Trash(programFile);
+						StorageHelper.Rename(backupFile, programFile);
+						shouldReload = true;
+						break;
+					}
 					case "EncryptRecord": {
 						if (game.Record != GameRecordState.Decrypted) {
 							cancelled = true;
@@ -253,9 +257,35 @@ namespace KairosoftGameManager.View {
 						shouldReload = true;
 						break;
 					}
+					case "ExportRecord": {
+						if (game.Record != GameRecordState.Original && game.Record != GameRecordState.Decrypted) {
+							cancelled = true;
+							break;
+						}
+						var shouldEncrypt = game.Record == GameRecordState.Original;
+						var archiveFile = await StorageHelper.PickSaveFile(App.MainWindow, "@RecordFile", $"{game.Name}.{GameHelper.RecordArchiveFileExtension}");
+						if (archiveFile == null) {
+							cancelled = true;
+							break;
+						}
+						var recordDirectory = $"{game.Path}/{GameHelper.RecordBundleDirectory}/{game.User}";
+						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GameHelper.GetPlatformSystemName(GamePlatform.WindowsIntel32), Identifier = game.Identifier, Version = game.Version };
+						await GameHelper.ExportRecordArchive(
+							recordDirectory,
+							archiveFile,
+							!shouldEncrypt ? null : GameHelper.ConvertKeyFromUser(game.User),
+							async (archiveConfiguration) => {
+								archiveConfiguration.Platform = archiveConfigurationForLocal.Platform;
+								archiveConfiguration.Identifier = archiveConfigurationForLocal.Identifier;
+								archiveConfiguration.Version = archiveConfigurationForLocal.Version;
+								return true;
+							}
+						);
+						break;
+					}
 					case "ImportRecord": {
-						var shouldEncrypt = false;
-						if (!(game.Record == GameRecordState.Original || game.Record == GameRecordState.Decrypted)) {
+						var shouldEncrypt = game.Record == GameRecordState.Original;
+						if (game.Record != GameRecordState.Original && game.Record != GameRecordState.Decrypted) {
 							if (temporaryState != null) {
 								var temporaryData = temporaryState.As<Tuple<Boolean>>();
 								shouldEncrypt = temporaryData.Item1;
@@ -302,19 +332,16 @@ namespace KairosoftGameManager.View {
 								temporaryStateMap.Add(action, new Tuple<Boolean>(shouldEncrypt));
 							}
 						}
-						else {
-							shouldEncrypt = game.Record == GameRecordState.Original;
-						}
 						var archiveFile = await StorageHelper.PickLoadFile(App.MainWindow, "@RecordFile");
 						if (archiveFile == null) {
 							cancelled = true;
 							break;
 						}
 						var recordDirectory = $"{game.Path}/{GameHelper.RecordBundleDirectory}/{game.User}";
-						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.WindowsIntel32.ToString().ToLower(), Identifier = game.Identifier, Version = game.Version };
+						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GameHelper.GetPlatformSystemName(GamePlatform.WindowsIntel32), Identifier = game.Identifier, Version = game.Version };
 						await GameHelper.ImportRecordArchive(
-							archiveFile,
 							recordDirectory,
+							archiveFile,
 							!shouldEncrypt ? null : GameHelper.ConvertKeyFromUser(game.User),
 							async (archiveConfiguration) => {
 								if (archiveConfiguration != archiveConfigurationForLocal) {
@@ -323,42 +350,10 @@ namespace KairosoftGameManager.View {
 										return false;
 									}
 								}
-								if (StorageHelper.ExistDirectory(recordDirectory)) {
-									StorageHelper.Trash(recordDirectory);
-								}
 								return true;
 							}
 						);
 						shouldReload = true;
-						break;
-					}
-					case "ExportRecord": {
-						var shouldEncrypt = false;
-						if (game.Record != GameRecordState.Original && game.Record != GameRecordState.Decrypted) {
-							cancelled = true;
-							break;
-						}
-						else {
-							shouldEncrypt = game.Record == GameRecordState.Original;
-						}
-						var archiveFile = await StorageHelper.PickSaveFile(App.MainWindow, "@RecordFile", $"{game.Name}.{GameHelper.RecordArchiveFileExtension}");
-						if (archiveFile == null) {
-							cancelled = true;
-							break;
-						}
-						var recordDirectory = $"{game.Path}/{GameHelper.RecordBundleDirectory}/{game.User}";
-						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GamePlatform.WindowsIntel32.ToString().ToLower(), Identifier = game.Identifier, Version = game.Version };
-						await GameHelper.ExportRecordArchive(
-							archiveFile,
-							recordDirectory,
-							!shouldEncrypt ? null : GameHelper.ConvertKeyFromUser(game.User),
-							async (archiveConfiguration) => {
-								archiveConfiguration.Platform = archiveConfigurationForLocal.Platform;
-								archiveConfiguration.Identifier = archiveConfigurationForLocal.Identifier;
-								archiveConfiguration.Version = archiveConfigurationForLocal.Version;
-								return true;
-							}
-						);
 						break;
 					}
 					default: throw new UnreachableException();
@@ -555,15 +550,15 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public Boolean uActionRestoreProgram_IsEnabled {
-			get {
-				return this.Configuration.Program == GameProgramState.Modified;
-			}
-		}
-
 		public Boolean uActionModifyProgram_IsEnabled {
 			get {
 				return this.Configuration.Program == GameProgramState.Original || this.Configuration.Program == GameProgramState.Modified;
+			}
+		}
+
+		public Boolean uActionRestoreProgram_IsEnabled {
+			get {
+				return this.Configuration.Program == GameProgramState.Modified;
 			}
 		}
 
@@ -579,15 +574,15 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public Boolean uActionImportRecord_IsEnabled {
-			get {
-				return true;
-			}
-		}
-
 		public Boolean uActionExportRecord_IsEnabled {
 			get {
 				return this.Configuration.Record == GameRecordState.Original || this.Configuration.Record == GameRecordState.Decrypted;
+			}
+		}
+
+		public Boolean uActionImportRecord_IsEnabled {
+			get {
+				return true;
 			}
 		}
 
