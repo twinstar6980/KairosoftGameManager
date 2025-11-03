@@ -47,7 +47,7 @@ def execute_command(location: str, command: list[str], environment: dict[str, st
 # ----------------
 
 def get_project() -> str:
-    return f'{pathlib.Path(__file__).absolute().parent.parent.parent}'
+    return f'{pathlib.Path(__file__).absolute().parent.parent.parent.as_posix()}'
 
 def get_project_module(path: str) -> tuple[str, str]:
     name = pathlib.Path(path).parent.name
@@ -59,7 +59,7 @@ def get_project_local() -> str:
 
 def get_project_certificate(type: str) -> tuple[str | None, str]:
     file = f'{get_project_local()}/certificate/file.{type}'
-    if not pathlib.Path.is_file(file):
+    if not pathlib.Path(file).is_file():
         return (None, '')
     password = fs_read_file(f'{get_project_local()}/certificate/password.{type}.txt')
     return (file, password)
