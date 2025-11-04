@@ -31,6 +31,7 @@
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Center"
 				HorizontalContentAlignment="Stretch"
+				Flyout="{x:Bind Controller.uRepositoryDirectoryList_Flyout}"
 				>
 				<my:Stack
 					HorizontalAlignment="Stretch"
@@ -48,6 +49,8 @@
 						my:Stack.Weight="1"
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
+						Foreground="{x:Bind Controller.uRepositoryDirectoryText_Foreground}"
+						Style="{ThemeResource BodyTextBlockStyle}"
 						TextWrapping="NoWrap"
 						Text="{x:Bind Controller.uRepositoryDirectoryText_Text}"
 						/>
@@ -55,25 +58,9 @@
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
 						Style="{StaticResource AttentionValueInfoBadgeStyle}"
-						Value="{x:Bind Controller.uRepositoryDirectoryCount_Value}"
+						Value="{x:Bind Controller.uRepositoryDirectoryGameCount_Value}"
 						/>
 				</my:Stack>
-				<DropDownButton.Flyout>
-					<MenuFlyout Placement="BottomEdgeAlignedLeft">
-						<MenuFlyoutItem
-							Tag="Reload"
-							Click="{x:Bind Controller.uRepositoryDirectoryAction_Click}"
-							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Refresh}}"
-							Text="Reload"
-							/>
-						<MenuFlyoutItem
-							Tag="Reselect"
-							Click="{x:Bind Controller.uRepositoryDirectoryAction_Click}"
-							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.FolderOpen}}"
-							Text="Reselect"
-							/>
-					</MenuFlyout>
-				</DropDownButton.Flyout>
 			</DropDownButton>
 			<Button
 				HorizontalAlignment="Stretch"
@@ -94,6 +81,7 @@
 					<TextBlock
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
+						Style="{StaticResource BodyTextBlockStyle}"
 						TextWrapping="NoWrap"
 						Text="Action"
 						/>
@@ -248,7 +236,7 @@
 											VerticalAlignment="Center"
 											Width="8"
 											Height="8"
-											Style="{StaticResource SuccessIconInfoBadgeStyle}"
+											Style="{x:Bind uIdentifierBadge_Style}"
 											/>
 										<TextBlock
 											HorizontalAlignment="Stretch"
@@ -272,7 +260,7 @@
 											VerticalAlignment="Center"
 											Width="8"
 											Height="8"
-											Style="{StaticResource SuccessIconInfoBadgeStyle}"
+											Style="{x:Bind uVersionBadge_Style}"
 											/>
 										<TextBlock
 											HorizontalAlignment="Stretch"

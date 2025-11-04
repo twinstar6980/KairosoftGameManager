@@ -49,7 +49,15 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public GameFunctionType Type { get; set; } = GameFunctionType.EncryptRecord;
+		public GameFunctionType Type { get; set; } = GameFunctionType.ModifyProgram;
+
+		// ----------------
+
+		public String ArgumentOfProgramOfTarget { get; set; } = "";
+
+		public Boolean ArgumentOfProgramOfDisableRecordEncryption { get; set; } = true;
+
+		public Boolean ArgumentOfProgramOfEnableDebugMode { get; set; } = false;
 
 		// ----------------
 
@@ -57,15 +65,7 @@ namespace KairosoftGameManager.View {
 
 		public String ArgumentOfRecordOfArchiveFile { get; set; } = "";
 
-		public Byte[] ArgumentOfRecordOfKey { get; set; } = [0x00];
-
-		// ----------------
-
-		public String ArgumentOfModifyProgramOfTarget { get; set; } = "";
-
-		public Boolean ArgumentOfModifyProgramOfDisableRecordEncryption { get; set; } = true;
-
-		public Boolean ArgumentOfModifyProgramOfEnableDebugMode { get; set; } = false;
+		public List<Byte> ArgumentOfRecordOfKey { get; set; } = [0x00];
 
 		// ----------------
 
@@ -98,10 +98,10 @@ namespace KairosoftGameManager.View {
 		public String uTypeIcon_Glyph {
 			get {
 				return this.Type switch {
+					GameFunctionType.ModifyProgram => FluentIconGlyph.Repair,
 					GameFunctionType.EncryptRecord => FluentIconGlyph.Unlock,
 					GameFunctionType.ExportRecord  => FluentIconGlyph.Export,
 					GameFunctionType.ImportRecord  => FluentIconGlyph.Import,
-					GameFunctionType.ModifyProgram => FluentIconGlyph.Repair,
 					_                              => throw new UnreachableException(),
 				};
 			}
@@ -110,10 +110,10 @@ namespace KairosoftGameManager.View {
 		public String uTypeName_Text {
 			get {
 				return this.Type switch {
+					GameFunctionType.ModifyProgram => "Modify Program",
 					GameFunctionType.EncryptRecord => "Encrypt Record",
 					GameFunctionType.ExportRecord  => "Export Record",
 					GameFunctionType.ImportRecord  => "Import Record",
-					GameFunctionType.ModifyProgram => "Modify Program",
 					_                              => throw new UnreachableException(),
 				};
 			}
@@ -125,28 +125,123 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<MenuFlyoutItem>();
 			this.Type = senders.Tag.As<String>() switch {
+				nameof(GameFunctionType.ModifyProgram) => GameFunctionType.ModifyProgram,
 				nameof(GameFunctionType.EncryptRecord) => GameFunctionType.EncryptRecord,
 				nameof(GameFunctionType.ExportRecord)  => GameFunctionType.ExportRecord,
 				nameof(GameFunctionType.ImportRecord)  => GameFunctionType.ImportRecord,
-				nameof(GameFunctionType.ModifyProgram) => GameFunctionType.ModifyProgram,
 				_                                      => throw new UnreachableException(),
 			};
 			this.NotifyPropertyChanged([
 				nameof(this.uTypeIcon_Glyph),
 				nameof(this.uTypeName_Text),
+				nameof(this.uArgumentOfProgramOfTarget_Visibility),
+				nameof(this.uArgumentOfProgramOfDisableRecordEncryption_Visibility),
+				nameof(this.uArgumentOfProgramOfEnableDebugMode_Visibility),
 				nameof(this.uArgumentOfRecordOfTargetDirectory_Visibility),
 				nameof(this.uArgumentOfRecordOfArchiveFile_Visibility),
 				nameof(this.uArgumentOfRecordOfKey_Visibility),
-				nameof(this.uArgumentOfModifyProgramOfTarget_Visibility),
-				nameof(this.uArgumentOfModifyProgramOfDisableRecordEncryption_Visibility),
-				nameof(this.uArgumentOfModifyProgramOfEnableDebugMode_Visibility),
 			]);
 			return;
 		}
 
 		#endregion
 
-		#region argument
+		#region argument of program
+
+		public Boolean uArgumentOfProgramOfTarget_Visibility {
+			get {
+				return this.Type == GameFunctionType.ModifyProgram;
+			}
+		}
+
+		public async void uArgumentOfProgramOfTargetEditor_LostFocus (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<TextBox>();
+			this.ArgumentOfProgramOfTarget = StorageHelper.Regularize(senders.Text);
+			this.NotifyPropertyChanged([
+				nameof(this.uArgumentOfProgramOfTargetEditor_Text),
+			]);
+			return;
+		}
+
+		public String uArgumentOfProgramOfTargetEditor_Text {
+			get {
+				return this.ArgumentOfProgramOfTarget;
+			}
+		}
+
+		public async void uArgumentOfProgramOfTargetPicker_Click (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<MenuFlyoutItem>();
+			var value = await StorageHelper.Pick($"Load{senders.Tag}", App.MainWindow, "@Function.Program.Target", null);
+			if (value != null) {
+				this.ArgumentOfProgramOfTarget = value;
+				this.NotifyPropertyChanged([
+					nameof(this.uArgumentOfProgramOfTargetEditor_Text),
+				]);
+			}
+			return;
+		}
+
+		// ----------------
+
+		public Boolean uArgumentOfProgramOfDisableRecordEncryption_Visibility {
+			get {
+				return this.Type == GameFunctionType.ModifyProgram;
+			}
+		}
+
+		public async void uArgumentOfProgramOfDisableRecordEncryptionEditor_Click (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<Button>();
+			this.ArgumentOfProgramOfDisableRecordEncryption = !this.ArgumentOfProgramOfDisableRecordEncryption;
+			this.NotifyPropertyChanged([
+				nameof(this.uArgumentOfProgramOfDisableRecordEncryptionEditor_Content),
+			]);
+			return;
+		}
+
+		public String uArgumentOfProgramOfDisableRecordEncryptionEditor_Content {
+			get {
+				return ConvertHelper.MakeBooleanToStringOfConfirmation(this.ArgumentOfProgramOfDisableRecordEncryption);
+			}
+		}
+
+		// ----------------
+
+		public Boolean uArgumentOfProgramOfEnableDebugMode_Visibility {
+			get {
+				return this.Type == GameFunctionType.ModifyProgram;
+			}
+		}
+
+		public async void uArgumentOfProgramOfEnableDebugModeEditor_Click (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<Button>();
+			this.ArgumentOfProgramOfEnableDebugMode = !this.ArgumentOfProgramOfEnableDebugMode;
+			this.NotifyPropertyChanged([
+				nameof(this.uArgumentOfProgramOfEnableDebugModeEditor_Content),
+			]);
+			return;
+		}
+
+		public String uArgumentOfProgramOfEnableDebugModeEditor_Content {
+			get {
+				return ConvertHelper.MakeBooleanToStringOfConfirmation(this.ArgumentOfProgramOfEnableDebugMode);
+			}
+		}
+
+		#endregion
+
+		#region argument of record
 
 		public Boolean uArgumentOfRecordOfTargetDirectory_Visibility {
 			get {
@@ -179,7 +274,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@Record.TargetDirectory");
+			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@Function.Record.TargetDirectory");
 			if (value != null) {
 				this.ArgumentOfRecordOfTargetDirectory = value;
 				this.NotifyPropertyChanged([
@@ -222,8 +317,8 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<Button>();
 			var value = this.Type switch {
-				GameFunctionType.ExportRecord => await StorageHelper.PickSaveFile(App.MainWindow, "@Record.ArchiveFile", $"game.{GameHelper.RecordArchiveFileExtension}"),
-				GameFunctionType.ImportRecord => await StorageHelper.PickLoadFile(App.MainWindow, "@Record.ArchiveFile"),
+				GameFunctionType.ExportRecord => await StorageHelper.PickSaveFile(App.MainWindow, "@Function.Record.ArchiveFile", $"game.{GameHelper.RecordArchiveFileExtension}"),
+				GameFunctionType.ImportRecord => await StorageHelper.PickLoadFile(App.MainWindow, "@Function.Record.ArchiveFile"),
 				_                             => throw new UnreachableException(),
 			};
 			if (value != null) {
@@ -254,12 +349,14 @@ namespace KairosoftGameManager.View {
 				this.ArgumentOfRecordOfKey = [0x00];
 			}
 			else if (senders.Text.StartsWith("d32:") && IntegerU32.TryParse(senders.Text["d32:".Length..], out var value32)) {
-				this.ArgumentOfRecordOfKey = new Byte[4];
-				BinaryPrimitives.WriteUInt32LittleEndian(this.ArgumentOfRecordOfKey, value32);
+				this.ArgumentOfRecordOfKey = new Byte[4].SelfAlso((it) => {
+					BinaryPrimitives.WriteUInt32LittleEndian(it, value32);
+				}).ToList();
 			}
 			else if (senders.Text.StartsWith("d64:") && IntegerU64.TryParse(senders.Text["d64:".Length..], out var value64)) {
-				this.ArgumentOfRecordOfKey = new Byte[8];
-				BinaryPrimitives.WriteUInt64LittleEndian(this.ArgumentOfRecordOfKey, value64);
+				this.ArgumentOfRecordOfKey = new Byte[8].SelfAlso((it) => {
+					BinaryPrimitives.WriteUInt64LittleEndian(it, value64);
+				}).ToList();
 			}
 			else {
 				var text = senders.Text.Replace(" ", "");
@@ -267,10 +364,11 @@ namespace KairosoftGameManager.View {
 					if (text.Length % 2 == 1) {
 						text += "0";
 					}
-					this.ArgumentOfRecordOfKey = new Byte[text.Length / 2];
-					for (var index = 0; index < text.Length / 2; index++) {
-						this.ArgumentOfRecordOfKey[index] = IntegerU8.Parse(text.Substring(index * 2, 2), NumberStyles.HexNumber);
-					}
+					this.ArgumentOfRecordOfKey = new Byte[text.Length / 2].SelfAlso((it) => {
+						for (var index = 0; index < text.Length / 2; index++) {
+							it[index] = IntegerU8.Parse(text.Substring(index * 2, 2), NumberStyles.HexNumber);
+						}
+					}).ToList();
 				}
 			}
 			this.NotifyPropertyChanged([
@@ -282,99 +380,6 @@ namespace KairosoftGameManager.View {
 		public String uArgumentOfRecordOfKeyEditor_Text {
 			get {
 				return String.Join(' ', this.ArgumentOfRecordOfKey.Select((value) => ($"{value:x2}")));
-			}
-		}
-
-		// ----------------
-
-		public Boolean uArgumentOfModifyProgramOfTarget_Visibility {
-			get {
-				return this.Type == GameFunctionType.ModifyProgram;
-			}
-		}
-
-		public async void uArgumentOfModifyProgramOfTargetEditor_LostFocus (
-			Object          sender,
-			RoutedEventArgs args
-		) {
-			var senders = sender.As<TextBox>();
-			this.ArgumentOfModifyProgramOfTarget = StorageHelper.Regularize(senders.Text);
-			this.NotifyPropertyChanged([
-				nameof(this.uArgumentOfModifyProgramOfTargetEditor_Text),
-			]);
-			return;
-		}
-
-		public String uArgumentOfModifyProgramOfTargetEditor_Text {
-			get {
-				return this.ArgumentOfModifyProgramOfTarget;
-			}
-		}
-
-		public async void uArgumentOfModifyProgramOfTargetPicker_Click (
-			Object          sender,
-			RoutedEventArgs args
-		) {
-			var senders = sender.As<MenuFlyoutItem>();
-			var value = await StorageHelper.Pick($"Load{senders.Tag}", App.MainWindow, "@ModifyProgram.Target", null);
-			if (value != null) {
-				this.ArgumentOfModifyProgramOfTarget = value;
-				this.NotifyPropertyChanged([
-					nameof(this.uArgumentOfModifyProgramOfTargetEditor_Text),
-				]);
-			}
-			return;
-		}
-
-		// ----------------
-
-		public Boolean uArgumentOfModifyProgramOfDisableRecordEncryption_Visibility {
-			get {
-				return this.Type == GameFunctionType.ModifyProgram;
-			}
-		}
-
-		public async void uArgumentOfModifyProgramOfDisableRecordEncryptionEditor_Click (
-			Object          sender,
-			RoutedEventArgs args
-		) {
-			var senders = sender.As<Button>();
-			this.ArgumentOfModifyProgramOfDisableRecordEncryption = !this.ArgumentOfModifyProgramOfDisableRecordEncryption;
-			this.NotifyPropertyChanged([
-				nameof(this.uArgumentOfModifyProgramOfDisableRecordEncryptionEditor_Content),
-			]);
-			return;
-		}
-
-		public String uArgumentOfModifyProgramOfDisableRecordEncryptionEditor_Content {
-			get {
-				return ConvertHelper.MakeBooleanToStringOfConfirmation(this.ArgumentOfModifyProgramOfDisableRecordEncryption);
-			}
-		}
-
-		// ----------------
-
-		public Boolean uArgumentOfModifyProgramOfEnableDebugMode_Visibility {
-			get {
-				return this.Type == GameFunctionType.ModifyProgram;
-			}
-		}
-
-		public async void uArgumentOfModifyProgramOfEnableDebugModeEditor_Click (
-			Object          sender,
-			RoutedEventArgs args
-		) {
-			var senders = sender.As<Button>();
-			this.ArgumentOfModifyProgramOfEnableDebugMode = !this.ArgumentOfModifyProgramOfEnableDebugMode;
-			this.NotifyPropertyChanged([
-				nameof(this.uArgumentOfModifyProgramOfEnableDebugModeEditor_Content),
-			]);
-			return;
-		}
-
-		public String uArgumentOfModifyProgramOfEnableDebugModeEditor_Content {
-			get {
-				return ConvertHelper.MakeBooleanToStringOfConfirmation(this.ArgumentOfModifyProgramOfEnableDebugMode);
 			}
 		}
 
@@ -406,6 +411,16 @@ namespace KairosoftGameManager.View {
 				PublishMessage($"Starting at {DateTime.Now:HH:mm:ss}.");
 				await Task.Run(async () => {
 					switch (this.Type) {
+						case GameFunctionType.ModifyProgram: {
+							await GameHelper.ModifyProgram(
+								this.ArgumentOfProgramOfTarget,
+								this.ArgumentOfProgramOfDisableRecordEncryption,
+								this.ArgumentOfProgramOfEnableDebugMode,
+								ExternalToolHelper.ParseSetting(App.Setting.Data.ExternalTool),
+								PublishMessage
+							);
+							break;
+						}
 						case GameFunctionType.EncryptRecord: {
 							await GameHelper.EncryptRecord(
 								this.ArgumentOfRecordOfTargetDirectory,
@@ -436,16 +451,6 @@ namespace KairosoftGameManager.View {
 								async (archiveConfiguration) => {
 									return true;
 								}
-							);
-							break;
-						}
-						case GameFunctionType.ModifyProgram: {
-							await GameHelper.ModifyProgram(
-								this.ArgumentOfModifyProgramOfTarget,
-								this.ArgumentOfModifyProgramOfDisableRecordEncryption,
-								this.ArgumentOfModifyProgramOfEnableDebugMode,
-								ExternalToolHelper.ParseSetting(App.Setting.Data.ExternalTool),
-								PublishMessage
 							);
 							break;
 						}

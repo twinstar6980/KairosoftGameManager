@@ -5,16 +5,16 @@ using KairosoftGameManager;
 
 namespace KairosoftGameManager.Utility {
 
-	public partial class Finalizer : IDisposable {
+	public partial class Finalizer : IDisposable, IAsyncDisposable {
 
-		#region structor
+		#region constructor
 
-		private Action mAction;
+		private Func<Task> mAction;
 
 		// ----------------
 
 		public Finalizer (
-			Action action
+			Func<Task> action
 		) {
 			this.mAction = action;
 			return;
@@ -27,6 +27,17 @@ namespace KairosoftGameManager.Utility {
 		public void Dispose (
 		) {
 			this.mAction();
+			GC.SuppressFinalize(this);
+			return;
+		}
+
+		#endregion
+
+		#region implement IAsyncDisposable
+
+		public async ValueTask DisposeAsync (
+		) {
+			await this.mAction();
 			GC.SuppressFinalize(this);
 			return;
 		}

@@ -46,6 +46,10 @@ namespace KairosoftGameManager.View {
 
 		public ManagerPage View { get; init; } = default!;
 
+		// ----------------
+
+		public String? ActiveRepositoryDirectory { get; set; } = null;
+
 		#endregion
 
 		#region life
@@ -58,12 +62,17 @@ namespace KairosoftGameManager.View {
 		public async Task UpdateView (
 		) {
 			await Task.Delay(200); // wait for LostFocus event on SettingPage
-			if (App.Setting.State.CurrentRepositoryDirectory != App.Setting.Data.RepositoryDirectory) {
+			if (!App.Setting.State.CurrentRepositoryDirectory.SequenceEqual(App.Setting.Data.RepositoryDirectory)) {
+				App.Setting.State.CurrentRepositoryDirectory = [..App.Setting.Data.RepositoryDirectory];
 				this.NotifyPropertyChanged([
-					nameof(this.uRepositoryDirectoryText_Text),
+					nameof(this.uRepositoryDirectoryList_Flyout),
 				]);
-				await this.LoadRepository();
-				App.Setting.State.CurrentRepositoryDirectory = App.Setting.Data.RepositoryDirectory;
+				if (App.Setting.State.CurrentRepositoryDirectory.Count == 0) {
+					await this.LoadRepository(null);
+				}
+				else if (this.ActiveRepositoryDirectory == null || !App.Setting.State.CurrentRepositoryDirectory.Contains(this.ActiveRepositoryDirectory)) {
+					await this.LoadRepository(App.Setting.Data.RepositoryDirectory.First());
+				}
 			}
 			return;
 		}
@@ -73,30 +82,42 @@ namespace KairosoftGameManager.View {
 		#region action
 
 		public async Task LoadRepository (
+			String? repositoryDirectory
 		) {
 			this.uGameList_ItemsSource.Clear();
+			this.ActiveRepositoryDirectory = repositoryDirectory;
 			this.NotifyPropertyChanged([
-				nameof(this.uRepositoryDirectoryCount_Value),
+				nameof(this.uRepositoryDirectoryText_Foreground),
+				nameof(this.uRepositoryDirectoryText_Text),
+				nameof(this.uRepositoryDirectoryGameCount_Value),
 			]);
-			var hideDialog = await ControlHelper.ShowDialogForWait(this.View);
+			if (repositoryDirectory == null) {
+				return;
+			}
 			try {
-				if (!await GameHelper.CheckRepositoryDirectory(App.Setting.Data.RepositoryDirectory)) {
-					await App.MainWindow.PushNotification(InfoBarSeverity.Warning, "The specified repository directory is not the Steam root.", "");
+				await using var hideDialogFinalizer = new Finalizer(await ControlHelper.ShowDialogForWait(this.View));
+				var gameList = null as List<GameConfiguration>;
+				if (await GameHelper.CheckSteamRepository(repositoryDirectory)) {
+					gameList = await GameHelper.LoadSteamRepository(repositoryDirectory);
+				}
+				else if (await GameHelper.CheckCustomRepository(repositoryDirectory)) {
+					gameList = await GameHelper.LoadCustomRepository(repositoryDirectory);
+				}
+				if (gameList == null) {
+					await App.MainWindow.PushNotification(InfoBarSeverity.Warning, "The specified repository directory is invalid.", "");
 				}
 				else {
-					var gameConfigurationList = await GameHelper.ListGameInRepository(App.Setting.Data.RepositoryDirectory);
-					gameConfigurationList.Sort((left, right) => (String.CompareOrdinal(left.Name, right.Name)));
-					foreach (var gameConfiguration in gameConfigurationList) {
-						this.uGameList_ItemsSource.Add(new () { Host = this, Configuration = gameConfiguration });
+					gameList.Sort((left, right) => (String.CompareOrdinal(left.Name, right.Name)));
+					foreach (var game in gameList) {
+						this.uGameList_ItemsSource.Add(new () { Host = this, Configuration = game });
 					}
 				}
 			}
 			catch (Exception e) {
 				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed to load repository.", ExceptionHelper.GenerateMessage(e));
 			}
-			await hideDialog();
 			this.NotifyPropertyChanged([
-				nameof(this.uRepositoryDirectoryCount_Value),
+				nameof(this.uRepositoryDirectoryGameCount_Value),
 			]);
 			return;
 		}
@@ -104,11 +125,19 @@ namespace KairosoftGameManager.View {
 		public async Task ReloadGame (
 			ManagerPageGameItemController gameController
 		) {
-			gameController.Configuration = (await GameHelper.LoadGameConfiguration(gameController.Configuration.Library, gameController.Configuration.Identifier)).AsNotNull();
+			if (gameController.Configuration.Library == null) {
+				gameController.Configuration = (await GameHelper.LoadCustomGame(gameController.Configuration.Path)).AsNotNull();
+			}
+			else {
+				gameController.Configuration = (await GameHelper.LoadSteamGame(gameController.Configuration.Library, gameController.Configuration.Identifier.AsNotNull())).AsNotNull();
+			}
 			gameController.NotifyPropertyChanged([
 				nameof(gameController.uIcon_Source),
+				nameof(gameController.uName_ToolTip),
 				nameof(gameController.uName_Text),
+				nameof(gameController.uIdentifierBadge_Style),
 				nameof(gameController.uIdentifierText_Text),
+				nameof(gameController.uVersionBadge_Style),
 				nameof(gameController.uVersionText_Text),
 				nameof(gameController.uProgramBadge_Style),
 				nameof(gameController.uProgramText_Text),
@@ -131,8 +160,13 @@ namespace KairosoftGameManager.View {
 		) {
 			var state = true as Boolean?;
 			var shouldReload = false;
-			var hideDialog = await ControlHelper.ShowDialogForWait(this.View);
+			await using var shouldReloadFinalizer = new Finalizer(async () => {
+				if (shouldReload) {
+					await this.ReloadGame(gameController);
+				}
+			});
 			try {
+				await using var hideDialogFinalizer = new Finalizer(await ControlHelper.ShowDialogForWait(this.View));
 				var cancelled = false;
 				var game = gameController.Configuration;
 				var temporaryState = temporaryStateMap.GetValueOrDefault(action);
@@ -150,6 +184,7 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "ModifyProgram": {
+						shouldReload = true;
 						if (game.Program != GameProgramState.Original && game.Program != GameProgramState.Modified) {
 							cancelled = true;
 							break;
@@ -199,7 +234,7 @@ namespace KairosoftGameManager.View {
 							temporaryStateMap.Add(action, new Tuple<Boolean, Boolean>(argumentDisableRecordEncryption, argumentEnableDebugMode));
 						}
 						var programFile = $"{game.Path}/{GameHelper.ProgramFile}";
-						var backupFile = $"{game.Path}/{GameHelper.ProgramFile}.{game.Version}.bak";
+						var backupFile = $"{game.Path}/{GameHelper.ProgramFile}.{game.Version ?? "0"}.bak";
 						if (!StorageHelper.ExistFile(backupFile)) {
 							StorageHelper.Rename(programFile, backupFile);
 						}
@@ -214,22 +249,22 @@ namespace KairosoftGameManager.View {
 							ExternalToolHelper.ParseSetting(App.Setting.Data.ExternalTool),
 							(_) => { }
 						);
-						shouldReload = true;
 						break;
 					}
 					case "RestoreProgram": {
+						shouldReload = true;
 						if (game.Program != GameProgramState.Modified) {
 							cancelled = true;
 							break;
 						}
 						var programFile = $"{game.Path}/{GameHelper.ProgramFile}";
-						var backupFile = $"{game.Path}/{GameHelper.ProgramFile}.{game.Version}.bak";
+						var backupFile = $"{game.Path}/{GameHelper.ProgramFile}.{game.Version ?? "0"}.bak";
 						StorageHelper.Trash(programFile);
 						StorageHelper.Rename(backupFile, programFile);
-						shouldReload = true;
 						break;
 					}
 					case "EncryptRecord": {
+						shouldReload = true;
 						if (game.Record != GameRecordState.Decrypted) {
 							cancelled = true;
 							break;
@@ -237,13 +272,13 @@ namespace KairosoftGameManager.View {
 						var recordDirectory = $"{game.Path}/{GameHelper.RecordBundleDirectory}/{game.User}";
 						await GameHelper.EncryptRecord(
 							recordDirectory,
-							GameHelper.ConvertKeyFromUser(game.User),
+							GameHelper.MakeKeyFromSteamUser(game.User),
 							(_) => { }
 						);
-						shouldReload = true;
 						break;
 					}
 					case "DecryptRecord": {
+						shouldReload = true;
 						if (game.Record != GameRecordState.Original) {
 							cancelled = true;
 							break;
@@ -251,29 +286,33 @@ namespace KairosoftGameManager.View {
 						var recordDirectory = $"{game.Path}/{GameHelper.RecordBundleDirectory}/{game.User}";
 						await GameHelper.EncryptRecord(
 							recordDirectory,
-							GameHelper.ConvertKeyFromUser(game.User),
+							GameHelper.MakeKeyFromSteamUser(game.User),
 							(_) => { }
 						);
-						shouldReload = true;
 						break;
 					}
 					case "ExportRecord": {
+						shouldReload = true;
 						if (game.Record != GameRecordState.Original && game.Record != GameRecordState.Decrypted) {
 							cancelled = true;
 							break;
 						}
 						var shouldEncrypt = game.Record == GameRecordState.Original;
-						var archiveFile = await StorageHelper.PickSaveFile(App.MainWindow, "@RecordFile", $"{game.Name}.{GameHelper.RecordArchiveFileExtension}");
+						var archiveFile = await StorageHelper.PickSaveFile(App.MainWindow, "@RecordArchiveFile", $"{game.Name}.{GameHelper.RecordArchiveFileExtension}");
 						if (archiveFile == null) {
 							cancelled = true;
 							break;
 						}
 						var recordDirectory = $"{game.Path}/{GameHelper.RecordBundleDirectory}/{game.User}";
-						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GameHelper.GetPlatformSystemName(GamePlatform.WindowsIntel32), Identifier = game.Identifier, Version = game.Version };
+						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() {
+							Platform = GameHelper.GetPlatformSystemName(GamePlatform.WindowsIntel32),
+							Identifier = game.Identifier ?? "unknown",
+							Version = game.Version ?? "unknown",
+						};
 						await GameHelper.ExportRecordArchive(
 							recordDirectory,
 							archiveFile,
-							!shouldEncrypt ? null : GameHelper.ConvertKeyFromUser(game.User),
+							!shouldEncrypt ? null : GameHelper.MakeKeyFromSteamUser(game.User),
 							async (archiveConfiguration) => {
 								archiveConfiguration.Platform = archiveConfigurationForLocal.Platform;
 								archiveConfiguration.Identifier = archiveConfigurationForLocal.Identifier;
@@ -284,6 +323,7 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "ImportRecord": {
+						shouldReload = true;
 						var shouldEncrypt = game.Record == GameRecordState.Original;
 						if (game.Record != GameRecordState.Original && game.Record != GameRecordState.Decrypted) {
 							if (temporaryState != null) {
@@ -332,17 +372,21 @@ namespace KairosoftGameManager.View {
 								temporaryStateMap.Add(action, new Tuple<Boolean>(shouldEncrypt));
 							}
 						}
-						var archiveFile = await StorageHelper.PickLoadFile(App.MainWindow, "@RecordFile");
+						var archiveFile = await StorageHelper.PickLoadFile(App.MainWindow, "@RecordArchiveFile");
 						if (archiveFile == null) {
 							cancelled = true;
 							break;
 						}
 						var recordDirectory = $"{game.Path}/{GameHelper.RecordBundleDirectory}/{game.User}";
-						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() { Platform = GameHelper.GetPlatformSystemName(GamePlatform.WindowsIntel32), Identifier = game.Identifier, Version = game.Version };
+						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() {
+							Platform = GameHelper.GetPlatformSystemName(GamePlatform.WindowsIntel32),
+							Identifier = game.Identifier ?? "unknown",
+							Version = game.Version ?? "unknown",
+						};
 						await GameHelper.ImportRecordArchive(
 							recordDirectory,
 							archiveFile,
-							!shouldEncrypt ? null : GameHelper.ConvertKeyFromUser(game.User),
+							!shouldEncrypt ? null : GameHelper.MakeKeyFromSteamUser(game.User),
 							async (archiveConfiguration) => {
 								if (archiveConfiguration != archiveConfigurationForLocal) {
 									if (!await ControlHelper.ShowDialogForConfirm(this.View, "Record Incompatible", $"This archive may not work with the current game.\nProvided: {GameHelper.MakeRecordArchiveConfigurationText(archiveConfiguration)}\nExpected: {GameHelper.MakeRecordArchiveConfigurationText(archiveConfigurationForLocal)}")) {
@@ -353,7 +397,6 @@ namespace KairosoftGameManager.View {
 								return true;
 							}
 						);
-						shouldReload = true;
 						break;
 					}
 					default: throw new UnreachableException();
@@ -370,10 +413,6 @@ namespace KairosoftGameManager.View {
 				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", ExceptionHelper.GenerateMessage(e));
 				state = false;
 			}
-			await hideDialog();
-			if (shouldReload) {
-				await this.ReloadGame(gameController);
-			}
 			return state;
 		}
 
@@ -381,43 +420,41 @@ namespace KairosoftGameManager.View {
 
 		#region repository
 
-		public String uRepositoryDirectoryText_Text {
+		public MenuFlyout uRepositoryDirectoryList_Flyout {
 			get {
-				return App.Setting.Data.RepositoryDirectory;
+				var menu = new MenuFlyout() {
+					Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft,
+				};
+				foreach (var item in App.Setting.Data.RepositoryDirectory) {
+					menu.Items.Add(new MenuFlyoutItem() {
+						Text = item,
+					}.SelfAlso((it) => {
+						it.Click += async (_, _) => {
+							await this.LoadRepository(item);
+							return;
+						};
+					}));
+				}
+				return menu;
 			}
 		}
 
-		public Size uRepositoryDirectoryCount_Value {
+		public Brush uRepositoryDirectoryText_Foreground {
+			get {
+				return this.View.FindResource(this.ActiveRepositoryDirectory != null ? "TextFillColorPrimaryBrush" : "TextFillColorSecondaryBrush").As<Brush>();
+			}
+		}
+
+		public String uRepositoryDirectoryText_Text {
+			get {
+				return this.ActiveRepositoryDirectory ?? "None";
+			}
+		}
+
+		public Size uRepositoryDirectoryGameCount_Value {
 			get {
 				return this.uGameList_ItemsSource.Count;
 			}
-		}
-
-		public async void uRepositoryDirectoryAction_Click (
-			Object          sender,
-			RoutedEventArgs args
-		) {
-			var senders = sender.As<MenuFlyoutItem>();
-			switch (senders.Tag.As<String>()) {
-				case "Reload": {
-					await this.LoadRepository();
-					break;
-				}
-				case "Reselect": {
-					var directory = await StorageHelper.PickLoadDirectory(App.MainWindow, "@RepositoryDirectory");
-					if (directory != null) {
-						App.Setting.Data.RepositoryDirectory = directory;
-						this.NotifyPropertyChanged([
-							nameof(this.uRepositoryDirectoryText_Text),
-						]);
-						await App.Setting.Save();
-						await this.LoadRepository();
-					}
-					break;
-				}
-				default: throw new UnreachableException();
-			}
-			return;
 		}
 
 		#endregion
@@ -495,17 +532,35 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
+		public Style uIdentifierBadge_Style {
+			get {
+				return this.Host.View.FindResource(this.Configuration.Identifier switch {
+					null => "InformationalIconInfoBadgeStyle",
+					_    => "SuccessIconInfoBadgeStyle",
+				}).As<Style>();
+			}
+		}
+
 		public String uIdentifierText_Text {
 			get {
-				return this.Configuration.Identifier;
+				return this.Configuration.Identifier ?? "Unknown";
 			}
 		}
 
 		// ----------------
 
+		public Style uVersionBadge_Style {
+			get {
+				return this.Host.View.FindResource(this.Configuration.Version switch {
+					null => "InformationalIconInfoBadgeStyle",
+					_    => "SuccessIconInfoBadgeStyle",
+				}).As<Style>();
+			}
+		}
+
 		public String uVersionText_Text {
 			get {
-				return this.Configuration.Version;
+				return this.Configuration.Version ?? "Unknown";
 			}
 		}
 

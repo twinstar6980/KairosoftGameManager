@@ -64,7 +64,7 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var alignedFile = StorageHelper.Temporary();
 			StorageHelper.CreateFile(alignedFile);
-			using var alignedFileFinalizer = new Finalizer(() => {
+			await using var alignedFileFinalizer = new Finalizer(async () => {
 				StorageHelper.Remove(alignedFile);
 			});
 			var processResult = (await ProcessHelper.RunProcess(

@@ -31,6 +31,7 @@
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Center"
 				Style="{StaticResource SubtitleTextBlockStyle}"
+				TextWrapping="NoWrap"
 				Text="{x:Bind Controller.uVersion_Text}"
 				/>
 			<Button
@@ -53,6 +54,7 @@
 					<TextBlock
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
+						Style="{StaticResource BodyTextBlockStyle}"
 						TextWrapping="NoWrap"
 						Text="Source"
 						/>
@@ -106,7 +108,7 @@
 							/>
 					</my:Stack>
 				</communityControls:SettingsCard>
-				<communityControls:SettingsCard
+				<communityControls:SettingsExpander
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.FileExplorer}}"
@@ -118,29 +120,72 @@
 						Orientation="Horizontal"
 						Spacing="8"
 						>
-						<TextBox
-							my:Stack.Weight="1"
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Top"
-							Width="208"
-							LostFocus="{x:Bind Controller.uRepositoryDirectory_LostFocus}"
-							Text="{x:Bind Controller.uRepositoryDirectory_Text}"
-							/>
 						<Button
-							ToolTipService.ToolTip="Pick"
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Top"
-							Click="{x:Bind Controller.uRepositoryDirectoryPick_Click}"
-							Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
-							/>
+							Click="{x:Bind Controller.uRepositoryDirectoryAdd_Click}"
+							>
+							<my:Stack
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								Orientation="Horizontal"
+								Spacing="8"
+								>
+								<FontIcon
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Center"
+									FontSize="{StaticResource SmallIconSize}"
+									Glyph="{StaticResource FluentIconGlyph.AddTo}"
+									/>
+								<TextBlock
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Center"
+									Style="{ThemeResource BodyTextBlockStyle}"
+									TextWrapping="NoWrap"
+									Text="Add"
+									/>
+							</my:Stack>
+						</Button>
 					</my:Stack>
-				</communityControls:SettingsCard>
+					<communityControls:SettingsExpander.Items>
+						<communityControls:SettingsCard
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							Header="Path"
+							>
+							<my:Stack
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Stretch"
+								Orientation="Horizontal"
+								Spacing="8"
+								>
+								<TextBox
+									my:Stack.Weight="1"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Top"
+									Width="208"
+									LostFocus="{x:Bind Controller.uRepositoryDirectory_LostFocus}"
+									TextWrapping="Wrap"
+									AcceptsReturn="True"
+									Text="{x:Bind Controller.uRepositoryDirectory_Text}"
+									/>
+							</my:Stack>
+						</communityControls:SettingsCard>
+					</communityControls:SettingsExpander.Items>
+				</communityControls:SettingsExpander>
 				<communityControls:SettingsExpander
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.DeveloperTools}}"
 					Header="External Tool"
 					>
+					<my:Stack
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						Orientation="Horizontal"
+						Spacing="8"
+						>
+					</my:Stack>
 					<communityControls:SettingsExpander.Items>
 						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"

@@ -127,12 +127,28 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
+		public async void uRepositoryDirectoryAdd_Click (
+			Object          sender,
+			RoutedEventArgs args
+		) {
+			var senders = sender.As<Button>();
+			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@RepositoryDirectory");
+			if (value != null && !App.Setting.Data.RepositoryDirectory.Contains(value)) {
+				App.Setting.Data.RepositoryDirectory.Add(value);
+				this.NotifyPropertyChanged([
+					nameof(this.uRepositoryDirectory_Text),
+				]);
+				await App.Setting.Save();
+			}
+			return;
+		}
+
 		public async void uRepositoryDirectory_LostFocus (
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Setting.Data.RepositoryDirectory = StorageHelper.Regularize(senders.Text);
+			App.Setting.Data.RepositoryDirectory = ConvertHelper.ParseStringListFromStringWithLine(senders.Text).Select(StorageHelper.Regularize).Distinct().ToList();
 			this.NotifyPropertyChanged([
 				nameof(this.uRepositoryDirectory_Text),
 			]);
@@ -142,24 +158,8 @@ namespace KairosoftGameManager.View {
 
 		public String uRepositoryDirectory_Text {
 			get {
-				return App.Setting.Data.RepositoryDirectory;
+				return ConvertHelper.MakeStringListToStringWithLine(App.Setting.Data.RepositoryDirectory);
 			}
-		}
-
-		public async void uRepositoryDirectoryPick_Click (
-			Object          sender,
-			RoutedEventArgs args
-		) {
-			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@RepositoryDirectory");
-			if (value != null) {
-				App.Setting.Data.RepositoryDirectory = value;
-				this.NotifyPropertyChanged([
-					nameof(this.uRepositoryDirectory_Text),
-				]);
-				await App.Setting.Save();
-			}
-			return;
 		}
 
 		// ----------------

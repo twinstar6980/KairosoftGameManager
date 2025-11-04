@@ -18,17 +18,17 @@ namespace KairosoftGameManager.Utility {
 		AndroidArm64,
 	}
 
+	public enum GameProgramState {
+		None,
+		Original,
+		Modified,
+	}
+
 	public enum GameRecordState {
 		None,
 		Invalid,
 		Original,
 		Decrypted,
-	}
-
-	public enum GameProgramState {
-		None,
-		Original,
-		Modified,
 	}
 
 	public enum GamePackageType {
@@ -42,14 +42,14 @@ namespace KairosoftGameManager.Utility {
 
 	public record GameConfiguration {
 		public String           Path       = "";
-		public String           Library    = "";
-		public String           Identifier = "";
-		public String           Version    = "";
+		public String?          Library    = null;
+		public String?          Identifier = null;
+		public String?          Version    = null;
 		public String           Name       = "";
 		public ImageSource?     Icon       = null;
 		public String           User       = "";
-		public GameRecordState  Record     = GameRecordState.None;
 		public GameProgramState Program    = GameProgramState.None;
+		public GameRecordState  Record     = GameRecordState.None;
 	}
 
 	public record GameRecordArchiveConfiguration {
@@ -61,10 +61,10 @@ namespace KairosoftGameManager.Utility {
 	// ----------------
 
 	public enum GameFunctionType {
+		ModifyProgram,
 		EncryptRecord,
 		ExportRecord,
 		ImportRecord,
-		ModifyProgram,
 	}
 
 	#endregion
@@ -92,175 +92,6 @@ namespace KairosoftGameManager.Utility {
 				GamePlatform.AndroidArm64   => "android",
 				_                           => throw new UnreachableException(),
 			};
-		}
-
-		#endregion
-
-		#region record
-
-		private static List<String> ListRecordFile (
-			String recordDirectory
-		) {
-			return StorageHelper.ListDirectory(recordDirectory, 1, true, false).Where((value) => new Regex(@"^\d{4,4}(_backup)?$").IsMatch(value)).ToList();
-		}
-
-		private static async Task<GameRecordState> DetectRecordState (
-			String  recordDirectory,
-			Byte[]? key
-		) {
-			var state = default(GameRecordState);
-			var itemNameList = GameHelper.ListRecordFile(recordDirectory);
-			if (itemNameList.Count == 0) {
-				state = GameRecordState.None;
-			}
-			else if (!itemNameList.Contains("0000")) {
-				state = GameRecordState.Invalid;
-			}
-			else {
-				var itemFile = $"{recordDirectory}/0000";
-				var itemData = await StorageHelper.ReadFileLimited(itemFile, 8);
-				if (itemData.Length != 8) {
-					state = GameRecordState.Invalid;
-				}
-				else {
-					var firstNumber = BinaryPrimitives.ReadUInt32LittleEndian(itemData);
-					if (firstNumber == 0x00000000) {
-						state = GameRecordState.Decrypted;
-					}
-					else {
-						GameHelper.EncryptRecordData(itemData, key);
-						firstNumber = BinaryPrimitives.ReadUInt32LittleEndian(itemData);
-						if (firstNumber == 0x00000000) {
-							state = GameRecordState.Original;
-						}
-						else {
-							state = GameRecordState.Invalid;
-						}
-					}
-				}
-			}
-			return state;
-		}
-
-		// ----------------
-
-		private static void EncryptRecordData (
-			Byte[]  data,
-			Byte[]? key
-		) {
-			if (key != null && key.Length != 0) {
-				for (var index = 0; index < data.Length; index++) {
-					data[index] ^= key[index % key.Length];
-				}
-			}
-			return;
-		}
-
-		private static async Task EncryptRecordFile (
-			String  sourceFile,
-			String  destinationFile,
-			Byte[]? key
-		) {
-			var data = await StorageHelper.ReadFile(sourceFile);
-			GameHelper.EncryptRecordData(data, key);
-			await StorageHelper.WriteFile(destinationFile, data);
-			return;
-		}
-
-		public static async Task EncryptRecord (
-			String         targetDirectory,
-			Byte[]         key,
-			Action<String> onNotify
-		) {
-			var itemNameList = GameHelper.ListRecordFile(targetDirectory);
-			if (itemNameList.Count == 0) {
-				onNotify($"The target directory does not contain a record file.");
-			}
-			foreach (var itemName in itemNameList) {
-				onNotify($"Phase: {itemName}.");
-				await GameHelper.EncryptRecordFile($"{targetDirectory}/{itemName}", $"{targetDirectory}/{itemName}", key);
-			}
-			return;
-		}
-
-		// ----------------
-
-		public static String MakeRecordArchiveConfigurationText (
-			GameRecordArchiveConfiguration value
-		) {
-			return String.Join(':', [value.Platform, value.Identifier, value.Version]);
-		}
-
-		public static GameRecordArchiveConfiguration ParseRecordArchiveConfigurationText (
-			String text
-		) {
-			var list = text.Split(':');
-			return new () {
-				Platform = list[0],
-				Identifier = list[1],
-				Version = list[2],
-			};
-		}
-
-		// ----------------
-
-		public static async Task ExportRecordArchive (
-			String                                              targetDirectory,
-			String                                              archiveFile,
-			Byte[]?                                             key,
-			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
-		) {
-			var archiveDirectory = StorageHelper.Temporary();
-			StorageHelper.CreateDirectory(archiveDirectory);
-			using var archiveDirectoryFinalizer = new Finalizer(() => {
-				StorageHelper.Remove(archiveDirectory);
-			});
-			// configuration
-			var archiveConfiguration = new GameRecordArchiveConfiguration();
-			if (!await doArchiveConfiguration(archiveConfiguration)) {
-				return;
-			}
-			await StorageHelper.WriteFileText($"{archiveDirectory}/configuration.txt", GameHelper.MakeRecordArchiveConfigurationText(archiveConfiguration));
-			// data
-			StorageHelper.CreateDirectory($"{archiveDirectory}/data");
-			foreach (var dataFile in GameHelper.ListRecordFile(targetDirectory)) {
-				await GameHelper.EncryptRecordFile($"{targetDirectory}/{dataFile}", $"{archiveDirectory}/data/{dataFile}", key);
-			}
-			// save
-			if (StorageHelper.ExistFile(archiveFile)) {
-				StorageHelper.Trash(archiveFile);
-			}
-			ZipFile.CreateFromDirectory(archiveDirectory, archiveFile, CompressionLevel.SmallestSize, false, Encoding.UTF8);
-			return;
-		}
-
-		public static async Task ImportRecordArchive (
-			String                                              targetDirectory,
-			String                                              archiveFile,
-			Byte[]?                                             key,
-			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
-		) {
-			var archiveDirectory = StorageHelper.Temporary();
-			StorageHelper.CreateDirectory(archiveDirectory);
-			using var archiveDirectoryFinalizer = new Finalizer(() => {
-				StorageHelper.Remove(archiveDirectory);
-			});
-			// load
-			ZipFile.ExtractToDirectory(archiveFile, archiveDirectory, Encoding.UTF8);
-			// configuration
-			var archiveConfiguration = GameHelper.ParseRecordArchiveConfigurationText(await StorageHelper.ReadFileText($"{archiveDirectory}/configuration.txt"));
-			if (!await doArchiveConfiguration(archiveConfiguration)) {
-				return;
-			}
-			// data
-			if (StorageHelper.ExistDirectory(targetDirectory)) {
-				StorageHelper.Trash(targetDirectory);
-			}
-			StorageHelper.CreateDirectory(targetDirectory);
-			foreach (var dataFile in GameHelper.ListRecordFile($"{archiveDirectory}/data")) {
-				await GameHelper.EncryptRecordFile($"{archiveDirectory}/data/{dataFile}", $"{targetDirectory}/{dataFile}", key);
-			}
-			return;
 		}
 
 		#endregion
@@ -661,7 +492,7 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var temporaryDirectory = StorageHelper.Temporary();
 			StorageHelper.CreateDirectory(temporaryDirectory);
-			using var temporaryDirectoryFinalizer = new Finalizer(() => {
+			await using var temporaryDirectoryFinalizer = new Finalizer(async () => {
 				StorageHelper.Remove(temporaryDirectory);
 			});
 			onNotify($"Phase: detect package type.");
@@ -816,20 +647,254 @@ namespace KairosoftGameManager.Utility {
 
 		#endregion
 
+		#region record
+
+		private static List<String> ListRecordFile (
+			String recordDirectory
+		) {
+			return StorageHelper.ListDirectory(recordDirectory, 1, true, false).Where((value) => new Regex(@"^\d{4,4}(_backup)?$").IsMatch(value)).ToList();
+		}
+
+		private static async Task<GameRecordState> DetectRecordState (
+			String      recordDirectory,
+			List<Byte>? key
+		) {
+			var state = default(GameRecordState);
+			var itemNameList = GameHelper.ListRecordFile(recordDirectory);
+			if (itemNameList.Count == 0) {
+				state = GameRecordState.None;
+			}
+			else if (!itemNameList.Contains("0000")) {
+				state = GameRecordState.Invalid;
+			}
+			else {
+				var itemFile = $"{recordDirectory}/0000";
+				var itemData = await StorageHelper.ReadFileLimited(itemFile, 8);
+				if (itemData.Length != 8) {
+					state = GameRecordState.Invalid;
+				}
+				else {
+					var firstNumber = BinaryPrimitives.ReadUInt32LittleEndian(itemData);
+					if (firstNumber == 0x00000000) {
+						state = GameRecordState.Decrypted;
+					}
+					else {
+						GameHelper.EncryptRecordData(itemData, key);
+						firstNumber = BinaryPrimitives.ReadUInt32LittleEndian(itemData);
+						if (firstNumber == 0x00000000) {
+							state = GameRecordState.Original;
+						}
+						else {
+							state = GameRecordState.Invalid;
+						}
+					}
+				}
+			}
+			return state;
+		}
+
+		// ----------------
+
+		private static void EncryptRecordData (
+			Byte[]      data,
+			List<Byte>? key
+		) {
+			if (key != null && key.Count != 0) {
+				for (var index = 0; index < data.Length; index++) {
+					data[index] ^= key[index % key.Count];
+				}
+			}
+			return;
+		}
+
+		private static async Task EncryptRecordFile (
+			String      sourceFile,
+			String      destinationFile,
+			List<Byte>? key
+		) {
+			var data = await StorageHelper.ReadFile(sourceFile);
+			GameHelper.EncryptRecordData(data, key);
+			await StorageHelper.WriteFile(destinationFile, data);
+			return;
+		}
+
+		public static async Task EncryptRecord (
+			String         targetDirectory,
+			List<Byte>     key,
+			Action<String> onNotify
+		) {
+			var itemNameList = GameHelper.ListRecordFile(targetDirectory);
+			if (itemNameList.Count == 0) {
+				onNotify($"The target directory does not contain a record file.");
+			}
+			foreach (var itemName in itemNameList) {
+				onNotify($"Phase: {itemName}.");
+				await GameHelper.EncryptRecordFile($"{targetDirectory}/{itemName}", $"{targetDirectory}/{itemName}", key);
+			}
+			return;
+		}
+
+		// ----------------
+
+		public static String MakeRecordArchiveConfigurationText (
+			GameRecordArchiveConfiguration value
+		) {
+			return String.Join(':', [value.Platform, value.Identifier, value.Version]);
+		}
+
+		public static GameRecordArchiveConfiguration ParseRecordArchiveConfigurationText (
+			String text
+		) {
+			var list = text.Split(':');
+			return new () {
+				Platform = list[0],
+				Identifier = list[1],
+				Version = list[2],
+			};
+		}
+
+		// ----------------
+
+		public static async Task ExportRecordArchive (
+			String                                              targetDirectory,
+			String                                              archiveFile,
+			List<Byte>?                                         key,
+			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
+		) {
+			var archiveDirectory = StorageHelper.Temporary();
+			StorageHelper.CreateDirectory(archiveDirectory);
+			await using var archiveDirectoryFinalizer = new Finalizer(async () => {
+				StorageHelper.Remove(archiveDirectory);
+			});
+			// configuration
+			var archiveConfiguration = new GameRecordArchiveConfiguration();
+			if (!await doArchiveConfiguration(archiveConfiguration)) {
+				return;
+			}
+			await StorageHelper.WriteFileText($"{archiveDirectory}/configuration.txt", GameHelper.MakeRecordArchiveConfigurationText(archiveConfiguration));
+			// data
+			StorageHelper.CreateDirectory($"{archiveDirectory}/data");
+			foreach (var dataFile in GameHelper.ListRecordFile(targetDirectory)) {
+				await GameHelper.EncryptRecordFile($"{targetDirectory}/{dataFile}", $"{archiveDirectory}/data/{dataFile}", key);
+			}
+			// save
+			if (StorageHelper.ExistFile(archiveFile)) {
+				StorageHelper.Trash(archiveFile);
+			}
+			ZipFile.CreateFromDirectory(archiveDirectory, archiveFile, CompressionLevel.SmallestSize, false, Encoding.UTF8);
+			return;
+		}
+
+		public static async Task ImportRecordArchive (
+			String                                              targetDirectory,
+			String                                              archiveFile,
+			List<Byte>?                                         key,
+			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
+		) {
+			var archiveDirectory = StorageHelper.Temporary();
+			StorageHelper.CreateDirectory(archiveDirectory);
+			await using var archiveDirectoryFinalizer = new Finalizer(async () => {
+				StorageHelper.Remove(archiveDirectory);
+			});
+			// load
+			ZipFile.ExtractToDirectory(archiveFile, archiveDirectory, Encoding.UTF8);
+			// configuration
+			var archiveConfiguration = GameHelper.ParseRecordArchiveConfigurationText(await StorageHelper.ReadFileText($"{archiveDirectory}/configuration.txt"));
+			if (!await doArchiveConfiguration(archiveConfiguration)) {
+				return;
+			}
+			// data
+			if (StorageHelper.ExistDirectory(targetDirectory)) {
+				StorageHelper.Trash(targetDirectory);
+			}
+			StorageHelper.CreateDirectory(targetDirectory);
+			foreach (var dataFile in GameHelper.ListRecordFile($"{archiveDirectory}/data")) {
+				await GameHelper.EncryptRecordFile($"{archiveDirectory}/data/{dataFile}", $"{targetDirectory}/{dataFile}", key);
+			}
+			return;
+		}
+
+		#endregion
+
 		#region repository
 
-		public static Byte[] ConvertKeyFromUser (
+		public static async Task<Tuple<GameProgramState, GameRecordState>> CheckGameState (
+			String  gameDirectory,
+			String? version,
+			String  user
+		) {
+			var programState = GameProgramState.None;
+			var recordState = GameRecordState.None;
+			if (StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.ProgramFile}")) {
+				programState = !StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.ProgramFile}.{version ?? "0"}.bak")
+					? GameProgramState.Original
+					: GameProgramState.Modified;
+			}
+			if (StorageHelper.ExistDirectory($"{gameDirectory}/{GameHelper.RecordBundleDirectory}/{user}")) {
+				recordState = await GameHelper.DetectRecordState($"{gameDirectory}/{GameHelper.RecordBundleDirectory}/{user}", GameHelper.MakeKeyFromSteamUser(user));
+			}
+			return new (programState, recordState);
+		}
+
+		// ----------------
+
+		public static async Task<GameConfiguration?> LoadCustomGame (
+			String gameDirectory
+		) {
+			if (!StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.ExecutableFile}")) {
+				return null;
+			}
+			var configuration = new GameConfiguration();
+			configuration.Path = gameDirectory;
+			configuration.Library = null;
+			configuration.Identifier = null;
+			configuration.Version = null;
+			configuration.Name = StorageHelper.Name(gameDirectory);
+			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon($"{gameDirectory}/{GameHelper.ExecutableFile}", 0, 48).AsNotNull().ToBitmap());
+			configuration.User = "0";
+			if (StorageHelper.ExistDirectory($"{gameDirectory}/{GameHelper.RecordBundleDirectory}")) {
+				configuration.User = StorageHelper.ListDirectory($"{gameDirectory}/{GameHelper.RecordBundleDirectory}", 1, false, true).FirstOrDefault((it) => new Regex(@"^\d+$").IsMatch(it)) ?? "0";
+			}
+			var gameState = await GameHelper.CheckGameState(gameDirectory, configuration.Version, configuration.User);
+			configuration.Program = gameState.Item1;
+			configuration.Record = gameState.Item2;
+			return configuration;
+		}
+
+		public static async Task<Boolean> CheckCustomRepository (
+			String repositoryDirectory
+		) {
+			return StorageHelper.ExistDirectory($"{repositoryDirectory}")
+				&& !StorageHelper.ExistFile($"{repositoryDirectory}/steam.exe");
+		}
+
+		public static async Task<List<GameConfiguration>> LoadCustomRepository (
+			String repositoryDirectory
+		) {
+			var libraryList = StorageHelper.ListDirectory(repositoryDirectory, 1, false, true);
+			var result = new List<GameConfiguration>();
+			foreach (var library in libraryList) {
+				var libraryDirectory = $"{repositoryDirectory}/{library}";
+				var gameConfiguration = await GameHelper.LoadCustomGame(libraryDirectory);
+				if (gameConfiguration != null) {
+					result.Add(gameConfiguration);
+				}
+			}
+			return result;
+		}
+
+		// ----------------
+
+		public static List<Byte> MakeKeyFromSteamUser (
 			String user
 		) {
 			var keyValue = IntegerU64.Parse(user);
 			var key = new Byte[8];
 			BinaryPrimitives.TryWriteUInt64LittleEndian(key, keyValue);
-			return key;
+			return key.ToList();
 		}
 
-		// ----------------
-
-		public static async Task<GameConfiguration?> LoadGameConfiguration (
+		public static async Task<GameConfiguration?> LoadSteamGame (
 			String libraryDirectory,
 			String gameIdentifier
 		) {
@@ -852,27 +917,20 @@ namespace KairosoftGameManager.Utility {
 			configuration.Name = gameManifest.Value["name"].AsNotNull().Value<String>();
 			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon($"{gameDirectory}/{GameHelper.ExecutableFile}", 0, 48).AsNotNull().ToBitmap());
 			configuration.User = gameManifest.Value["LastOwner"].AsNotNull().Value<String>();
-			if (!StorageHelper.ExistDirectory($"{gameDirectory}/{GameHelper.RecordBundleDirectory}/{configuration.User}")) {
-				configuration.Record = GameRecordState.None;
-			}
-			else {
-				configuration.Record = await GameHelper.DetectRecordState($"{gameDirectory}/{GameHelper.RecordBundleDirectory}/{configuration.User}", GameHelper.ConvertKeyFromUser(configuration.User));
-			}
-			if (!StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.ProgramFile}")) {
-				configuration.Program = GameProgramState.None;
-			}
-			else {
-				if (!StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.ProgramFile}.{configuration.Version}.bak")) {
-					configuration.Program = GameProgramState.Original;
-				}
-				else {
-					configuration.Program = GameProgramState.Modified;
-				}
-			}
+			var gameState = await GameHelper.CheckGameState(gameDirectory, configuration.Version, configuration.User);
+			configuration.Program = gameState.Item1;
+			configuration.Record = gameState.Item2;
 			return configuration;
 		}
 
-		public static async Task<List<GameConfiguration>> ListGameInRepository (
+		public static async Task<Boolean> CheckSteamRepository (
+			String repositoryDirectory
+		) {
+			return StorageHelper.ExistDirectory($"{repositoryDirectory}")
+				&& StorageHelper.ExistFile($"{repositoryDirectory}/steam.exe");
+		}
+
+		public static async Task<List<GameConfiguration>> LoadSteamRepository (
 			String repositoryDirectory
 		) {
 			var libraryList = VdfConvert.Deserialize(await StorageHelper.ReadFileText($"{repositoryDirectory}/steamapps/libraryfolders.vdf"));
@@ -882,19 +940,13 @@ namespace KairosoftGameManager.Utility {
 				var libraryDirectory = StorageHelper.Regularize(library.Value["path"].AsNotNull().Value<String>());
 				foreach (var game in library.Value["apps"].AsNotNull().Children<VProperty>()) {
 					var gameIdentifier = game.Key;
-					var gameConfiguration = await GameHelper.LoadGameConfiguration(libraryDirectory, gameIdentifier);
+					var gameConfiguration = await GameHelper.LoadSteamGame(libraryDirectory, gameIdentifier);
 					if (gameConfiguration != null) {
 						result.Add(gameConfiguration);
 					}
 				}
 			}
 			return result;
-		}
-
-		public static async Task<Boolean> CheckRepositoryDirectory (
-			String repositoryDirectory
-		) {
-			return StorageHelper.ExistFile($"{repositoryDirectory}/steam.exe");
 		}
 
 		#endregion

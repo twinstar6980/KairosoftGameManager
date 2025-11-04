@@ -11,18 +11,18 @@ namespace KairosoftGameManager {
 		public String                     Version                      = default!;
 		public ElementTheme               ThemeMode                    = default!;
 		public Dictionary<String, String> StoragePickerHistoryLocation = default!;
-		public String                     RepositoryDirectory          = default!;
+		public List<String>               RepositoryDirectory          = default!;
 		public ExternalToolSetting        ExternalTool                 = default!;
 	}
 
 	public record SettingState {
 		public ElementTheme? ThemeMode                  = default!;
-		public String        CurrentRepositoryDirectory = default!;
+		public List<String>  CurrentRepositoryDirectory = default!;
 	}
 
 	public class SettingProvider {
 
-		#region structor
+		#region constructor
 
 		public SettingData Data;
 
@@ -110,7 +110,9 @@ namespace KairosoftGameManager {
 				Version = ApplicationInformation.VersionMainly,
 				ThemeMode = ElementTheme.Default,
 				StoragePickerHistoryLocation = [],
-				RepositoryDirectory = "C:/Program Files (x86)/Steam",
+				RepositoryDirectory = [
+					"C:/Program Files (x86)/Steam",
+				],
 				ExternalTool = new () {
 					Il2cppdumperPath = "Il2CppDumper",
 					ZipalignPath = "zipalign",
@@ -125,7 +127,7 @@ namespace KairosoftGameManager {
 		) {
 			return new () {
 				ThemeMode = null,
-				CurrentRepositoryDirectory = "",
+				CurrentRepositoryDirectory = [],
 			};
 		}
 

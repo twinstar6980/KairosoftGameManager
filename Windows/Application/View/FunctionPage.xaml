@@ -47,12 +47,19 @@
 					<TextBlock
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
+						Style="{ThemeResource BodyTextBlockStyle}"
 						TextWrapping="NoWrap"
 						Text="{x:Bind Controller.uTypeName_Text}"
 						/>
 				</my:Stack>
 				<DropDownButton.Flyout>
 					<MenuFlyout Placement="BottomEdgeAlignedLeft">
+						<MenuFlyoutItem
+							Tag="ModifyProgram"
+							Click="{x:Bind Controller.uTypeSelect_Click}"
+							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Repair}}"
+							Text="Modify Program"
+							/>
 						<MenuFlyoutItem
 							Tag="EncryptRecord"
 							Click="{x:Bind Controller.uTypeSelect_Click}"
@@ -70,12 +77,6 @@
 							Click="{x:Bind Controller.uTypeSelect_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Import}}"
 							Text="Import Record"
-							/>
-						<MenuFlyoutItem
-							Tag="ModifyProgram"
-							Click="{x:Bind Controller.uTypeSelect_Click}"
-							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Repair}}"
-							Text="Modify Program"
 							/>
 					</MenuFlyout>
 				</DropDownButton.Flyout>
@@ -101,6 +102,7 @@
 					<TextBlock
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
+						Style="{ThemeResource BodyTextBlockStyle}"
 						TextWrapping="NoWrap"
 						Text="Run"
 						/>
@@ -139,6 +141,166 @@
 					Orientation="Vertical"
 					Spacing="0"
 					>
+					<my:Stack
+						Visibility="{x:Bind Controller.uArgumentOfProgramOfTarget_Visibility}"
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						Margin="0,0,0,8"
+						Orientation="Vertical"
+						Spacing="8"
+						>
+						<my:Stack
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							Orientation="Horizontal"
+							Spacing="8"
+							>
+							<FontIcon
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								Margin="4,0"
+								FontSize="{StaticResource SmallIconSize}"
+								Glyph="{StaticResource FluentIconGlyph.Folder}"
+								/>
+							<TextBlock
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								Style="{StaticResource SubtitleTextBlockStyle}"
+								FontSize="16"
+								TextWrapping="NoWrap"
+								Text="Target"
+								/>
+						</my:Stack>
+						<my:Stack
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							Orientation="Horizontal"
+							Spacing="8"
+							>
+							<TextBox
+								my:Stack.Weight="1"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								LostFocus="{x:Bind Controller.uArgumentOfProgramOfTargetEditor_LostFocus}"
+								Text="{x:Bind Controller.uArgumentOfProgramOfTargetEditor_Text}"
+								/>
+							<Button
+								ToolTipService.ToolTip="Pick"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								Content="{community:FontIcon Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
+								>
+								<Button.Flyout>
+									<MenuFlyout Placement="BottomEdgeAlignedRight">
+										<MenuFlyoutItem
+											Tag="File"
+											Click="{x:Bind Controller.uArgumentOfProgramOfTargetPicker_Click}"
+											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Document}}"
+											Text="File"
+											/>
+										<MenuFlyoutItem
+											Tag="Directory"
+											Click="{x:Bind Controller.uArgumentOfProgramOfTargetPicker_Click}"
+											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Folder}}"
+											Text="Directory"
+											/>
+									</MenuFlyout>
+								</Button.Flyout>
+							</Button>
+						</my:Stack>
+					</my:Stack>
+					<my:Stack
+						Visibility="{x:Bind Controller.uArgumentOfProgramOfDisableRecordEncryption_Visibility}"
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						Margin="0,0,0,8"
+						Orientation="Vertical"
+						Spacing="8"
+						>
+						<my:Stack
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							Orientation="Horizontal"
+							Spacing="8"
+							>
+							<FontIcon
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								Margin="4,0"
+								FontSize="{StaticResource SmallIconSize}"
+								Glyph="{StaticResource FluentIconGlyph.Unlock}"
+								/>
+							<TextBlock
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								Style="{StaticResource SubtitleTextBlockStyle}"
+								FontSize="16"
+								TextWrapping="NoWrap"
+								Text="Disable Record Encryption"
+								/>
+						</my:Stack>
+						<my:Stack
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							Orientation="Horizontal"
+							Spacing="8"
+							>
+							<Button
+								my:Stack.Weight="1"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								HorizontalContentAlignment="Stretch"
+								Click="{x:Bind Controller.uArgumentOfProgramOfDisableRecordEncryptionEditor_Click}"
+								Content="{x:Bind Controller.uArgumentOfProgramOfDisableRecordEncryptionEditor_Content}"
+								/>
+						</my:Stack>
+					</my:Stack>
+					<my:Stack
+						Visibility="{x:Bind Controller.uArgumentOfProgramOfEnableDebugMode_Visibility}"
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						Margin="0,0,0,8"
+						Orientation="Vertical"
+						Spacing="8"
+						>
+						<my:Stack
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							Orientation="Horizontal"
+							Spacing="8"
+							>
+							<FontIcon
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								Margin="4,0"
+								FontSize="{StaticResource SmallIconSize}"
+								Glyph="{StaticResource FluentIconGlyph.Bug}"
+								/>
+							<TextBlock
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								Style="{StaticResource SubtitleTextBlockStyle}"
+								FontSize="16"
+								TextWrapping="NoWrap"
+								Text="Enable Debug Mode"
+								/>
+						</my:Stack>
+						<my:Stack
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							Orientation="Horizontal"
+							Spacing="8"
+							>
+							<Button
+								my:Stack.Weight="1"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								HorizontalContentAlignment="Stretch"
+								Click="{x:Bind Controller.uArgumentOfProgramOfEnableDebugModeEditor_Click}"
+								Content="{x:Bind Controller.uArgumentOfProgramOfEnableDebugModeEditor_Content}"
+								/>
+						</my:Stack>
+					</my:Stack>
 					<my:Stack
 						Visibility="{x:Bind Controller.uArgumentOfRecordOfTargetDirectory_Visibility}"
 						HorizontalAlignment="Stretch"
@@ -286,166 +448,6 @@
 								LostFocus="{x:Bind Controller.uArgumentOfRecordOfKeyEditor_LostFocus}"
 								Description="'0a 1b' or 'd32:1234' or 'd64:5678'"
 								Text="{x:Bind Controller.uArgumentOfRecordOfKeyEditor_Text}"
-								/>
-						</my:Stack>
-					</my:Stack>
-					<my:Stack
-						Visibility="{x:Bind Controller.uArgumentOfModifyProgramOfTarget_Visibility}"
-						HorizontalAlignment="Stretch"
-						VerticalAlignment="Stretch"
-						Margin="0,0,0,8"
-						Orientation="Vertical"
-						Spacing="8"
-						>
-						<my:Stack
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Stretch"
-							Orientation="Horizontal"
-							Spacing="8"
-							>
-							<FontIcon
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								Margin="4,0"
-								FontSize="{StaticResource SmallIconSize}"
-								Glyph="{StaticResource FluentIconGlyph.Folder}"
-								/>
-							<TextBlock
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								Style="{StaticResource SubtitleTextBlockStyle}"
-								FontSize="16"
-								TextWrapping="NoWrap"
-								Text="Target"
-								/>
-						</my:Stack>
-						<my:Stack
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Stretch"
-							Orientation="Horizontal"
-							Spacing="8"
-							>
-							<TextBox
-								my:Stack.Weight="1"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								LostFocus="{x:Bind Controller.uArgumentOfModifyProgramOfTargetEditor_LostFocus}"
-								Text="{x:Bind Controller.uArgumentOfModifyProgramOfTargetEditor_Text}"
-								/>
-							<Button
-								ToolTipService.ToolTip="Pick"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								Content="{community:FontIcon Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
-								>
-								<Button.Flyout>
-									<MenuFlyout Placement="BottomEdgeAlignedRight">
-										<MenuFlyoutItem
-											Tag="File"
-											Click="{x:Bind Controller.uArgumentOfModifyProgramOfTargetPicker_Click}"
-											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Document}}"
-											Text="File"
-											/>
-										<MenuFlyoutItem
-											Tag="Directory"
-											Click="{x:Bind Controller.uArgumentOfModifyProgramOfTargetPicker_Click}"
-											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Folder}}"
-											Text="Directory"
-											/>
-									</MenuFlyout>
-								</Button.Flyout>
-							</Button>
-						</my:Stack>
-					</my:Stack>
-					<my:Stack
-						Visibility="{x:Bind Controller.uArgumentOfModifyProgramOfDisableRecordEncryption_Visibility}"
-						HorizontalAlignment="Stretch"
-						VerticalAlignment="Stretch"
-						Margin="0,0,0,8"
-						Orientation="Vertical"
-						Spacing="8"
-						>
-						<my:Stack
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Stretch"
-							Orientation="Horizontal"
-							Spacing="8"
-							>
-							<FontIcon
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								Margin="4,0"
-								FontSize="{StaticResource SmallIconSize}"
-								Glyph="{StaticResource FluentIconGlyph.Unlock}"
-								/>
-							<TextBlock
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								Style="{StaticResource SubtitleTextBlockStyle}"
-								FontSize="16"
-								TextWrapping="NoWrap"
-								Text="Disable Record Encryption"
-								/>
-						</my:Stack>
-						<my:Stack
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Stretch"
-							Orientation="Horizontal"
-							Spacing="8"
-							>
-							<Button
-								my:Stack.Weight="1"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								HorizontalContentAlignment="Stretch"
-								Click="{x:Bind Controller.uArgumentOfModifyProgramOfDisableRecordEncryptionEditor_Click}"
-								Content="{x:Bind Controller.uArgumentOfModifyProgramOfDisableRecordEncryptionEditor_Content}"
-								/>
-						</my:Stack>
-					</my:Stack>
-					<my:Stack
-						Visibility="{x:Bind Controller.uArgumentOfModifyProgramOfEnableDebugMode_Visibility}"
-						HorizontalAlignment="Stretch"
-						VerticalAlignment="Stretch"
-						Margin="0,0,0,8"
-						Orientation="Vertical"
-						Spacing="8"
-						>
-						<my:Stack
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Stretch"
-							Orientation="Horizontal"
-							Spacing="8"
-							>
-							<FontIcon
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								Margin="4,0"
-								FontSize="{StaticResource SmallIconSize}"
-								Glyph="{StaticResource FluentIconGlyph.Bug}"
-								/>
-							<TextBlock
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								Style="{StaticResource SubtitleTextBlockStyle}"
-								FontSize="16"
-								TextWrapping="NoWrap"
-								Text="Enable Debug Mode"
-								/>
-						</my:Stack>
-						<my:Stack
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Stretch"
-							Orientation="Horizontal"
-							Spacing="8"
-							>
-							<Button
-								my:Stack.Weight="1"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								HorizontalContentAlignment="Stretch"
-								Click="{x:Bind Controller.uArgumentOfModifyProgramOfEnableDebugModeEditor_Click}"
-								Content="{x:Bind Controller.uArgumentOfModifyProgramOfEnableDebugModeEditor_Content}"
 								/>
 						</my:Stack>
 					</my:Stack>
