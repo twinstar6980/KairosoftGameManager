@@ -91,9 +91,10 @@ namespace KairosoftGameManager {
 				if (window != null) {
 					await window.DispatcherQueue.EnqueueAsync(async () => {
 						await ControlHelper.PostTask(window.Content.As<FrameworkElement>(), async () => {
-							await ControlHelper.ShowDialogAsAutomatic(window.Content, "Unhandled Exception", new TextBlock() {
+							await ControlHelper.ShowDialogAsAutomatic(window.Content.As<FrameworkElement>(), "Unhandled Exception", new TextBlock() {
 								HorizontalAlignment = HorizontalAlignment.Stretch,
 								VerticalAlignment = VerticalAlignment.Stretch,
+								Style = window.Content.As<FrameworkElement>().FindResource("BodyTextBlockStyle").As<Style>(),
 								IsTextSelectionEnabled = true,
 								TextWrapping = TextWrapping.Wrap,
 								Text = ExceptionHelper.GenerateMessage(exception),

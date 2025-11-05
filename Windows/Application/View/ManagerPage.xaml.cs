@@ -87,7 +87,6 @@ namespace KairosoftGameManager.View {
 			this.uGameList_ItemsSource.Clear();
 			this.ActiveRepositoryDirectory = repositoryDirectory;
 			this.NotifyPropertyChanged([
-				nameof(this.uRepositoryDirectoryText_Foreground),
 				nameof(this.uRepositoryDirectoryText_Text),
 				nameof(this.uRepositoryDirectoryGameCount_Value),
 			]);
@@ -153,12 +152,13 @@ namespace KairosoftGameManager.View {
 			return;
 		}
 
-		public async Task<Boolean?> ActionGame (
+		public async Task<Tuple<Boolean?, Exception?>> ActionGame (
 			ManagerPageGameItemController gameController,
 			String                        action,
 			Dictionary<String, Object>    temporaryStateMap
 		) {
-			var state = true as Boolean?;
+			var state = null as Boolean?;
+			var exception = null as Exception;
 			var shouldReload = false;
 			await using var shouldReloadFinalizer = new Finalizer(async () => {
 				if (shouldReload) {
@@ -389,7 +389,17 @@ namespace KairosoftGameManager.View {
 							!shouldEncrypt ? null : GameHelper.MakeKeyFromSteamUser(game.User),
 							async (archiveConfiguration) => {
 								if (archiveConfiguration != archiveConfigurationForLocal) {
-									if (!await ControlHelper.ShowDialogForConfirm(this.View, "Record Incompatible", $"This archive may not work with the current game.\nProvided: {GameHelper.MakeRecordArchiveConfigurationText(archiveConfiguration)}\nExpected: {GameHelper.MakeRecordArchiveConfigurationText(archiveConfigurationForLocal)}")) {
+									if (!await ControlHelper.ShowDialogForConfirm(this.View, "Record Incompatible", new TextBlock() {
+											HorizontalAlignment = HorizontalAlignment.Stretch,
+											VerticalAlignment = VerticalAlignment.Stretch,
+											Style = this.View.FindResource("BodyTextBlockStyle").As<Style>(),
+											TextWrapping = TextWrapping.Wrap,
+											Text = String.Join('\n', [
+												$"This archive may not work with the current game.",
+												$"Provided: {GameHelper.MakeRecordArchiveConfigurationText(archiveConfiguration)}",
+												$"Expected: {GameHelper.MakeRecordArchiveConfigurationText(archiveConfigurationForLocal)}",
+											]),
+										})) {
 										cancelled = true;
 										return false;
 									}
@@ -402,18 +412,14 @@ namespace KairosoftGameManager.View {
 					default: throw new UnreachableException();
 				}
 				if (!cancelled) {
-					await App.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
-				}
-				else {
-					await App.MainWindow.PushNotification(InfoBarSeverity.Warning, "Cancelled.", "");
-					state = null;
+					state = true;
 				}
 			}
 			catch (Exception e) {
-				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", ExceptionHelper.GenerateMessage(e));
 				state = false;
+				exception = e;
 			}
-			return state;
+			return new (state, exception);
 		}
 
 		#endregion
@@ -436,12 +442,6 @@ namespace KairosoftGameManager.View {
 					}));
 				}
 				return menu;
-			}
-		}
-
-		public Brush uRepositoryDirectoryText_Foreground {
-			get {
-				return this.View.FindResource(this.ActiveRepositoryDirectory != null ? "TextFillColorPrimaryBrush" : "TextFillColorSecondaryBrush").As<Brush>();
 			}
 		}
 
@@ -474,10 +474,22 @@ namespace KairosoftGameManager.View {
 			var actionTemporaryState = new Dictionary<String, Object>();
 			var result = new List<Tuple<ManagerPageGameItemController, Boolean?>>();
 			foreach (var item in this.View.uGameList.SelectedItems.Select(CommonUtility.As<ManagerPageGameItemController>)) {
-				var state = await this.ActionGame(item, action, actionTemporaryState);
+				var (state, exception) = await this.ActionGame(item, action, actionTemporaryState);
 				result.Add(new (item, state));
 				if (state != null && !state.AsNotNull()) {
-					if (!await ControlHelper.ShowDialogForConfirm(this.View, "Error Occurred", $"Failed to action for '{item.Configuration.Name}'.\nWhether to proceed with the remaining item?")) {
+					if (!await ControlHelper.ShowDialogForConfirm(this.View, "Error Occurred", new TextBlock() {
+							HorizontalAlignment = HorizontalAlignment.Stretch,
+							VerticalAlignment = VerticalAlignment.Stretch,
+							Style = this.View.FindResource("BodyTextBlockStyle").As<Style>(),
+							IsTextSelectionEnabled = true,
+							TextWrapping = TextWrapping.Wrap,
+							Text = String.Join('\n', [
+								$"Failed to action for '{item.Configuration.Name}'.",
+								$"Whether to proceed with the remaining item?",
+								$"",
+								$"{ExceptionHelper.GenerateMessage(exception.AsNotNull())}",
+							]),
+						})) {
 						break;
 					}
 				}
@@ -486,8 +498,13 @@ namespace KairosoftGameManager.View {
 				await ControlHelper.ShowDialogAsAutomatic(this.View, "Result Report", new TextBlock() {
 					HorizontalAlignment = HorizontalAlignment.Stretch,
 					VerticalAlignment = VerticalAlignment.Stretch,
+					Style = this.View.FindResource("BodyTextBlockStyle").As<Style>(),
+					TextWrapping = TextWrapping.Wrap,
 					Text = String.Join('\n', result.Select((value) => ($"{(value.Item2 == null ? "Cancelled" : !value.Item2.AsNotNull() ? "Failed" : "Succeeded")} - {value.Item1.Configuration.Name}"))),
 				}, null);
+			}
+			else {
+				await App.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
 			}
 			return;
 		}
@@ -648,7 +665,16 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<MenuFlyoutItem>();
-			await this.Host.ActionGame(this, senders.Tag.As<String>(), []);
+			var (state, exception) = await this.Host.ActionGame(this, senders.Tag.As<String>(), []);
+			if (state == null) {
+				await App.MainWindow.PushNotification(InfoBarSeverity.Warning, "Cancelled.", "");
+			}
+			else if (state.AsNotNull()) {
+				await App.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
+			}
+			else {
+				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", ExceptionHelper.GenerateMessage(exception.AsNotNull()));
+			}
 			return;
 		}
 
