@@ -42,17 +42,93 @@ namespace KairosoftGameManager.Utility {
 			String              programFile,
 			String              metadataFile
 		) {
+			var dumpDirectory = StorageHelper.Temporary();
+			StorageHelper.CreateDirectory(dumpDirectory);
+			await using var dumpDirectoryFinalizer = new Finalizer(async () => {
+				StorageHelper.Remove(dumpDirectory);
+			});
 			var processResult = (await ProcessHelper.RunProcess(
 				setting.Il2cppdumperPath,
 				[
 					programFile,
 					metadataFile,
+					dumpDirectory,
 				],
 				null,
 				true
 			)).AsNotNull();
 			AssertTest(processResult.Item2.ReplaceLineEndings("\n").EndsWith("Done!\nPress any key to exit...\n"));
-			var result = (await StorageHelper.ReadFileText($"{StorageHelper.Parent(setting.Il2cppdumperPath)}/dump.cs")).Split('\n').ToList();
+			var result = (await StorageHelper.ReadFileText($"{dumpDirectory}/dump.cs")).Split('\n').ToList();
+			return result;
+		}
+
+		public static List<Tuple<Size, String, Boolean, String>> DoIl2cppdumperSearchFieldFromDumpData (
+			List<String> source,
+			String       className,
+			String       fieldName
+		) {
+			var result = new List<Tuple<Size, String, Boolean, String>>();
+			var classRule = new Regex(@"^(private|protected|public) class ([^ ]+)");
+			var fieldRule = new Regex(@"^\t(private|protected|public)( static)? (.+) (.+); \/\/ 0x(.+)$");
+			for (var index = 0; index < source.Count; index++) {
+				var classMatch = classRule.Match(source[index]);
+				if (!classMatch.Success || classMatch.Groups[2].Value != className) {
+					continue;
+				}
+				for (; index < source.Count; index++) {
+					if (source[index] == "}") {
+						break;
+					}
+					var fieldMatch = fieldRule.Match(source[index]);
+					if (!fieldMatch.Success || fieldMatch.Groups[4].Value != fieldName) {
+						continue;
+					}
+					result.Add(new (
+						Size.Parse(fieldMatch.Groups[5].Value, NumberStyles.HexNumber),
+						fieldMatch.Groups[1].Value,
+						fieldMatch.Groups[2].Value.Length != 0,
+						fieldMatch.Groups[3].Value
+					));
+				}
+				break;
+			}
+			return result;
+		}
+
+		public static List<Tuple<Size, String, Boolean, String, String>> DoIl2cppdumperSearchMethodFromDumpData (
+			List<String> source,
+			String       className,
+			String       methodName
+		) {
+			var result = new List<Tuple<Size, String, Boolean, String, String>>();
+			var classRule = new Regex(@"^(private|protected|public) class ([^ ]+)");
+			var methodRule = new Regex(@"^\t(private|protected|public)( static)? (.+) (.+)\((.*)\) \{ \}$");
+			var commentRule = new Regex(@"^\t\/\/ RVA: 0x(.+) Offset: 0x(.+) VA: 0x(.+)$");
+			for (var index = 0; index < source.Count; index++) {
+				var classMatch = classRule.Match(source[index]);
+				if (!classMatch.Success || classMatch.Groups[2].Value != className) {
+					continue;
+				}
+				for (; index < source.Count; index++) {
+					if (source[index] == "}") {
+						break;
+					}
+					var methodMatch = methodRule.Match(source[index]);
+					if (!methodMatch.Success || methodMatch.Groups[4].Value != methodName) {
+						continue;
+					}
+					var commentMatch = commentRule.Match(source[index - 1]);
+					AssertTest(commentMatch.Success);
+					result.Add(new (
+						Size.Parse(commentMatch.Groups[2].Value, NumberStyles.HexNumber),
+						methodMatch.Groups[1].Value,
+						methodMatch.Groups[2].Value.Length != 0,
+						methodMatch.Groups[3].Value,
+						methodMatch.Groups[5].Value
+					));
+				}
+				break;
+			}
 			return result;
 		}
 

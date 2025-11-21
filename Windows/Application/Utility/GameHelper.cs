@@ -138,70 +138,6 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		private static Tuple<Size, String, Boolean, String>? SearchFieldFromDumpData (
-			List<String> source,
-			String       className,
-			String       fieldName
-		) {
-			var result = null as Tuple<Size, String, Boolean, String>;
-			for (var index = 0; index < source.Count; index++) {
-				var classMatch = new Regex(@"^(private|protected|public)? class ([^ ]+)?").Match(source[index]);
-				if (classMatch.Success && classMatch.Groups[2].Value == className) {
-					for (; index < source.Count; index++) {
-						if (source[index] == "}") {
-							break;
-						}
-						var fieldMatch = new Regex(@"^\t(private|protected|public)?( static)? (.+) (.+); \/\/ 0x(.+)$").Match(source[index]);
-						if (fieldMatch.Success && fieldMatch.Groups[4].Value == fieldName) {
-							result = new (
-								Size.Parse(fieldMatch.Groups[5].Value, NumberStyles.HexNumber),
-								fieldMatch.Groups[1].Value,
-								fieldMatch.Groups[2].Value == " static",
-								fieldMatch.Groups[3].Value
-							);
-							break;
-						}
-					}
-					break;
-				}
-			}
-			return result;
-		}
-
-		private static List<Tuple<Size, String, Boolean, String, String>> SearchMethodFromDumpData (
-			List<String> source,
-			String       className,
-			String       methodName
-		) {
-			var result = new List<Tuple<Size, String, Boolean, String, String>>();
-			for (var index = 0; index < source.Count; index++) {
-				var classMatch = new Regex(@"^(private|protected|public)? class ([^ ]+)?").Match(source[index]);
-				if (classMatch.Success && classMatch.Groups[2].Value == className) {
-					for (; index < source.Count; index++) {
-						if (source[index] == "}") {
-							break;
-						}
-						var methodMatch = new Regex(@"^\t(private|protected|public)?( static)? (.+) (.+)\((.*)\) \{ \}$").Match(source[index]);
-						if (methodMatch.Success && methodMatch.Groups[4].Value == methodName) {
-							var commentMatch = new Regex(@"^\t\/\/ RVA: 0x(.+) Offset: 0x(.+) VA: 0x(.+)$").Match(source[index - 1]);
-							AssertTest(commentMatch.Success);
-							result.Add(new (
-								Size.Parse(commentMatch.Groups[2].Value, NumberStyles.HexNumber),
-								methodMatch.Groups[1].Value,
-								methodMatch.Groups[2].Value == " static",
-								methodMatch.Groups[3].Value,
-								methodMatch.Groups[5].Value
-							));
-						}
-					}
-					break;
-				}
-			}
-			return result;
-		}
-
-		// ----------------
-
 		private const IntegerU8 InstructionCodeNopIntel32 = 0x90;
 
 		private const IntegerU32 InstructionCodeNopArm32 = 0xE320F000;
@@ -217,9 +153,9 @@ namespace KairosoftGameManager.Utility {
 			GamePlatform platform
 		) {
 			var state = false;
-			var end = Math.Min(data.Length, position + limit);
+			var dataEnd = Math.Min(data.Length, position + limit);
 			if (platform == GamePlatform.WindowsIntel32) {
-				while (position < end) {
+				while (position < dataEnd) {
 					var instructionCode = data[position];
 					position += 1;
 					// call #X = E8 XX XX XX XX
@@ -246,7 +182,7 @@ namespace KairosoftGameManager.Utility {
 				}
 			}
 			if (platform == GamePlatform.AndroidArm32) {
-				while (position < end) {
+				while (position < dataEnd) {
 					var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(data.Slice(position, 4));
 					position += 4;
 					// bl #X = EB XX XX XX
@@ -269,7 +205,7 @@ namespace KairosoftGameManager.Utility {
 				}
 			}
 			if (platform == GamePlatform.AndroidArm64) {
-				while (position < end) {
+				while (position < dataEnd) {
 					var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(data.Slice(position, 4));
 					position += 4;
 					// bl #X = 97 XX XX XX
@@ -326,46 +262,36 @@ namespace KairosoftGameManager.Utility {
 				},
 			};
 			{
-				var searchResult = GameHelper.SearchMethodFromDumpData(dumpData, "CRC64", "GetValue");
-				AssertTest(searchResult.Count == 1);
-				symbolAddress.CRC64.GetValue.AddRange(searchResult.Select((value) => value.Item1));
-				onNotify($"The symbol 'CRC64.GetValue' at {String.Join(',', symbolAddress.CRC64.GetValue.Select((value) => ($"{value:x}")))}.");
-			}
-			{
-				var searchResult = GameHelper.SearchMethodFromDumpData(dumpData, "Encrypter", "Encode");
-				AssertTest(searchResult.Count == 3);
-				symbolAddress.Encrypter.Encode.AddRange(searchResult.Select((value) => value.Item1));
-				onNotify($"The symbol 'Encrypter.Encode' at {String.Join(',', symbolAddress.Encrypter.Encode.Select((value) => ($"{value:x}")))}.");
-			}
-			{
-				var searchResult = GameHelper.SearchMethodFromDumpData(dumpData, "Encrypter", "Decode");
-				AssertTest(searchResult.Count == 3);
-				symbolAddress.Encrypter.Decode.AddRange(searchResult.Select((value) => value.Item1));
-				onNotify($"The symbol 'Encrypter.Decode' at {String.Join(',', symbolAddress.Encrypter.Decode.Select((value) => ($"{value:x}")))}.");
-			}
-			{
-				var searchResult = GameHelper.SearchMethodFromDumpData(dumpData, "RecordStore", "ReadRecord").Where((value) => (!value.Item3 && value.Item5 == "int rcId")).ToList();
-				AssertTest(searchResult.Count == 1);
-				symbolAddress.RecordStore.ReadRecord.Add(searchResult[0].Item1);
-				onNotify($"The symbol 'RecordStore.ReadRecord' at {symbolAddress.RecordStore.ReadRecord[0]:x}.");
-			}
-			{
-				var searchResult = GameHelper.SearchMethodFromDumpData(dumpData, "RecordStore", "WriteRecord").Where((value) => (!value.Item3 && value.Item5 == "int rcId, byte[][] data")).ToList();
-				AssertTest(searchResult.Count == 1);
-				symbolAddress.RecordStore.WriteRecord.Add(searchResult[0].Item1);
-				onNotify($"The symbol 'RecordStore.WriteRecord' at {symbolAddress.RecordStore.WriteRecord[0]:x}.");
-			}
-			{
-				var searchResult = GameHelper.SearchMethodFromDumpData(dumpData, "MyConfig", ".cctor");
-				AssertTest(searchResult.Count == 1);
-				symbolAddress.MyConfig._cctor.Add(searchResult[0].Item1);
-				onNotify($"The symbol 'MyConfig..cctor' at {symbolAddress.MyConfig._cctor[0]:x}.");
-			}
-			{
-				var searchResult = GameHelper.SearchFieldFromDumpData(dumpData, "MyConfig", "DEBUG");
-				AssertTest(searchResult != null);
-				symbolAddress.MyConfig.DEBUG.Add(searchResult.Item1);
-				onNotify($"The symbol 'MyConfig.DEBUG' at +{symbolAddress.MyConfig.DEBUG[0]:x}.");
+				symbolAddress.CRC64.GetValue.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "CRC64", "GetValue")
+					.SelfAlso((it) => AssertTest(it.Count() == 1))
+					.Select((it) => it.Item1)
+					.SelfAlso((it) => onNotify($"The symbol 'CRC64.GetValue' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+				symbolAddress.Encrypter.Encode.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "Encrypter", "Encode")
+					.SelfAlso((it) => AssertTest(it.Count() == 3))
+					.Select((it) => it.Item1)
+					.SelfAlso((it) => onNotify($"The symbol 'Encrypter.Encode' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+				symbolAddress.Encrypter.Decode.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "Encrypter", "Decode")
+					.SelfAlso((it) => AssertTest(it.Count() == 3))
+					.Select((it) => it.Item1)
+					.SelfAlso((it) => onNotify($"The symbol 'Encrypter.Decode' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+				symbolAddress.RecordStore.ReadRecord.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "RecordStore", "ReadRecord")
+					.Where((value) => (!value.Item3 && value.Item5 == "int rcId"))
+					.SelfAlso((it) => AssertTest(it.Count() == 1))
+					.Select((it) => it.Item1)
+					.SelfAlso((it) => onNotify($"The symbol 'RecordStore.ReadRecord' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+				symbolAddress.RecordStore.WriteRecord.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "RecordStore", "WriteRecord")
+					.Where((value) => (!value.Item3 && value.Item5 == "int rcId, byte[][] data"))
+					.SelfAlso((it) => AssertTest(it.Count() == 1))
+					.Select((it) => it.Item1)
+					.SelfAlso((it) => onNotify($"The symbol 'RecordStore.WriteRecord' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+				symbolAddress.MyConfig._cctor.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "MyConfig", ".cctor")
+					.SelfAlso((it) => AssertTest(it.Count() == 1))
+					.Select((it) => it.Item1)
+					.SelfAlso((it) => onNotify($"The symbol 'MyConfig..cctor' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+				symbolAddress.MyConfig.DEBUG.AddRange(ExternalToolHelper.DoIl2cppdumperSearchFieldFromDumpData(dumpData, "MyConfig", "DEBUG")
+					.SelfAlso((it) => AssertTest(it.Count() == 1))
+					.Select((it) => it.Item1)
+					.SelfAlso((it) => onNotify($"The symbol 'MyConfig.DEBUG' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
 			}
 			onNotify($"Phase: load original program.");
 			var programData = await StorageHelper.ReadFile(programFile);
@@ -417,9 +343,9 @@ namespace KairosoftGameManager.Utility {
 			if (enableDebugMode) {
 				onNotify($"Phase: modify method 'MyConfig..cctor'.");
 				programPosition = symbolAddress.MyConfig._cctor[0];
-				var searchLimit = 512;
+				var programStreamEnd = programPosition + 0x200;
 				if (platform == GamePlatform.WindowsIntel32) {
-					while (programPosition < symbolAddress.MyConfig._cctor[0] + searchLimit) {
+					while (programPosition < programStreamEnd) {
 						// mov byte ptr [eax+X], 0 = C6 40 XX 00
 						if (programData[programPosition] != 0xC6) {
 							programPosition++;
@@ -438,13 +364,11 @@ namespace KairosoftGameManager.Utility {
 							continue;
 						}
 						programData[programPosition++] = 0x01;
-						onNotify($"Warning: the STR instruction for 'MyConfig.DEBUG' was found at {(programPosition - 4):x}, but this modification may cause error.");
 						break;
 					}
-					AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
 				}
 				if (platform == GamePlatform.AndroidArm32) {
-					while (programPosition < symbolAddress.MyConfig._cctor[0] + searchLimit) {
+					while (programPosition < programStreamEnd) {
 						// strb rX, [rY, #Z] = 111001011100 YYYY XXXX ZZZZZZZZZZZZ
 						var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4));
 						programPosition += 4;
@@ -455,13 +379,11 @@ namespace KairosoftGameManager.Utility {
 							continue;
 						}
 						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b111111111111_1111_0000_000000000000u) | (14u << 12) | (symbolAddress.MyConfig.DEBUG.First().CastPrimitive<SizeU>() << 0));
-						onNotify($"Warning: the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
 						break;
 					}
-					AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
 				}
 				if (platform == GamePlatform.AndroidArm64) {
-					while (programPosition < symbolAddress.MyConfig._cctor[0] + searchLimit) {
+					while (programPosition < programStreamEnd) {
 						// strb wX, [xY, #Z] = 0011100100 ZZZZZZZZZZZZ YYYYY XXXXX
 						var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4));
 						programPosition += 4;
@@ -472,11 +394,11 @@ namespace KairosoftGameManager.Utility {
 							continue;
 						}
 						BinaryPrimitives.WriteUInt32LittleEndian(programData.AsSpan().Slice(programPosition - 4, 4), (instructionCode & 0b1111111111_000000000000_11111_00000u) | (symbolAddress.MyConfig.DEBUG.First().CastPrimitive<SizeU>() << 10) | (30u << 0));
-						onNotify($"Warning: the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
 						break;
 					}
-					AssertTest(programPosition != symbolAddress.MyConfig._cctor[0] + searchLimit);
 				}
+				AssertTest(programPosition != programStreamEnd);
+				onNotify($"Warning: the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
 			}
 			onNotify($"Phase: save modified program.");
 			await StorageHelper.WriteFile(programFile, programData);
@@ -520,28 +442,28 @@ namespace KairosoftGameManager.Utility {
 			else {
 				onNotify($"Phase: unpack package file.");
 				targetDirectory = $"{temporaryDirectory}/flat";
-				var fileNameList = Enum.GetValues<GamePlatform>().SelectMany((it) => new[] { GameHelper.GetProgramFilePath(it), GameHelper.GetMetadataFilePath(it) }).Distinct();
-				var unpackSingleArchive = (
+				var necessaryFileNameList = Enum.GetValues<GamePlatform>().SelectMany((it) => new[] { GameHelper.GetProgramFilePath(it), GameHelper.GetMetadataFilePath(it) }).Distinct();
+				var unpackSingleArchive = async (
 					ZipArchive package
 				) => {
-					foreach (var fileName in fileNameList) {
-						var entry = package.GetEntry(fileName);
-						if (entry != null) {
-							StorageHelper.CreateDirectory(StorageHelper.Parent($"{targetDirectory}/{fileName}").AsNotNull());
-							entry.ExtractToFile($"{targetDirectory}/{fileName}");
+					foreach (var necessaryFileName in necessaryFileNameList) {
+						var necessaryFile = package.GetEntry(necessaryFileName);
+						if (necessaryFile != null) {
+							StorageHelper.CreateDirectory(StorageHelper.Parent($"{targetDirectory}/{necessaryFileName}").AsNotNull());
+							await necessaryFile.ExtractToFileAsync($"{targetDirectory}/{necessaryFileName}");
 						}
 					}
 					return;
 				};
-				using var package = ZipFile.Open(target, ZipArchiveMode.Read);
+				await using var package = await ZipFile.OpenAsync(target, ZipArchiveMode.Read);
 				if (packageType == GamePackageType.Zip || packageType == GamePackageType.Apk) {
-					unpackSingleArchive(package);
+					await unpackSingleArchive(package);
 				}
 				if (packageType == GamePackageType.Apks) {
-					ZipFile.ExtractToDirectory(target, $"{temporaryDirectory}/apks");
-					foreach (var subPackageName in StorageHelper.ListDirectory($"{temporaryDirectory}/apks", 1, true, false, "*.apk")) {
-						using var subPackage = ZipFile.Open($"{temporaryDirectory}/apks/{subPackageName}", ZipArchiveMode.Read);
-						unpackSingleArchive(subPackage);
+					await ZipFile.ExtractToDirectoryAsync(target, $"{temporaryDirectory}/apks");
+					foreach (var packagePartName in StorageHelper.ListDirectory($"{temporaryDirectory}/apks", 1, true, false, "*.apk")) {
+						await using var packagePart = await ZipFile.OpenAsync($"{temporaryDirectory}/apks/{packagePartName}", ZipArchiveMode.Read);
+						await unpackSingleArchive(packagePart);
 					}
 				}
 			}
@@ -565,19 +487,19 @@ namespace KairosoftGameManager.Utility {
 				onNotify($"Phase: repack package file.");
 				var targetFile = $"{temporaryDirectory}/package";
 				StorageHelper.Copy(target, targetFile);
-				using var package = ZipFile.Open(targetFile, ZipArchiveMode.Update);
-				var replaceProgramFile = (
+				await using var package = await ZipFile.OpenAsync(targetFile, ZipArchiveMode.Update);
+				var replaceProgramFile = async (
 					ZipArchive   package,
 					GamePlatform platform
 				) => {
 					var fileName = GameHelper.GetProgramFilePath(platform);
 					package.GetEntry(fileName).AsNotNull().Delete();
-					package.CreateEntryFromFile($"{targetDirectory}/{fileName}", fileName);
+					await package.CreateEntryFromFileAsync($"{targetDirectory}/{fileName}", fileName);
 					return;
 				};
 				foreach (var platform in platformList) {
 					if (packageType == GamePackageType.Zip || packageType == GamePackageType.Apk) {
-						replaceProgramFile(package, platform);
+						await replaceProgramFile(package, platform);
 					}
 					if (packageType == GamePackageType.Apks) {
 						var architectureName = platform switch {
@@ -585,14 +507,14 @@ namespace KairosoftGameManager.Utility {
 							GamePlatform.AndroidArm64 => "arm64_v8a",
 							_                         => throw new UnreachableException(),
 						};
-						var subPackageName = $"split_config.{architectureName}.apk";
-						var subPackageFile = $"{temporaryDirectory}/apks/{subPackageName}";
-						using var subPackage = ZipFile.Open(subPackageFile, ZipArchiveMode.Update);
-						replaceProgramFile(subPackage, platform);
+						var packagePartName = $"split_config.{architectureName}.apk";
+						var packagePartFile = $"{temporaryDirectory}/apks/{packagePartName}";
+						await using var packagePart = await ZipFile.OpenAsync(packagePartFile, ZipArchiveMode.Update);
+						await replaceProgramFile(packagePart, platform);
 					}
 				}
 				if (packageType == GamePackageType.Zip) {
-					package.Dispose();
+					await package.DisposeAsync();
 				}
 				if (packageType == GamePackageType.Apk || packageType == GamePackageType.Apks) {
 					onNotify($"Phase: post-processing apk file.");
@@ -626,17 +548,17 @@ namespace KairosoftGameManager.Utility {
 						return;
 					};
 					if (packageType == GamePackageType.Apk) {
-						package.Dispose();
+						await package.DisposeAsync();
 						await postProcessingApkFile(targetFile);
 					}
 					if (packageType == GamePackageType.Apks) {
-						foreach (var subPackageName in StorageHelper.ListDirectory($"{temporaryDirectory}/apks", 1, true, false, "*.apk")) {
-							var subPackageFile = $"{temporaryDirectory}/apks/{subPackageName}";
-							await postProcessingApkFile(subPackageFile);
-							package.GetEntry(subPackageName).AsNotNull().Delete();
-							package.CreateEntryFromFile(subPackageFile, subPackageName);
+						foreach (var packagePartName in StorageHelper.ListDirectory($"{temporaryDirectory}/apks", 1, true, false, "*.apk")) {
+							var packagePartFile = $"{temporaryDirectory}/apks/{packagePartName}";
+							await postProcessingApkFile(packagePartFile);
+							package.GetEntry(packagePartName).AsNotNull().Delete();
+							await package.CreateEntryFromFileAsync(packagePartFile, packagePartName);
 						}
-						package.Dispose();
+						await package.DisposeAsync();
 					}
 				}
 				StorageHelper.Trash(target);
