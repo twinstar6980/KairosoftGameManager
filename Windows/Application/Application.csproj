@@ -97,6 +97,6 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
     <PublishAot Condition="'$(Configuration)' == 'Debug'">False</PublishAot>
-    <PublishAot Condition="'$(Configuration)' != 'Debug'">True</PublishAot>
+    <PublishAot Condition="'$(Configuration)' != 'Debug'">False</PublishAot>
   </PropertyGroup>
 </Project>

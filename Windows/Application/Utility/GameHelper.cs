@@ -265,40 +265,40 @@ namespace KairosoftGameManager.Utility {
 				symbolAddress.CRC64.GetValue.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "CRC64", "GetValue")
 					.SelfAlso((it) => AssertTest(it.Count() == 1))
 					.Select((it) => it.Item1)
-					.SelfAlso((it) => onNotify($"The symbol 'CRC64.GetValue' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+					.SelfAlso((it) => onNotify($"Tip: the symbol 'CRC64.GetValue' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
 				symbolAddress.Encrypter.Encode.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "Encrypter", "Encode")
 					.SelfAlso((it) => AssertTest(it.Count() == 3))
 					.Select((it) => it.Item1)
-					.SelfAlso((it) => onNotify($"The symbol 'Encrypter.Encode' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+					.SelfAlso((it) => onNotify($"Tip: the symbol 'Encrypter.Encode' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
 				symbolAddress.Encrypter.Decode.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "Encrypter", "Decode")
 					.SelfAlso((it) => AssertTest(it.Count() == 3))
 					.Select((it) => it.Item1)
-					.SelfAlso((it) => onNotify($"The symbol 'Encrypter.Decode' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+					.SelfAlso((it) => onNotify($"Tip: the symbol 'Encrypter.Decode' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
 				symbolAddress.RecordStore.ReadRecord.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "RecordStore", "ReadRecord")
 					.Where((value) => (!value.Item3 && value.Item5 == "int rcId"))
 					.SelfAlso((it) => AssertTest(it.Count() == 1))
 					.Select((it) => it.Item1)
-					.SelfAlso((it) => onNotify($"The symbol 'RecordStore.ReadRecord' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+					.SelfAlso((it) => onNotify($"Tip: the symbol 'RecordStore.ReadRecord' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
 				symbolAddress.RecordStore.WriteRecord.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "RecordStore", "WriteRecord")
 					.Where((value) => (!value.Item3 && value.Item5 == "int rcId, byte[][] data"))
 					.SelfAlso((it) => AssertTest(it.Count() == 1))
 					.Select((it) => it.Item1)
-					.SelfAlso((it) => onNotify($"The symbol 'RecordStore.WriteRecord' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+					.SelfAlso((it) => onNotify($"Tip: the symbol 'RecordStore.WriteRecord' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
 				symbolAddress.MyConfig._cctor.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "MyConfig", ".cctor")
 					.SelfAlso((it) => AssertTest(it.Count() == 1))
 					.Select((it) => it.Item1)
-					.SelfAlso((it) => onNotify($"The symbol 'MyConfig..cctor' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+					.SelfAlso((it) => onNotify($"Tip: the symbol 'MyConfig..cctor' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
 				symbolAddress.MyConfig.DEBUG.AddRange(ExternalToolHelper.DoIl2cppdumperSearchFieldFromDumpData(dumpData, "MyConfig", "DEBUG")
 					.SelfAlso((it) => AssertTest(it.Count() == 1))
 					.Select((it) => it.Item1)
-					.SelfAlso((it) => onNotify($"The symbol 'MyConfig.DEBUG' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
+					.SelfAlso((it) => onNotify($"Tip: the symbol 'MyConfig.DEBUG' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
 			}
 			onNotify($"Phase: load original program.");
 			var programData = await StorageHelper.ReadFile(programFile);
 			var programPosition = 0;
 			if (disableRecordEncryption) {
 				onNotify($"Phase: modify method 'RecordStore.ReadRecord'.");
-				programPosition = symbolAddress.RecordStore.ReadRecord[0];
+				programPosition = symbolAddress.RecordStore.ReadRecord.First();
 				AssertTest(GameHelper.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Decode, true, platform));
 				AssertTest(GameHelper.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Decode, true, platform));
 				AssertTest(GameHelper.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.CRC64.GetValue, false, platform));
@@ -336,16 +336,16 @@ namespace KairosoftGameManager.Utility {
 			}
 			if (disableRecordEncryption) {
 				onNotify($"Phase: modify method 'RecordStore.WriteRecord'.");
-				programPosition = symbolAddress.RecordStore.WriteRecord[0];
+				programPosition = symbolAddress.RecordStore.WriteRecord.First();
 				AssertTest(GameHelper.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Encode, true, platform));
 				AssertTest(GameHelper.FindCallInstruction(programData, ref programPosition, 0x1000, symbolAddress.Encrypter.Encode, true, platform));
 			}
 			if (enableDebugMode) {
 				onNotify($"Phase: modify method 'MyConfig..cctor'.");
-				programPosition = symbolAddress.MyConfig._cctor[0];
-				var programStreamEnd = programPosition + 0x200;
+				programPosition = symbolAddress.MyConfig._cctor.First();
+				var programEnd = programPosition + 0x200;
 				if (platform == GamePlatform.WindowsIntel32) {
-					while (programPosition < programStreamEnd) {
+					while (programPosition < programEnd) {
 						// mov byte ptr [eax+X], 0 = C6 40 XX 00
 						if (programData[programPosition] != 0xC6) {
 							programPosition++;
@@ -356,7 +356,7 @@ namespace KairosoftGameManager.Utility {
 							continue;
 						}
 						programPosition++;
-						if (programData[programPosition] != symbolAddress.MyConfig.DEBUG[0]) {
+						if (programData[programPosition] != symbolAddress.MyConfig.DEBUG.First()) {
 							continue;
 						}
 						programPosition++;
@@ -368,7 +368,7 @@ namespace KairosoftGameManager.Utility {
 					}
 				}
 				if (platform == GamePlatform.AndroidArm32) {
-					while (programPosition < programStreamEnd) {
+					while (programPosition < programEnd) {
 						// strb rX, [rY, #Z] = 111001011100 YYYY XXXX ZZZZZZZZZZZZ
 						var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4));
 						programPosition += 4;
@@ -383,7 +383,7 @@ namespace KairosoftGameManager.Utility {
 					}
 				}
 				if (platform == GamePlatform.AndroidArm64) {
-					while (programPosition < programStreamEnd) {
+					while (programPosition < programEnd) {
 						// strb wX, [xY, #Z] = 0011100100 ZZZZZZZZZZZZ YYYYY XXXXX
 						var instructionCode = BinaryPrimitives.ReadUInt32LittleEndian(programData.AsSpan().Slice(programPosition, 4));
 						programPosition += 4;
@@ -397,8 +397,8 @@ namespace KairosoftGameManager.Utility {
 						break;
 					}
 				}
-				AssertTest(programPosition != programStreamEnd);
-				onNotify($"Warning: the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x}, but this modification may cause error.");
+				AssertTest(programPosition != programEnd);
+				onNotify($"Warning: the STR instruction for 'MyConfig.DEBUG'+4 was found at {(programPosition - 4):x8}, but this modification may cause error.");
 			}
 			onNotify($"Phase: save modified program.");
 			await StorageHelper.WriteFile(programFile, programData);
@@ -434,43 +434,71 @@ namespace KairosoftGameManager.Utility {
 				}
 			}
 			AssertTest(packageType != null);
-			onNotify($"The package type is '{packageType}'.");
-			var targetDirectory = default(String?);
-			if (packageType == GamePackageType.Flat) {
-				targetDirectory = target;
-			}
-			else {
-				onNotify($"Phase: unpack package file.");
-				targetDirectory = $"{temporaryDirectory}/flat";
-				var necessaryFileNameList = Enum.GetValues<GamePlatform>().SelectMany((it) => new[] { GameHelper.GetProgramFilePath(it), GameHelper.GetMetadataFilePath(it) }).Distinct();
-				var unpackSingleArchive = async (
-					ZipArchive package
-				) => {
-					foreach (var necessaryFileName in necessaryFileNameList) {
-						var necessaryFile = package.GetEntry(necessaryFileName);
-						if (necessaryFile != null) {
-							StorageHelper.CreateDirectory(StorageHelper.Parent($"{targetDirectory}/{necessaryFileName}").AsNotNull());
-							await necessaryFile.ExtractToFileAsync($"{targetDirectory}/{necessaryFileName}");
-						}
+			onNotify($"Tip: the package type is '{packageType}'.");
+			var packageBundle = null as ZipArchive;
+			var packagePartList = null as List<Tuple<String, ZipArchive>>;
+			await using var packageFinalizer = new Finalizer(async () => {
+				if (packageBundle != null) {
+					await packageBundle.DisposeAsync();
+				}
+				if (packagePartList != null) {
+					foreach (var packagePart in packagePartList) {
+						await packagePart.Item2.DisposeAsync();
 					}
-					return;
-				};
-				await using var package = await ZipFile.OpenAsync(target, ZipArchiveMode.Read);
-				if (packageType == GamePackageType.Zip || packageType == GamePackageType.Apk) {
-					await unpackSingleArchive(package);
+				}
+			});
+			if (packageType != GamePackageType.Flat) {
+				onNotify($"Phase: load package file'.");
+				var packageMainPath = $"{temporaryDirectory}/package/main";
+				StorageHelper.Copy(target, packageMainPath);
+				var packageMain = await ZipFile.OpenAsync(packageMainPath, ZipArchiveMode.Update);
+				packagePartList = [];
+				if (packageType == GamePackageType.Zip) {
+					packagePartList.Add(new ("main", packageMain));
+				}
+				if (packageType == GamePackageType.Apk) {
+					packagePartList.Add(new ("main", packageMain));
 				}
 				if (packageType == GamePackageType.Apks) {
-					await ZipFile.ExtractToDirectoryAsync(target, $"{temporaryDirectory}/apks");
-					foreach (var packagePartName in StorageHelper.ListDirectory($"{temporaryDirectory}/apks", 1, true, false, "*.apk")) {
-						await using var packagePart = await ZipFile.OpenAsync($"{temporaryDirectory}/apks/{packagePartName}", ZipArchiveMode.Read);
-						await unpackSingleArchive(packagePart);
+					packageBundle = packageMain;
+					StorageHelper.CreateDirectory(StorageHelper.Parent($"{temporaryDirectory}/package").AsNotNull());
+					foreach (var packagePartFile in packageBundle.Entries) {
+						if (!packagePartFile.Name.ToLower().EndsWith(".apk")) {
+							continue;
+						}
+						var packagePartPath = $"{temporaryDirectory}/package/{packagePartFile.Name}";
+						await packagePartFile.ExtractToFileAsync(packagePartPath);
+						packagePartList.Add(new (packagePartFile.Name, await ZipFile.OpenAsync(packagePartPath, ZipArchiveMode.Update)));
+					}
+				}
+			}
+			onNotify($"Phase: extract necessary file.");
+			var targetDirectory = $"{temporaryDirectory}/flat";
+			var necessaryFileNameList = Enum.GetValues<GamePlatform>().SelectMany((it) => new[] { GameHelper.GetProgramFilePath(it), GameHelper.GetMetadataFilePath(it) }).Distinct();
+			if (packageType == GamePackageType.Flat) {
+				foreach (var necessaryFileName in necessaryFileNameList) {
+					if (StorageHelper.ExistFile($"{target}/{necessaryFileName}")) {
+						StorageHelper.Copy($"{target}/{necessaryFileName}", $"{targetDirectory}/{necessaryFileName}");
+					}
+				}
+			}
+			else {
+				AssertTest(packagePartList != null);
+				foreach (var packagePart in packagePartList) {
+					foreach (var necessaryFileName in necessaryFileNameList) {
+						var necessaryFile = packagePart.Item2.GetEntry(necessaryFileName);
+						if (necessaryFile == null) {
+							continue;
+						}
+						StorageHelper.CreateDirectory(StorageHelper.Parent($"{targetDirectory}/{necessaryFileName}").AsNotNull());
+						await necessaryFile.ExtractToFileAsync($"{targetDirectory}/{necessaryFileName}");
 					}
 				}
 			}
 			onNotify($"Phase: detect platform.");
 			var platformList = GameHelper.DetectPlatform(targetDirectory);
 			AssertTest(platformList.Count != 0);
-			onNotify($"The platform is '{String.Join('|', platformList)}'.");
+			onNotify($"Tip: the platform is '{String.Join('|', platformList)}'.");
 			foreach (var platform in platformList) {
 				onNotify($"Phase: modify program of '{platform}'.");
 				await GameHelper.ModifyProgramFlat(
@@ -485,9 +513,8 @@ namespace KairosoftGameManager.Utility {
 			}
 			if (packageType != GamePackageType.Flat) {
 				onNotify($"Phase: repack package file.");
-				var targetFile = $"{temporaryDirectory}/package";
-				StorageHelper.Copy(target, targetFile);
-				await using var package = await ZipFile.OpenAsync(targetFile, ZipArchiveMode.Update);
+				AssertTest(packagePartList != null);
+				var replaceTaskList = new List<Tuple<ZipArchive, GamePlatform>>();
 				var replaceProgramFile = async (
 					ZipArchive   package,
 					GamePlatform platform
@@ -499,7 +526,7 @@ namespace KairosoftGameManager.Utility {
 				};
 				foreach (var platform in platformList) {
 					if (packageType == GamePackageType.Zip || packageType == GamePackageType.Apk) {
-						await replaceProgramFile(package, platform);
+						replaceTaskList.Add(new (packagePartList.First().Item2, platform));
 					}
 					if (packageType == GamePackageType.Apks) {
 						var architectureName = platform switch {
@@ -508,62 +535,75 @@ namespace KairosoftGameManager.Utility {
 							_                         => throw new UnreachableException(),
 						};
 						var packagePartName = $"split_config.{architectureName}.apk";
-						var packagePartFile = $"{temporaryDirectory}/apks/{packagePartName}";
-						await using var packagePart = await ZipFile.OpenAsync(packagePartFile, ZipArchiveMode.Update);
-						await replaceProgramFile(packagePart, platform);
+						replaceTaskList.Add(new (packagePartList.First((it) => it.Item1 == packagePartName).Item2, platform));
 					}
 				}
-				if (packageType == GamePackageType.Zip) {
-					await package.DisposeAsync();
+				foreach (var replaceTask in replaceTaskList) {
+					var packagePart = replaceTask.Item1;
+					var platform = replaceTask.Item2;
+					var fileName = GameHelper.GetProgramFilePath(platform);
+					packagePart.GetEntry(fileName).AsNotNull().Delete();
+					await packagePart.CreateEntryFromFileAsync($"{targetDirectory}/{fileName}", fileName);
 				}
-				if (packageType == GamePackageType.Apk || packageType == GamePackageType.Apks) {
-					onNotify($"Phase: post-processing apk file.");
-					var enableAlign = true;
-					var enableSign = true;
-					if (!StorageHelper.ExistFile(externalToolSetting.ZipalignPath)) {
-						onNotify($"Skipping apk align, the external tool 'zipalign' not found.");
-						enableAlign = false;
-					}
-					if (!StorageHelper.ExistFile(externalToolSetting.ApksignerPath)) {
-						onNotify($"Skipping apk sign, the external tool 'apksigner' not found.");
-						enableSign = false;
-					}
-					if (!StorageHelper.ExistFile(externalToolSetting.ApkCertificateFile)) {
-						onNotify($"Skipping apk sign, the custom apk certificate file not found.");
-						enableSign = false;
-					}
-					if (externalToolSetting.ApkCertificatePassword == "") {
-						onNotify($"Skipping apk sign, the custom apk certificate password not set.");
-						enableSign = false;
-					}
-					var postProcessingApkFile = async (
-						String apk
-					) => {
-						if (enableAlign) {
-							await ExternalToolHelper.RunZipalign(externalToolSetting, apk);
-						}
-						if (enableSign) {
-							await ExternalToolHelper.RunApksigner(externalToolSetting, apk);
-						}
-						return;
-					};
-					if (packageType == GamePackageType.Apk) {
-						await package.DisposeAsync();
-						await postProcessingApkFile(targetFile);
-					}
-					if (packageType == GamePackageType.Apks) {
-						foreach (var packagePartName in StorageHelper.ListDirectory($"{temporaryDirectory}/apks", 1, true, false, "*.apk")) {
-							var packagePartFile = $"{temporaryDirectory}/apks/{packagePartName}";
-							await postProcessingApkFile(packagePartFile);
-							package.GetEntry(packagePartName).AsNotNull().Delete();
-							await package.CreateEntryFromFileAsync(packagePartFile, packagePartName);
-						}
-						await package.DisposeAsync();
-					}
+				foreach (var packagePart in packagePartList) {
+					await packagePart.Item2.DisposeAsync();
 				}
-				StorageHelper.Trash(target);
-				StorageHelper.Copy(targetFile, target);
 			}
+			if (packageType == GamePackageType.Apk || packageType == GamePackageType.Apks) {
+				onNotify($"Phase: post-processing apk file.");
+				AssertTest(packagePartList != null);
+				var enableAlign = true;
+				var enableSign = true;
+				if (!StorageHelper.ExistFile(externalToolSetting.ZipalignPath)) {
+					onNotify($"Tip: skipping apk align, the external tool 'zipalign' not found.");
+					enableAlign = false;
+				}
+				if (!StorageHelper.ExistFile(externalToolSetting.ApksignerPath)) {
+					onNotify($"Tip: skipping apk sign, the external tool 'apksigner' not found.");
+					enableSign = false;
+				}
+				if (!StorageHelper.ExistFile(externalToolSetting.ApkCertificateFile)) {
+					onNotify($"Tip: skipping apk sign, the custom apk certificate file not found.");
+					enableSign = false;
+				}
+				if (externalToolSetting.ApkCertificatePassword == "") {
+					onNotify($"Tip: skipping apk sign, the custom apk certificate password not set.");
+					enableSign = false;
+				}
+				foreach (var packagePart in packagePartList) {
+					var packagePartFile = $"{temporaryDirectory}/package/{packagePart.Item1}";
+					if (enableAlign) {
+						await ExternalToolHelper.RunZipalign(externalToolSetting, packagePartFile);
+					}
+					if (enableSign) {
+						await ExternalToolHelper.RunApksigner(externalToolSetting, packagePartFile);
+					}
+				}
+			}
+			onNotify($"Phase: generate result.");
+			if (packageType == GamePackageType.Flat) {
+				foreach (var platform in platformList) {
+					StorageHelper.Trash($"{target}/{GameHelper.GetProgramFilePath(platform)}");
+					StorageHelper.Copy($"{targetDirectory}/{GameHelper.GetProgramFilePath(platform)}", $"{target}/{GameHelper.GetProgramFilePath(platform)}");
+				}
+			}
+			if (packageType == GamePackageType.Zip || packageType == GamePackageType.Apk) {
+				AssertTest(packagePartList != null);
+				StorageHelper.Trash(target);
+				StorageHelper.Copy($"{temporaryDirectory}/package/{packagePartList.First().Item1}", target);
+			}
+			if (packageType == GamePackageType.Apks) {
+				AssertTest(packageBundle != null);
+				AssertTest(packagePartList != null);
+				foreach (var packagePart in packagePartList) {
+					packageBundle.GetEntry(packagePart.Item1).AsNotNull().Delete();
+					await packageBundle.CreateEntryFromFileAsync($"{temporaryDirectory}/package/{packagePart.Item1}", packagePart.Item1);
+				}
+				await packageBundle.DisposeAsync();
+				StorageHelper.Trash(target);
+				StorageHelper.Copy($"{temporaryDirectory}/package/main", target);
+			}
+			onNotify($"Phase: done.");
 			return;
 		}
 
@@ -574,40 +614,33 @@ namespace KairosoftGameManager.Utility {
 		private static List<String> ListRecordFile (
 			String recordDirectory
 		) {
-			return StorageHelper.ListDirectory(recordDirectory, 1, true, false).Where((value) => new Regex(@"^\d{4,4}(_backup)?$").IsMatch(value)).ToList();
+			return StorageHelper.ListDirectory(recordDirectory, 1, true, false)
+				.Where((value) => new Regex(@"^\d{4,4}(_backup)?$").IsMatch(value))
+				.ToList();
 		}
 
 		private static async Task<GameRecordState> DetectRecordState (
 			String      recordDirectory,
 			List<Byte>? key
 		) {
-			var state = default(GameRecordState);
+			var state = GameRecordState.Invalid;
 			var itemNameList = GameHelper.ListRecordFile(recordDirectory);
 			if (itemNameList.Count == 0) {
 				state = GameRecordState.None;
 			}
-			else if (!itemNameList.Contains("0000")) {
-				state = GameRecordState.Invalid;
-			}
-			else {
+			else if (itemNameList.Contains("0000")) {
 				var itemFile = $"{recordDirectory}/0000";
 				var itemData = await StorageHelper.ReadFileLimited(itemFile, 8);
-				if (itemData.Length != 8) {
-					state = GameRecordState.Invalid;
-				}
-				else {
+				if (itemData.Length == 8) {
 					var firstNumber = BinaryPrimitives.ReadUInt32LittleEndian(itemData);
 					if (firstNumber == 0x00000000) {
 						state = GameRecordState.Decrypted;
 					}
-					else {
+					else if (key != null) {
 						GameHelper.EncryptRecordData(itemData, key);
 						firstNumber = BinaryPrimitives.ReadUInt32LittleEndian(itemData);
 						if (firstNumber == 0x00000000) {
 							state = GameRecordState.Original;
-						}
-						else {
-							state = GameRecordState.Invalid;
 						}
 					}
 				}
@@ -621,7 +654,8 @@ namespace KairosoftGameManager.Utility {
 			Byte[]      data,
 			List<Byte>? key
 		) {
-			if (key != null && key.Count != 0) {
+			if (key != null) {
+				AssertTest(key.Count != 0);
 				for (var index = 0; index < data.Length; index++) {
 					data[index] ^= key[index % key.Count];
 				}
@@ -703,7 +737,7 @@ namespace KairosoftGameManager.Utility {
 			if (StorageHelper.ExistFile(archiveFile)) {
 				StorageHelper.Trash(archiveFile);
 			}
-			ZipFile.CreateFromDirectory(archiveDirectory, archiveFile, CompressionLevel.SmallestSize, false, Encoding.UTF8);
+			await ZipFile.CreateFromDirectoryAsync(archiveDirectory, archiveFile, CompressionLevel.SmallestSize, false, Encoding.UTF8);
 			return;
 		}
 
@@ -719,7 +753,7 @@ namespace KairosoftGameManager.Utility {
 				StorageHelper.Remove(archiveDirectory);
 			});
 			// load
-			ZipFile.ExtractToDirectory(archiveFile, archiveDirectory, Encoding.UTF8);
+			await ZipFile.ExtractToDirectoryAsync(archiveFile, archiveDirectory, Encoding.UTF8);
 			// configuration
 			var archiveConfiguration = GameHelper.ParseRecordArchiveConfigurationText(await StorageHelper.ReadFileText($"{archiveDirectory}/configuration.txt"));
 			if (!await doArchiveConfiguration(archiveConfiguration)) {
