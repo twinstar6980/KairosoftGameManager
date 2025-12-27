@@ -72,7 +72,8 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var handle = WindowHelper.GetHandle(window);
 			var ratio = Win32.PInvoke.GetDpiForWindow(new (handle)) / 96.0;
-			window.AppWindow.Resize(new ((width * ratio).CastPrimitive<Int32>(), (height * ratio).CastPrimitive<Int32>()));
+			window.AppWindow.ResizeClient(new ((width * ratio).CastPrimitive<Size>(), (height * ratio).CastPrimitive<Size>() - window.AppWindow.TitleBar.Height));
+			// TODO: there is still a problem, the height will be slightly less than the actual.
 			return;
 		}
 
@@ -86,8 +87,8 @@ namespace KairosoftGameManager.Utility {
 			};
 			AssertTest(Win32.PInvoke.GetMonitorInfo(monitor, ref monitorInformation));
 			AssertTest(Win32.PInvoke.GetWindowRect(new (handle), out var rect));
-			var x = (monitorInformation.rcMonitor.left + monitorInformation.rcMonitor.right - (rect.right - rect.left)) / 2;
-			var y = (monitorInformation.rcMonitor.bottom + monitorInformation.rcMonitor.top - (rect.bottom - rect.top)) / 2;
+			var x = (monitorInformation.rcWork.left + monitorInformation.rcWork.right - (rect.right - rect.left)) / 2;
+			var y = (monitorInformation.rcWork.bottom + monitorInformation.rcWork.top - (rect.bottom - rect.top)) / 2;
 			window.AppWindow.Move(new (x, y));
 			return;
 		}
