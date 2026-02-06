@@ -1,5 +1,7 @@
 # 使用方法
 
+## 安装
+
 在 [Release](https://github.com/twinstar6980/KairosoftGameManager/releases/tag/latest) 页中可以下载到最新版本的 `msix` 安装包文件。
 
 > 安装前需要先信任 `msix` 中的签名证书。\
