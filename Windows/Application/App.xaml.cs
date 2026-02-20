@@ -53,7 +53,8 @@ namespace KairosoftGameManager {
 			LaunchActivatedEventArgs args
 		) {
 			try {
-				ExceptionHelper.Initialize(this, async (exception) => {
+				ExceptionHelper.Initialize(this);
+				ExceptionHelper.Listen(async (exception) => {
 					_ = this.HandleException(exception, App.MainWindow);
 					return;
 				});
@@ -65,9 +66,8 @@ namespace KairosoftGameManager {
 					await App.Setting.Load();
 				}
 				catch (Exception) {
-					await App.Setting.Reset();
 				}
-				await App.Setting.Save();
+				await App.Setting.Save(apply: false);
 				App.MainWindow = new ();
 				WindowHelper.SetSize(App.MainWindow, 720, 640);
 				await App.Setting.Apply();

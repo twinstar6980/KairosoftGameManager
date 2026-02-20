@@ -9,25 +9,35 @@ namespace KairosoftGameManager.Utility {
 
 		#region utility
 
-		private static Action<Exception> Handler { get; set; } = (_) => { };
+		private static Boolean Initialized { get; set; } = false;
+
+		private static Action<Exception>? Handler { get; set; } = null;
 
 		// ----------------
 
 		public static void Initialize (
-			App               application,
-			Action<Exception> handler
+			App application
 		) {
-			ExceptionHelper.Handler = handler;
+			AssertTest(!ExceptionHelper.Initialized);
 			application.UnhandledException += async (_, args) => {
 				args.Handled = true;
-				ExceptionHelper.Handler(args.Exception);
+				ExceptionHelper.Handler?.Invoke(args.Exception);
 				return;
 			};
 			TaskScheduler.UnobservedTaskException += async (_, args) => {
 				args.SetObserved();
-				ExceptionHelper.Handler(args.Exception);
+				ExceptionHelper.Handler?.Invoke(args.Exception);
 				return;
 			};
+			ExceptionHelper.Initialized = true;
+			return;
+		}
+
+		public static void Listen (
+			Action<Exception>? handler
+		) {
+			AssertTest(ExceptionHelper.Initialized);
+			ExceptionHelper.Handler = handler;
 			return;
 		}
 
@@ -38,7 +48,7 @@ namespace KairosoftGameManager.Utility {
 		) {
 			return task.ContinueWith((it) => {
 				if (it.Exception?.InnerException != null) {
-					ExceptionHelper.Handler(it.Exception.InnerException);
+					ExceptionHelper.Handler?.Invoke(it.Exception.InnerException);
 				}
 				return;
 			});

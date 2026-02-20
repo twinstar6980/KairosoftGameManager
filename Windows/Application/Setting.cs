@@ -83,8 +83,7 @@ namespace KairosoftGameManager {
 			String? file = null
 		) {
 			file ??= this.File;
-			this.Data = await JsonHelper.DeserializeFile<SettingData>(file);
-			AssertTest(this.Data.Version == ApplicationInformation.VersionMainly);
+			this.Data = (await JsonHelper.DeserializeFile<SettingData>(file)).SelfAlso((it) => AssertTest(it.Version == ApplicationInformation.VersionMainly));
 			return;
 		}
 
