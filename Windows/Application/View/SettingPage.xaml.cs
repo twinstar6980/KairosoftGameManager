@@ -97,7 +97,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<SettingsCard>();
-			await StorageHelper.Reveal(StorageHelper.Parent(App.Setting.File).AsNotNull());
+			await StorageHelper.Reveal(StorageHelper.Parent(App.Instance.Setting.File).AsNotNull());
 			return;
 		}
 
@@ -111,7 +111,7 @@ namespace KairosoftGameManager.View {
 
 		public Size uThemeMode_SelectedIndex {
 			get {
-				return App.Setting.Data.ThemeMode.CastPrimitive<Size>();
+				return App.Instance.Setting.Data.ThemeMode.CastPrimitive<Size>();
 			}
 		}
 
@@ -120,8 +120,8 @@ namespace KairosoftGameManager.View {
 			SelectionChangedEventArgs args
 		) {
 			var senders = sender.As<ComboBox>();
-			App.Setting.Data.ThemeMode = senders.SelectedIndex.CastPrimitive<ElementTheme>();
-			await App.Setting.Save();
+			App.Instance.Setting.Data.ThemeMode = senders.SelectedIndex.CastPrimitive<ElementTheme>();
+			await App.Instance.Setting.Save();
 			return;
 		}
 
@@ -132,13 +132,13 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@RepositoryDirectory");
-			if (value != null && !App.Setting.Data.RepositoryDirectory.Contains(value)) {
-				App.Setting.Data.RepositoryDirectory.Add(value);
+			var value = await StorageHelper.PickLoadDirectory(App.Instance.MainWindow, "@RepositoryDirectory");
+			if (value != null && !App.Instance.Setting.Data.RepositoryDirectory.Contains(value)) {
+				App.Instance.Setting.Data.RepositoryDirectory.Add(value);
 				this.NotifyPropertyChanged([
 					nameof(this.uRepositoryDirectory_Text),
 				]);
-				await App.Setting.Save();
+				await App.Instance.Setting.Save();
 			}
 			return;
 		}
@@ -148,17 +148,17 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Setting.Data.RepositoryDirectory = ConvertHelper.ParseStringListFromStringWithLine(senders.Text).Select(StorageHelper.Regularize).Distinct().ToList();
+			App.Instance.Setting.Data.RepositoryDirectory = ConvertHelper.ParseStringListFromStringWithLine(senders.Text).Select(StorageHelper.Regularize).Distinct().ToList();
 			this.NotifyPropertyChanged([
 				nameof(this.uRepositoryDirectory_Text),
 			]);
-			await App.Setting.Save();
+			await App.Instance.Setting.Save();
 			return;
 		}
 
 		public String uRepositoryDirectory_Text {
 			get {
-				return ConvertHelper.MakeStringListToStringWithLine(App.Setting.Data.RepositoryDirectory);
+				return ConvertHelper.MakeStringListToStringWithLine(App.Instance.Setting.Data.RepositoryDirectory);
 			}
 		}
 
@@ -169,17 +169,17 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Setting.Data.ExternalTool.Il2cppdumperPath = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.Il2cppdumperPath = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uExternalToolOfIl2cppdumperPath_Text),
 			]);
-			await App.Setting.Save();
+			await App.Instance.Setting.Save();
 			return;
 		}
 
 		public String uExternalToolOfIl2cppdumperPath_Text {
 			get {
-				return App.Setting.Data.ExternalTool.Il2cppdumperPath;
+				return App.Instance.Setting.Data.ExternalTool.Il2cppdumperPath;
 			}
 		}
 
@@ -188,13 +188,13 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadFile(App.MainWindow, "@ExternalToolOfIl2cppdumperPath");
+			var value = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@ExternalToolOfIl2cppdumperPath");
 			if (value != null) {
-				App.Setting.Data.ExternalTool.Il2cppdumperPath = value;
+				App.Instance.Setting.Data.ExternalTool.Il2cppdumperPath = value;
 				this.NotifyPropertyChanged([
 					nameof(this.uExternalToolOfIl2cppdumperPath_Text),
 				]);
-				await App.Setting.Save();
+				await App.Instance.Setting.Save();
 			}
 			return;
 		}
@@ -206,17 +206,17 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Setting.Data.ExternalTool.ZipalignPath = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.ZipalignPath = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uExternalToolOfZipalignPath_Text),
 			]);
-			await App.Setting.Save();
+			await App.Instance.Setting.Save();
 			return;
 		}
 
 		public String uExternalToolOfZipalignPath_Text {
 			get {
-				return App.Setting.Data.ExternalTool.ZipalignPath;
+				return App.Instance.Setting.Data.ExternalTool.ZipalignPath;
 			}
 		}
 
@@ -225,13 +225,13 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadFile(App.MainWindow, "@ExternalToolOfZipalignPath");
+			var value = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@ExternalToolOfZipalignPath");
 			if (value != null) {
-				App.Setting.Data.ExternalTool.ZipalignPath = value;
+				App.Instance.Setting.Data.ExternalTool.ZipalignPath = value;
 				this.NotifyPropertyChanged([
 					nameof(this.uExternalToolOfZipalignPath_Text),
 				]);
-				await App.Setting.Save();
+				await App.Instance.Setting.Save();
 			}
 			return;
 		}
@@ -243,17 +243,17 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Setting.Data.ExternalTool.ApksignerPath = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.ApksignerPath = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uExternalToolOfApksignerPath_Text),
 			]);
-			await App.Setting.Save();
+			await App.Instance.Setting.Save();
 			return;
 		}
 
 		public String uExternalToolOfApksignerPath_Text {
 			get {
-				return App.Setting.Data.ExternalTool.ApksignerPath;
+				return App.Instance.Setting.Data.ExternalTool.ApksignerPath;
 			}
 		}
 
@@ -262,13 +262,13 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadFile(App.MainWindow, "@ExternalToolOfApksignerPath");
+			var value = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@ExternalToolOfApksignerPath");
 			if (value != null) {
-				App.Setting.Data.ExternalTool.ApksignerPath = value;
+				App.Instance.Setting.Data.ExternalTool.ApksignerPath = value;
 				this.NotifyPropertyChanged([
 					nameof(this.uExternalToolOfApksignerPath_Text),
 				]);
-				await App.Setting.Save();
+				await App.Instance.Setting.Save();
 			}
 			return;
 		}
@@ -280,17 +280,17 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Setting.Data.ExternalTool.ApkCertificateFile = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.ApkCertificateFile = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uExternalToolOfApkCertificateFile_Text),
 			]);
-			await App.Setting.Save();
+			await App.Instance.Setting.Save();
 			return;
 		}
 
 		public String uExternalToolOfApkCertificateFile_Text {
 			get {
-				return App.Setting.Data.ExternalTool.ApkCertificateFile;
+				return App.Instance.Setting.Data.ExternalTool.ApkCertificateFile;
 			}
 		}
 
@@ -299,13 +299,13 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadFile(App.MainWindow, "@ExternalToolOfApkCertificateFile");
+			var value = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@ExternalToolOfApkCertificateFile");
 			if (value != null) {
-				App.Setting.Data.ExternalTool.ApkCertificateFile = value;
+				App.Instance.Setting.Data.ExternalTool.ApkCertificateFile = value;
 				this.NotifyPropertyChanged([
 					nameof(this.uExternalToolOfApkCertificateFile_Text),
 				]);
-				await App.Setting.Save();
+				await App.Instance.Setting.Save();
 			}
 			return;
 		}
@@ -317,17 +317,17 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Setting.Data.ExternalTool.ApkCertificatePassword = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.ApkCertificatePassword = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uExternalToolOfApkCertificatePassword_Text),
 			]);
-			await App.Setting.Save();
+			await App.Instance.Setting.Save();
 			return;
 		}
 
 		public String uExternalToolOfApkCertificatePassword_Text {
 			get {
-				return App.Setting.Data.ExternalTool.ApkCertificatePassword;
+				return App.Instance.Setting.Data.ExternalTool.ApkCertificatePassword;
 			}
 		}
 

@@ -10,39 +10,46 @@ namespace KairosoftGameManager {
 
 	public partial class App : Application {
 
-		#region instance
+		#region singleton
 
 		public static App Instance { get; private set; } = default!;
-
-		public static SettingProvider Setting { get; private set; } = default!;
-
-		public static View.MainWindow MainWindow { get; private set; } = default!;
-
-		public static String PackageDirectory { get; private set; } = default!;
-
-		public static String ProgramFile { get; private set; } = default!;
-
-		public static String SharedDirectory { get; private set; } = default!;
-
-		public static String CacheDirectory { get; private set; } = default!;
-
-		// ----------------
-
-		public static Boolean MainWindowIsInitialized {
-			get {
-				// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-				return App.MainWindow != null;
-			}
-		}
 
 		#endregion
 
 		#region life
 
+		public String PackageDirectory { get; }
+
+		public String ProgramFile { get; }
+
+		public String SharedDirectory { get; }
+
+		public String CacheDirectory { get; }
+
+		public SettingProvider Setting { get; }
+
+		public View.MainWindow MainWindow { get; private set; }
+
+		public Boolean MainWindowIsInitialized {
+			get {
+				// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+				return this.MainWindow != null;
+			}
+		}
+
+		// ----------------
+
 		public App (
 		) {
+			// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+			AssertTest(App.Instance == null);
 			App.Instance = this;
-			App.Setting = new ();
+			this.PackageDirectory = StorageHelper.Regularize(Package.Current.InstalledPath);
+			this.ProgramFile = $"{this.PackageDirectory}/Application.exe";
+			this.SharedDirectory = StorageHelper.Regularize(Windows.Storage.ApplicationData.Current.LocalFolder.Path);
+			this.CacheDirectory = $"{this.SharedDirectory}/cache";
+			this.Setting = new ();
+			this.MainWindow = null!;
 			this.InitializeComponent();
 			return;
 		}
@@ -55,23 +62,19 @@ namespace KairosoftGameManager {
 			try {
 				ExceptionHelper.Initialize(this);
 				ExceptionHelper.Listen(async (exception) => {
-					_ = this.HandleException(exception, App.MainWindow);
+					_ = this.HandleException(exception, this.MainWindow);
 					return;
 				});
-				App.PackageDirectory = StorageHelper.Regularize(Package.Current.InstalledPath);
-				App.ProgramFile = $"{App.PackageDirectory}/Application.exe";
-				App.SharedDirectory = StorageHelper.Regularize(Windows.Storage.ApplicationData.Current.LocalFolder.Path);
-				App.CacheDirectory = $"{App.SharedDirectory}/cache";
 				try {
-					await App.Setting.Load();
+					await this.Setting.Load();
 				}
 				catch (Exception) {
 				}
-				await App.Setting.Save(apply: false);
-				App.MainWindow = new ();
-				WindowHelper.SetSize(App.MainWindow, 720, 640);
-				await App.Setting.Apply();
-				WindowHelper.Activate(App.MainWindow);
+				await this.Setting.Save(apply: false);
+				this.MainWindow = new ();
+				WindowHelper.SetSize(this.MainWindow, 720, 640);
+				await this.Setting.Apply();
+				WindowHelper.Activate(this.MainWindow);
 			}
 			catch (Exception e) {
 				_ = this.HandleExceptionFatal(e);
@@ -119,12 +122,12 @@ namespace KairosoftGameManager {
 				};
 				window.Closed += async (_, _) => {
 					// if the user close the window externally, the dialog task will not complete, so put the step to close MainWindow in the Closed event
-					if (App.MainWindowIsInitialized) {
-						WindowHelper.Close(App.MainWindow);
+					if (this.MainWindowIsInitialized) {
+						WindowHelper.Close(this.MainWindow);
 					}
 					return;
 				};
-				WindowHelper.SetIcon(window, $"{App.PackageDirectory}/Asset/Logo.ico");
+				WindowHelper.SetIcon(window, $"{this.PackageDirectory}/Asset/Logo.ico");
 				WindowHelper.SetTitle(window, ApplicationInformation.Name);
 				WindowHelper.SetTitleBar(window, true, null, false);
 				WindowHelper.Activate(window);

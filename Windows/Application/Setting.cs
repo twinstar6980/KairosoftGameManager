@@ -51,16 +51,16 @@ namespace KairosoftGameManager {
 		public async Task Apply (
 		) {
 			// ThemeMode
-			if (this.State.ThemeMode != this.Data.ThemeMode && App.MainWindowIsInitialized) {
-				App.MainWindow.Content.As<FrameworkElement>().RequestedTheme = this.Data.ThemeMode;
-				App.MainWindow.AppWindow.TitleBar.ButtonForegroundColor = this.Data.ThemeMode switch {
+			if (this.State.ThemeMode != this.Data.ThemeMode && App.Instance.MainWindowIsInitialized) {
+				App.Instance.MainWindow.Content.As<FrameworkElement>().RequestedTheme = this.Data.ThemeMode;
+				App.Instance.MainWindow.AppWindow.TitleBar.ButtonForegroundColor = this.Data.ThemeMode switch {
 					ElementTheme.Default => null,
 					ElementTheme.Light   => Colors.Black,
 					ElementTheme.Dark    => Colors.White,
 					_                    => throw new UnreachableException(),
 				};
 				await ControlHelper.IterateDialog(async (it) => {
-					it.RequestedTheme = App.MainWindow.Content.As<FrameworkElement>().RequestedTheme;
+					it.RequestedTheme = App.Instance.MainWindow.Content.As<FrameworkElement>().RequestedTheme;
 				});
 				this.State.ThemeMode = this.Data.ThemeMode;
 			}
@@ -73,7 +73,7 @@ namespace KairosoftGameManager {
 
 		public String File {
 			get {
-				return $"{App.SharedDirectory}/setting.json";
+				return $"{App.Instance.SharedDirectory}/setting.json";
 			}
 		}
 

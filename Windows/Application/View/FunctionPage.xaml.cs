@@ -177,7 +177,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<MenuFlyoutItem>();
-			var value = await StorageHelper.Pick($"Load{senders.Tag}", App.MainWindow, "@Function.Program.Target", null);
+			var value = await StorageHelper.Pick($"Load{senders.Tag}", App.Instance.MainWindow, "@Function.Program.Target", null);
 			if (value != null) {
 				this.ArgumentOfProgramOfTarget = value;
 				this.NotifyPropertyChanged([
@@ -274,7 +274,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadDirectory(App.MainWindow, "@Function.Record.TargetDirectory");
+			var value = await StorageHelper.PickLoadDirectory(App.Instance.MainWindow, "@Function.Record.TargetDirectory");
 			if (value != null) {
 				this.ArgumentOfRecordOfTargetDirectory = value;
 				this.NotifyPropertyChanged([
@@ -317,8 +317,8 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<Button>();
 			var value = this.Type switch {
-				GameFunctionType.ExportRecord => await StorageHelper.PickSaveFile(App.MainWindow, "@Function.Record.ArchiveFile", $"game.{GameHelper.RecordArchiveFileExtension}"),
-				GameFunctionType.ImportRecord => await StorageHelper.PickLoadFile(App.MainWindow, "@Function.Record.ArchiveFile"),
+				GameFunctionType.ExportRecord => await StorageHelper.PickSaveFile(App.Instance.MainWindow, "@Function.Record.ArchiveFile", $"game.{GameHelper.RecordArchiveFileExtension}"),
+				GameFunctionType.ImportRecord => await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@Function.Record.ArchiveFile"),
 				_                             => throw new UnreachableException(),
 			};
 			if (value != null) {
@@ -416,7 +416,7 @@ namespace KairosoftGameManager.View {
 								this.ArgumentOfProgramOfTarget,
 								this.ArgumentOfProgramOfDisableRecordEncryption,
 								this.ArgumentOfProgramOfEnableDebugMode,
-								ExternalToolHelper.ParseSetting(App.Setting.Data.ExternalTool),
+								ExternalToolHelper.ParseSetting(App.Instance.Setting.Data.ExternalTool),
 								PublishMessage
 							);
 							break;
@@ -459,13 +459,13 @@ namespace KairosoftGameManager.View {
 					return;
 				});
 				PublishMessage($"Succeeded.");
-				await App.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
+				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
 			}
 			catch (Exception e) {
 				PublishMessage($"Failed.");
 				PublishMessage(ExceptionHelper.GenerateMessage(e));
 				this.RunningFailed = true;
-				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", "");
+				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", "");
 			}
 			PublishMessage($"");
 			this.Running = false;
@@ -478,7 +478,7 @@ namespace KairosoftGameManager.View {
 			async void PublishMessage (
 				String message
 			) {
-				await App.MainWindow.DispatcherQueue.EnqueueAsync(async () => {
+				await App.Instance.MainWindow.DispatcherQueue.EnqueueAsync(async () => {
 					this.Message += message + "\n";
 					this.NotifyPropertyChanged([
 						nameof(this.uMessage_Text),

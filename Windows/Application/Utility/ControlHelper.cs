@@ -126,7 +126,7 @@ namespace KairosoftGameManager.Utility {
 					VerticalAlignment = VerticalAlignment.Center,
 					IsIndeterminate = true,
 				},
-				new("Hide", null, null),
+				new ("Hide", null, null),
 				hideWrapper
 			).SelfLet(ExceptionHelper.WrapTask);
 			return async () => {

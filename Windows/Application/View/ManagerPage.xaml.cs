@@ -62,16 +62,16 @@ namespace KairosoftGameManager.View {
 		public async Task UpdateView (
 		) {
 			await Task.Delay(200); // wait for LostFocus event on SettingPage
-			if (!App.Setting.State.CurrentRepositoryDirectory.SequenceEqual(App.Setting.Data.RepositoryDirectory)) {
-				App.Setting.State.CurrentRepositoryDirectory = [..App.Setting.Data.RepositoryDirectory];
+			if (!App.Instance.Setting.State.CurrentRepositoryDirectory.SequenceEqual(App.Instance.Setting.Data.RepositoryDirectory)) {
+				App.Instance.Setting.State.CurrentRepositoryDirectory = [..App.Instance.Setting.Data.RepositoryDirectory];
 				this.NotifyPropertyChanged([
 					nameof(this.uRepositoryDirectoryList_Flyout),
 				]);
-				if (App.Setting.State.CurrentRepositoryDirectory.Count == 0) {
+				if (App.Instance.Setting.State.CurrentRepositoryDirectory.Count == 0) {
 					await this.LoadRepository(null);
 				}
-				else if (this.ActiveRepositoryDirectory == null || !App.Setting.State.CurrentRepositoryDirectory.Contains(this.ActiveRepositoryDirectory)) {
-					await this.LoadRepository(App.Setting.Data.RepositoryDirectory.First());
+				else if (this.ActiveRepositoryDirectory == null || !App.Instance.Setting.State.CurrentRepositoryDirectory.Contains(this.ActiveRepositoryDirectory)) {
+					await this.LoadRepository(App.Instance.Setting.Data.RepositoryDirectory.First());
 				}
 			}
 			return;
@@ -103,7 +103,7 @@ namespace KairosoftGameManager.View {
 					gameList = await GameHelper.LoadCustomRepository(repositoryDirectory);
 				}
 				if (gameList == null) {
-					await App.MainWindow.PushNotification(InfoBarSeverity.Warning, "The specified repository directory is invalid.", "");
+					await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Warning, "The specified repository directory is invalid.", "");
 				}
 				else {
 					gameList.Sort((left, right) => (String.CompareOrdinal(left.Name, right.Name)));
@@ -113,7 +113,7 @@ namespace KairosoftGameManager.View {
 				}
 			}
 			catch (Exception e) {
-				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed to load repository.", ExceptionHelper.GenerateMessage(e));
+				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed to load repository.", ExceptionHelper.GenerateMessage(e));
 			}
 			this.NotifyPropertyChanged([
 				nameof(this.uRepositoryDirectoryGameCount_Value),
@@ -246,7 +246,7 @@ namespace KairosoftGameManager.View {
 							game.Path,
 							argumentDisableRecordEncryption,
 							argumentEnableDebugMode,
-							ExternalToolHelper.ParseSetting(App.Setting.Data.ExternalTool),
+							ExternalToolHelper.ParseSetting(App.Instance.Setting.Data.ExternalTool),
 							(_) => { }
 						);
 						break;
@@ -298,7 +298,7 @@ namespace KairosoftGameManager.View {
 							break;
 						}
 						var shouldEncrypt = game.Record == GameRecordState.Original;
-						var archiveFile = await StorageHelper.PickSaveFile(App.MainWindow, "@RecordArchiveFile", $"{game.Name}.{GameHelper.RecordArchiveFileExtension}");
+						var archiveFile = await StorageHelper.PickSaveFile(App.Instance.MainWindow, "@RecordArchiveFile", $"{game.Name}.{GameHelper.RecordArchiveFileExtension}");
 						if (archiveFile == null) {
 							cancelled = true;
 							break;
@@ -372,7 +372,7 @@ namespace KairosoftGameManager.View {
 								temporaryStateMap.Add(action, new Tuple<Boolean>(shouldEncrypt));
 							}
 						}
-						var archiveFile = await StorageHelper.PickLoadFile(App.MainWindow, "@RecordArchiveFile");
+						var archiveFile = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@RecordArchiveFile");
 						if (archiveFile == null) {
 							cancelled = true;
 							break;
@@ -431,7 +431,7 @@ namespace KairosoftGameManager.View {
 				var menu = new MenuFlyout() {
 					Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft,
 				};
-				foreach (var item in App.Setting.Data.RepositoryDirectory) {
+				foreach (var item in App.Instance.Setting.Data.RepositoryDirectory) {
 					menu.Items.Add(new MenuFlyoutItem() {
 						Text = item,
 					}.SelfAlso((it) => {
@@ -504,7 +504,7 @@ namespace KairosoftGameManager.View {
 				}, null);
 			}
 			else {
-				await App.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
+				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
 			}
 			return;
 		}
@@ -667,13 +667,13 @@ namespace KairosoftGameManager.View {
 			var senders = sender.As<MenuFlyoutItem>();
 			var (state, exception) = await this.Host.ActionGame(this, senders.Tag.As<String>(), []);
 			if (state == null) {
-				await App.MainWindow.PushNotification(InfoBarSeverity.Warning, "Cancelled.", "");
+				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Warning, "Cancelled.", "");
 			}
 			else if (state.AsNotNull()) {
-				await App.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
+				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
 			}
 			else {
-				await App.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", ExceptionHelper.GenerateMessage(exception.AsNotNull()));
+				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", ExceptionHelper.GenerateMessage(exception.AsNotNull()));
 			}
 			return;
 		}
