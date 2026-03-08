@@ -10,7 +10,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region type
 
-		public static Boolean IsTypeOfTuple (
+		public static Boolean IsTypeOfTuple(
 			Type type
 		) {
 			if (!type.IsGenericType) {
@@ -27,7 +27,7 @@ namespace KairosoftGameManager.Utility {
 				|| genericType == typeof(Tuple<,,,,,,,>);
 		}
 
-		public static Boolean IsTypeOfValueTuple (
+		public static Boolean IsTypeOfValueTuple(
 			Type type
 		) {
 			if (!type.IsGenericType) {
@@ -48,7 +48,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region boolean
 
-		public static String MakeBooleanToStringOfConfirmation (
+		public static String MakeBooleanToStringOfConfirmation(
 			Boolean value
 		) {
 			return value switch {
@@ -61,13 +61,13 @@ namespace KairosoftGameManager.Utility {
 
 		#region string list
 
-		public static String MakeStringListToStringWithLine (
+		public static String MakeStringListToStringWithLine(
 			List<String> value
 		) {
 			return String.Join('\r', value) + (value.Count != 0 && value[^1].Length == 0 ? "\r" : "");
 		}
 
-		public static List<String> ParseStringListFromStringWithLine (
+		public static List<String> ParseStringListFromStringWithLine(
 			String text
 		) {
 			var value = text.Split('\r').ToList();
@@ -81,7 +81,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region theme
 
-		public static String MakeThemeToString (
+		public static String MakeThemeToString(
 			ElementTheme value
 		) {
 			return value switch {
@@ -97,7 +97,7 @@ namespace KairosoftGameManager.Utility {
 		#region bitmap
 
 		// source by https://stackoverflow.com/a/76641464
-		public static async Task<Microsoft.UI.Xaml.Media.Imaging.SoftwareBitmapSource> ParseBitmapFromGdiBitmap (
+		public static async Task<Microsoft.UI.Xaml.Media.Imaging.SoftwareBitmapSource> ParseBitmapFromGdiBitmap(
 			System.Drawing.Bitmap bitmap
 		) {
 			// get pixels as an array of bytes

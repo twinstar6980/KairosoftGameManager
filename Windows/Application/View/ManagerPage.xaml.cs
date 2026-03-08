@@ -16,7 +16,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public ManagerPage (
+		public ManagerPage(
 		) {
 			this.InitializeComponent();
 			this.Controller = new () { View = this };
@@ -26,7 +26,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		protected override void OnNavigatedTo (
+		protected override void OnNavigatedTo(
 			NavigationEventArgs args
 		) {
 			ControlHelper.PostTask(this, async () => {
@@ -54,12 +54,12 @@ namespace KairosoftGameManager.View {
 
 		#region life
 
-		public void InitializeView (
+		public void InitializeView(
 		) {
 			return;
 		}
 
-		public async Task UpdateView (
+		public async Task UpdateView(
 		) {
 			await Task.Delay(200); // wait for LostFocus event on SettingPage
 			if (!App.Instance.Setting.State.CurrentRepositoryDirectory.SequenceEqual(App.Instance.Setting.Data.RepositoryDirectory)) {
@@ -81,7 +81,7 @@ namespace KairosoftGameManager.View {
 
 		#region action
 
-		public async Task LoadRepository (
+		public async Task LoadRepository(
 			String? repositoryDirectory
 		) {
 			this.uGameList_ItemsSource.Clear();
@@ -121,7 +121,7 @@ namespace KairosoftGameManager.View {
 			return;
 		}
 
-		public async Task ReloadGame (
+		public async Task ReloadGame(
 			ManagerPageGameItemController gameController
 		) {
 			if (gameController.Configuration.Library == null) {
@@ -152,7 +152,7 @@ namespace KairosoftGameManager.View {
 			return;
 		}
 
-		public async Task<Tuple<Boolean?, Exception?>> ActionGame (
+		public async Task<Tuple<Boolean?, Exception?>> ActionGame(
 			ManagerPageGameItemController gameController,
 			String                        action,
 			Dictionary<String, Object>    temporaryStateMap
@@ -465,7 +465,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uGameAction_Click (
+		public async void uGameAction_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -660,7 +660,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uAction_Click (
+		public async void uAction_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {

@@ -16,7 +16,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public MainWindow (
+		public MainWindow(
 		) {
 			this.InitializeComponent();
 			WindowHelper.SetIcon(this, $"{App.Instance.PackageDirectory}/Asset/Logo.ico");
@@ -31,7 +31,7 @@ namespace KairosoftGameManager.View {
 
 		#region action
 
-		public async Task PushNotification (
+		public async Task PushNotification(
 			InfoBarSeverity severity,
 			String          title,
 			String          message,
@@ -55,7 +55,7 @@ namespace KairosoftGameManager.View {
 
 		#region life
 
-		public void InitializeView (
+		public void InitializeView(
 		) {
 			return;
 		}
@@ -64,7 +64,7 @@ namespace KairosoftGameManager.View {
 
 		#region action
 
-		public async Task PushNotification (
+		public async Task PushNotification(
 			InfoBarSeverity severity,
 			String          title,
 			String          message,
@@ -93,7 +93,7 @@ namespace KairosoftGameManager.View {
 
 		#region navigation
 
-		public async void uNavigation_SelectionChanged (
+		public async void uNavigation_SelectionChanged(
 			NavigationView                          sender,
 			NavigationViewSelectionChangedEventArgs args
 		) {

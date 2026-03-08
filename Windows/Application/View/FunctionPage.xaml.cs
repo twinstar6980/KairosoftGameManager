@@ -17,7 +17,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public FunctionPage (
+		public FunctionPage(
 		) {
 			this.InitializeComponent();
 			this.Controller = new () { View = this };
@@ -27,7 +27,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		protected override void OnNavigatedTo (
+		protected override void OnNavigatedTo(
 			NavigationEventArgs args
 		) {
 			ControlHelper.PostTask(this, async () => {
@@ -81,12 +81,12 @@ namespace KairosoftGameManager.View {
 
 		#region life
 
-		public void InitializeView (
+		public void InitializeView(
 		) {
 			return;
 		}
 
-		public async Task UpdateView (
+		public async Task UpdateView(
 		) {
 			return;
 		}
@@ -119,7 +119,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uTypeSelect_Click (
+		public async void uTypeSelect_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -154,7 +154,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uArgumentOfProgramOfTargetEditor_LostFocus (
+		public async void uArgumentOfProgramOfTargetEditor_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -172,7 +172,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uArgumentOfProgramOfTargetPicker_Click (
+		public async void uArgumentOfProgramOfTargetPicker_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -195,7 +195,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uArgumentOfProgramOfDisableRecordEncryptionEditor_Click (
+		public async void uArgumentOfProgramOfDisableRecordEncryptionEditor_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -221,7 +221,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uArgumentOfProgramOfEnableDebugModeEditor_Click (
+		public async void uArgumentOfProgramOfEnableDebugModeEditor_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -251,7 +251,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uArgumentOfRecordOfTargetDirectoryEditor_LostFocus (
+		public async void uArgumentOfRecordOfTargetDirectoryEditor_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -269,7 +269,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uArgumentOfRecordOfTargetDirectoryPicker_Click (
+		public async void uArgumentOfRecordOfTargetDirectoryPicker_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -293,7 +293,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uArgumentOfRecordOfArchiveFileEditor_LostFocus (
+		public async void uArgumentOfRecordOfArchiveFileEditor_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -311,7 +311,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uArgumentOfRecordOfArchiveFilePicker_Click (
+		public async void uArgumentOfRecordOfArchiveFilePicker_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -340,7 +340,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uArgumentOfRecordOfKeyEditor_LostFocus (
+		public async void uArgumentOfRecordOfKeyEditor_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -393,7 +393,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uRun_Click (
+		public async void uRun_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -475,7 +475,7 @@ namespace KairosoftGameManager.View {
 				nameof(this.uProgress_ProgressError),
 			]);
 			return;
-			async void PublishMessage (
+			async void PublishMessage(
 				String message
 			) {
 				await App.Instance.MainWindow.DispatcherQueue.EnqueueAsync(async () => {

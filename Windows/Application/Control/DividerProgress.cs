@@ -10,7 +10,7 @@ namespace KairosoftGameManager.Control {
 
 		#region life
 
-		public DividerProgress (
+		public DividerProgress(
 		) {
 			this.DefaultStyleKey = typeof(DividerProgress);
 			return;

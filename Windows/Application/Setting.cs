@@ -8,16 +8,16 @@ using Microsoft.UI;
 namespace KairosoftGameManager {
 
 	public record SettingData {
-		public String                     Version                      = default!;
-		public ElementTheme               ThemeMode                    = default!;
-		public Dictionary<String, String> StoragePickerHistoryLocation = default!;
-		public List<String>               RepositoryDirectory          = default!;
-		public ExternalToolSetting        ExternalTool                 = default!;
+		public String                     Version                      { get; set; } = default!;
+		public ElementTheme               ThemeMode                    { get; set; } = default!;
+		public Dictionary<String, String> StoragePickerHistoryLocation { get; set; } = default!;
+		public List<String>               RepositoryDirectory          { get; set; } = default!;
+		public ExternalToolSetting        ExternalTool                 { get; set; } = default!;
 	}
 
 	public record SettingState {
-		public ElementTheme? ThemeMode                  = default!;
-		public List<String>  CurrentRepositoryDirectory = default!;
+		public ElementTheme? ThemeMode                  { get; set; } = default!;
+		public List<String>  CurrentRepositoryDirectory { get; set; } = default!;
 	}
 
 	public class SettingProvider {
@@ -30,7 +30,7 @@ namespace KairosoftGameManager {
 
 		// ----------------
 
-		public SettingProvider (
+		public SettingProvider(
 		) {
 			this.Data = SettingProvider.CreateDefaultData();
 			this.State = SettingProvider.CreateDefaultState();
@@ -41,14 +41,14 @@ namespace KairosoftGameManager {
 
 		#region action
 
-		public async Task Reset (
+		public async Task Reset(
 		) {
 			this.Data = SettingProvider.CreateDefaultData();
 			this.State = SettingProvider.CreateDefaultState();
 			return;
 		}
 
-		public async Task Apply (
+		public async Task Apply(
 		) {
 			// ThemeMode
 			if (this.State.ThemeMode != this.Data.ThemeMode && App.Instance.MainWindowIsInitialized) {
@@ -79,7 +79,7 @@ namespace KairosoftGameManager {
 
 		// ----------------
 
-		public async Task Load (
+		public async Task Load(
 			String? file = null
 		) {
 			file ??= this.File;
@@ -87,7 +87,7 @@ namespace KairosoftGameManager {
 			return;
 		}
 
-		public async Task Save (
+		public async Task Save(
 			String? file  = null,
 			Boolean apply = true
 		) {
@@ -103,7 +103,7 @@ namespace KairosoftGameManager {
 
 		#region utility
 
-		private static SettingData CreateDefaultData (
+		private static SettingData CreateDefaultData(
 		) {
 			return new () {
 				Version = ApplicationInformation.VersionMainly,
@@ -122,7 +122,7 @@ namespace KairosoftGameManager {
 			};
 		}
 
-		private static SettingState CreateDefaultState (
+		private static SettingState CreateDefaultState(
 		) {
 			return new () {
 				ThemeMode = null,

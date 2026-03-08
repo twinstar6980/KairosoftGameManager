@@ -13,7 +13,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public Finalizer (
+		public Finalizer(
 			Func<Task> action
 		) {
 			this.mAction = action;
@@ -24,7 +24,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region implement IDisposable
 
-		public void Dispose (
+		public void Dispose(
 		) {
 			this.mAction();
 			GC.SuppressFinalize(this);
@@ -35,7 +35,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region implement IAsyncDisposable
 
-		public async ValueTask DisposeAsync (
+		public async ValueTask DisposeAsync(
 		) {
 			await this.mAction();
 			GC.SuppressFinalize(this);

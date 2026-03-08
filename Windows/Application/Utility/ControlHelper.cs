@@ -9,7 +9,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region common
 
-		public static async Task PostTask (
+		public static async Task PostTask(
 			FrameworkElement target,
 			Func<Task>       action
 		) {
@@ -26,7 +26,7 @@ namespace KairosoftGameManager.Utility {
 
 		private static readonly List<ContentDialog> Dialog = [];
 
-		private static async Task<ContentDialogResult> PushDialog (
+		private static async Task<ContentDialogResult> PushDialog(
 			ContentDialog item
 		) {
 			ControlHelper.Dialog.Add(item);
@@ -52,7 +52,7 @@ namespace KairosoftGameManager.Utility {
 			return result;
 		}
 
-		public static async Task IterateDialog (
+		public static async Task IterateDialog(
 			Func<ContentDialog, Task> action
 		) {
 			foreach (var item in ControlHelper.Dialog) {
@@ -63,7 +63,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task<ContentDialogResult> ShowDialogAsAutomatic (
+		public static async Task<ContentDialogResult> ShowDialogAsAutomatic(
 			FrameworkElement                  root,
 			String                            title,
 			Object?                           content,
@@ -114,7 +114,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task<Func<Task>> ShowDialogForWait (
+		public static async Task<Func<Task>> ShowDialogForWait(
 			FrameworkElement root
 		) {
 			var hideWrapper = new Wrapper<Action>();
@@ -136,7 +136,7 @@ namespace KairosoftGameManager.Utility {
 			};
 		}
 
-		public static async Task<Boolean> ShowDialogForConfirm (
+		public static async Task<Boolean> ShowDialogForConfirm(
 			FrameworkElement root,
 			String?          title,
 			Object?          content

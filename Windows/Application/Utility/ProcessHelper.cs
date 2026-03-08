@@ -9,7 +9,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region environment
 
-		public static String? QueryEnvironment (
+		public static String? QueryEnvironment(
 			String name
 		) {
 			return Environment.GetEnvironmentVariable(name);
@@ -17,7 +17,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static Dictionary<String, String> ListEnvironment (
+		public static Dictionary<String, String> ListEnvironment(
 		) {
 			return Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(
 				(item) => item.Key.As<String>(),
@@ -29,7 +29,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region process
 
-		public static async Task<Tuple<Size, String, String>?> RunProcess (
+		public static async Task<Tuple<Size, String, String>?> RunProcess(
 			String                      program,
 			List<String>                argument,
 			Dictionary<String, String>? environment,
@@ -65,7 +65,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region program
 
-		public static String? SearchProgram (
+		public static String? SearchProgram(
 			String name
 		) {
 			var result = default(String?);
@@ -74,7 +74,7 @@ namespace KairosoftGameManager.Utility {
 			pathExtensionList.Insert(0, "");
 			foreach (var path in pathList) {
 				var pathBase = $"{path}/{name}";
-				var pathExtension = pathExtensionList.FirstOrDefault((value) => (StorageHelper.ExistFile($"{pathBase}{value}")));
+				var pathExtension = pathExtensionList.FirstOrDefault((value) => StorageHelper.ExistFile($"{pathBase}{value}"));
 				if (pathExtension != null) {
 					result = $"{pathBase}{pathExtension}";
 					break;
@@ -87,24 +87,19 @@ namespace KairosoftGameManager.Utility {
 
 		#region command
 
-		private static void EncodeCommandProgramString (
+		private static void EncodeCommandProgramString(
 			String        source,
 			StringBuilder destination
 		) {
 			destination.Append('"');
 			foreach (var element in source) {
-				if (element == '/') {
-					destination.Append('\\');
-				}
-				else {
-					destination.Append(element);
-				}
+				destination.Append(element == '/' ? '\\' : element);
 			}
 			destination.Append('"');
 			return;
 		}
 
-		private static void EncodeCommandArgumentString (
+		private static void EncodeCommandArgumentString(
 			String        source,
 			StringBuilder destination
 		) {
@@ -132,7 +127,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static String EncodeCommandString (
+		public static String EncodeCommandString(
 			String?      program,
 			List<String> argument
 		) {

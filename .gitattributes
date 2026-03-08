@@ -28,7 +28,6 @@
 /**/*.vcxproj.filters                        text eol=crlf
 /**/*.csproj                                 text eol=crlf
 /**/*.csproj.filters                         text eol=crlf
-/**/*.wapproj                                text eol=crlf
 /**/Directory.Packages.props                 text eol=crlf
 /**/Directory.Build.props                    text eol=crlf
 /**/Directory.Build.targets                  text eol=crlf

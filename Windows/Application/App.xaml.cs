@@ -39,7 +39,7 @@ namespace KairosoftGameManager {
 
 		// ----------------
 
-		public App (
+		public App(
 		) {
 			// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 			AssertTest(App.Instance == null);
@@ -56,7 +56,7 @@ namespace KairosoftGameManager {
 
 		// ----------------
 
-		protected override async void OnLaunched (
+		protected override async void OnLaunched(
 			LaunchActivatedEventArgs args
 		) {
 			try {
@@ -86,7 +86,7 @@ namespace KairosoftGameManager {
 
 		#region utility
 
-		private async Task HandleException (
+		private async Task HandleException(
 			Exception exception,
 			Window?   window
 		) {
@@ -112,7 +112,7 @@ namespace KairosoftGameManager {
 			return;
 		}
 
-		private async Task HandleExceptionFatal (
+		private async Task HandleExceptionFatal(
 			Exception exception
 		) {
 			try {

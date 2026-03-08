@@ -10,7 +10,7 @@ namespace KairosoftGameManager.Control {
 
 		#region life
 
-		public Divider (
+		public Divider(
 		) {
 			this.DefaultStyleKey = typeof(Divider);
 			return;

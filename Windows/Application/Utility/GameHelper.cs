@@ -41,21 +41,21 @@ namespace KairosoftGameManager.Utility {
 	// ----------------
 
 	public record GameConfiguration {
-		public String           Path       = "";
-		public String?          Library    = null;
-		public String?          Identifier = null;
-		public String?          Version    = null;
-		public String           Name       = "";
-		public ImageSource?     Icon       = null;
-		public String           User       = "";
-		public GameProgramState Program    = GameProgramState.None;
-		public GameRecordState  Record     = GameRecordState.None;
+		public String           Path       { get; set; } = "";
+		public String?          Library    { get; set; } = null;
+		public String?          Identifier { get; set; } = null;
+		public String?          Version    { get; set; } = null;
+		public String           Name       { get; set; } = "";
+		public ImageSource?     Icon       { get; set; } = null;
+		public String           User       { get; set; } = "";
+		public GameProgramState Program    { get; set; } = GameProgramState.None;
+		public GameRecordState  Record     { get; set; } = GameRecordState.None;
 	}
 
 	public record GameRecordArchiveConfiguration {
-		public String Platform   = "";
-		public String Identifier = "";
-		public String Version    = "";
+		public String Platform   { get; set; } = "";
+		public String Identifier { get; set; } = "";
+		public String Version    { get; set; } = "";
 	}
 
 	// ----------------
@@ -83,7 +83,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static String GetPlatformSystemName (
+		public static String GetPlatformSystemName(
 			GamePlatform value
 		) {
 			return value switch {
@@ -98,7 +98,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region program
 
-		private static String GetProgramFilePath (
+		private static String GetProgramFilePath(
 			GamePlatform platform
 		) {
 			return platform switch {
@@ -109,7 +109,7 @@ namespace KairosoftGameManager.Utility {
 			};
 		}
 
-		private static String GetMetadataFilePath (
+		private static String GetMetadataFilePath(
 			GamePlatform platform
 		) {
 			return platform switch {
@@ -120,7 +120,7 @@ namespace KairosoftGameManager.Utility {
 			};
 		}
 
-		private static List<GamePlatform> DetectPlatform (
+		private static List<GamePlatform> DetectPlatform(
 			String gameDirectory
 		) {
 			var result = new List<GamePlatform>();
@@ -144,7 +144,7 @@ namespace KairosoftGameManager.Utility {
 
 		private const IntegerU32 InstructionCodeNopArm64 = 0xD503201F;
 
-		private static Boolean FindCallInstruction (
+		private static Boolean FindCallInstruction(
 			Span<Byte>   data,
 			ref Size     position,
 			Size         limit,
@@ -232,7 +232,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		private static async Task ModifyProgramFlat (
+		private static async Task ModifyProgramFlat(
 			GamePlatform        platform,
 			String              programFile,
 			String              metadataFile,
@@ -405,7 +405,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static async Task ModifyProgram (
+		public static async Task ModifyProgram(
 			String              target,
 			Boolean             disableRecordEncryption,
 			Boolean             enableDebugMode,
@@ -611,7 +611,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region record
 
-		private static List<String> ListRecordFile (
+		private static List<String> ListRecordFile(
 			String recordDirectory
 		) {
 			return StorageHelper.ListDirectory(recordDirectory, 1, true, false)
@@ -619,7 +619,7 @@ namespace KairosoftGameManager.Utility {
 				.ToList();
 		}
 
-		private static async Task<GameRecordState> DetectRecordState (
+		private static async Task<GameRecordState> DetectRecordState(
 			String      recordDirectory,
 			List<Byte>? key
 		) {
@@ -650,7 +650,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		private static void EncryptRecordData (
+		private static void EncryptRecordData(
 			Byte[]      data,
 			List<Byte>? key
 		) {
@@ -663,7 +663,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		private static async Task EncryptRecordFile (
+		private static async Task EncryptRecordFile(
 			String      sourceFile,
 			String      destinationFile,
 			List<Byte>? key
@@ -674,7 +674,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static async Task EncryptRecord (
+		public static async Task EncryptRecord(
 			String         targetDirectory,
 			List<Byte>     key,
 			Action<String> onNotify
@@ -692,13 +692,13 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static String MakeRecordArchiveConfigurationText (
+		public static String MakeRecordArchiveConfigurationText(
 			GameRecordArchiveConfiguration value
 		) {
 			return String.Join(':', [value.Platform, value.Identifier, value.Version]);
 		}
 
-		public static GameRecordArchiveConfiguration ParseRecordArchiveConfigurationText (
+		public static GameRecordArchiveConfiguration ParseRecordArchiveConfigurationText(
 			String text
 		) {
 			var list = text.Split(':');
@@ -711,7 +711,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task ExportRecordArchive (
+		public static async Task ExportRecordArchive(
 			String                                              targetDirectory,
 			String                                              archiveFile,
 			List<Byte>?                                         key,
@@ -741,7 +741,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static async Task ImportRecordArchive (
+		public static async Task ImportRecordArchive(
 			String                                              targetDirectory,
 			String                                              archiveFile,
 			List<Byte>?                                         key,
@@ -774,7 +774,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region repository
 
-		public static async Task<Tuple<GameProgramState, GameRecordState>> CheckGameState (
+		public static async Task<Tuple<GameProgramState, GameRecordState>> CheckGameState(
 			String  gameDirectory,
 			String? version,
 			String  user
@@ -794,7 +794,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task<GameConfiguration?> LoadCustomGame (
+		public static async Task<GameConfiguration?> LoadCustomGame(
 			String gameDirectory
 		) {
 			if (!StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.ExecutableFile}")) {
@@ -817,14 +817,14 @@ namespace KairosoftGameManager.Utility {
 			return configuration;
 		}
 
-		public static async Task<Boolean> CheckCustomRepository (
+		public static async Task<Boolean> CheckCustomRepository(
 			String repositoryDirectory
 		) {
 			return StorageHelper.ExistDirectory($"{repositoryDirectory}")
 				&& !StorageHelper.ExistFile($"{repositoryDirectory}/steam.exe");
 		}
 
-		public static async Task<List<GameConfiguration>> LoadCustomRepository (
+		public static async Task<List<GameConfiguration>> LoadCustomRepository(
 			String repositoryDirectory
 		) {
 			var libraryList = StorageHelper.ListDirectory(repositoryDirectory, 1, false, true);
@@ -841,7 +841,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static List<Byte> MakeKeyFromSteamUser (
+		public static List<Byte> MakeKeyFromSteamUser(
 			String user
 		) {
 			var keyValue = IntegerU64.Parse(user);
@@ -850,7 +850,7 @@ namespace KairosoftGameManager.Utility {
 			return key.ToList();
 		}
 
-		public static async Task<GameConfiguration?> LoadSteamGame (
+		public static async Task<GameConfiguration?> LoadSteamGame(
 			String libraryDirectory,
 			String gameIdentifier
 		) {
@@ -879,14 +879,14 @@ namespace KairosoftGameManager.Utility {
 			return configuration;
 		}
 
-		public static async Task<Boolean> CheckSteamRepository (
+		public static async Task<Boolean> CheckSteamRepository(
 			String repositoryDirectory
 		) {
 			return StorageHelper.ExistDirectory($"{repositoryDirectory}")
 				&& StorageHelper.ExistFile($"{repositoryDirectory}/steam.exe");
 		}
 
-		public static async Task<List<GameConfiguration>> LoadSteamRepository (
+		public static async Task<List<GameConfiguration>> LoadSteamRepository(
 			String repositoryDirectory
 		) {
 			var libraryList = VdfConvert.Deserialize(await StorageHelper.ReadFileText($"{repositoryDirectory}/steamapps/libraryfolders.vdf"));

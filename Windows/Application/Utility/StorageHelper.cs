@@ -9,19 +9,19 @@ namespace KairosoftGameManager.Utility {
 
 		#region path
 
-		public static String Regularize (
+		public static String Regularize(
 			String path
 		) {
 			return StorageHelper.ToPosixStyle(path);
 		}
 
-		public static String ToPosixStyle (
+		public static String ToPosixStyle(
 			String path
 		) {
 			return path.Replace('\\', '/');
 		}
 
-		public static String ToWindowsStyle (
+		public static String ToWindowsStyle(
 			String path
 		) {
 			return path.Replace('/', '\\');
@@ -29,14 +29,14 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static String? Parent (
+		public static String? Parent(
 			String path
 		) {
 			var parent = Path.GetDirectoryName(path);
 			return parent == null ? null : StorageHelper.Regularize(parent);
 		}
 
-		public static String Name (
+		public static String Name(
 			String path
 		) {
 			var name = Path.GetFileName(path);
@@ -45,7 +45,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static String Temporary (
+		public static String Temporary(
 		) {
 			var parent = App.Instance.CacheDirectory;
 			var name = DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
@@ -62,7 +62,7 @@ namespace KairosoftGameManager.Utility {
 
 		private static readonly Character[] InvalidPathNameCharacter = Path.GetInvalidFileNameChars();
 
-		public static Boolean CheckName (
+		public static Boolean CheckName(
 			String name
 		) {
 			if (name.Length == 0) {
@@ -71,12 +71,12 @@ namespace KairosoftGameManager.Utility {
 			if (name[0] == ' ' || name[^1] == ' ' || name[^1] == '.') {
 				return false;
 			}
-			return name.All((value) => (!StorageHelper.InvalidPathNameCharacter.Contains(value)));
+			return name.All((value) => !StorageHelper.InvalidPathNameCharacter.Contains(value));
 		}
 
 		// ----------------
 
-		public static String GetLongPath (
+		public static String GetLongPath(
 			String source
 		) {
 			var destinationLength = Win32.PInvoke.GetLongPathName(source, []);
@@ -90,19 +90,19 @@ namespace KairosoftGameManager.Utility {
 
 		#region exist
 
-		public static Boolean Exist (
+		public static Boolean Exist(
 			String target
 		) {
 			return File.Exists(target) || Directory.Exists(target);
 		}
 
-		public static Boolean ExistFile (
+		public static Boolean ExistFile(
 			String target
 		) {
 			return File.Exists(target);
 		}
 
-		public static Boolean ExistDirectory (
+		public static Boolean ExistDirectory(
 			String target
 		) {
 			return Directory.Exists(target);
@@ -112,7 +112,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region basic
 
-		public static void Copy (
+		public static void Copy(
 			String source,
 			String destination
 		) {
@@ -133,7 +133,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static void Rename (
+		public static void Rename(
 			String source,
 			String destination
 		) {
@@ -148,7 +148,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static void Remove (
+		public static void Remove(
 			String source
 		) {
 			AssertTest(StorageHelper.Exist(source));
@@ -165,7 +165,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region file
 
-		public static void CreateFile (
+		public static void CreateFile(
 			String target
 		) {
 			var parent = StorageHelper.Parent(target);
@@ -178,13 +178,13 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task<Byte[]> ReadFile (
+		public static async Task<Byte[]> ReadFile(
 			String target
 		) {
 			return await File.ReadAllBytesAsync(target);
 		}
 
-		public static async Task WriteFile (
+		public static async Task WriteFile(
 			String target,
 			Byte[] data
 		) {
@@ -195,7 +195,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task<Byte[]> ReadFileLimited (
+		public static async Task<Byte[]> ReadFileLimited(
 			String target,
 			Size   limit
 		) {
@@ -209,13 +209,13 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task<String> ReadFileText (
+		public static async Task<String> ReadFileText(
 			String target
 		) {
 			return await File.ReadAllTextAsync(target);
 		}
 
-		public static async Task WriteFileText (
+		public static async Task WriteFileText(
 			String target,
 			String text
 		) {
@@ -228,7 +228,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region directory
 
-		public static void CreateDirectory (
+		public static void CreateDirectory(
 			String target
 		) {
 			Directory.CreateDirectory(target);
@@ -237,7 +237,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static List<String> ListDirectory (
+		public static List<String> ListDirectory(
 			String  target,
 			Size?   depth,
 			Boolean allowFile,
@@ -266,24 +266,24 @@ namespace KairosoftGameManager.Utility {
 				result = Directory.EnumerateFileSystemEntries(target, pattern, option);
 			}
 			var targetFullPath = new DirectoryInfo(target).FullName;
-			return result!.Select((value) => (StorageHelper.Regularize(value[(targetFullPath.Length + 1)..]))).Order().ToList();
+			return result.Select((value) => StorageHelper.Regularize(value[(targetFullPath.Length + 1)..])).Order().ToList();
 		}
 
 		#endregion
 
 		#region shell
 
-		public static async Task Reveal (
+		public static async Task Reveal(
 			String target
 		) {
-			var result = Win32.PInvoke.ShellExecute(new (IntPtr.Zero), "open", $"file://{target}", null, null, Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOWNORMAL);
+			var result = Win32.PInvoke.ShellExecute(new (IntegerSN.Zero), "open", $"file://{target}", null, null, Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOWNORMAL);
 			AssertTest(result >= 32);
 			return;
 		}
 
 		// ----------------
 
-		public static async Task<String?> Pick (
+		public static async Task<String?> Pick(
 			String  type,
 			Window  host,
 			String? location,
@@ -372,21 +372,21 @@ namespace KairosoftGameManager.Utility {
 			return target;
 		}
 
-		public static async Task<String?> PickLoadFile (
+		public static async Task<String?> PickLoadFile(
 			Window  host,
 			String? location
 		) {
 			return await StorageHelper.Pick("LoadFile", host, location, null);
 		}
 
-		public static async Task<String?> PickLoadDirectory (
+		public static async Task<String?> PickLoadDirectory(
 			Window  host,
 			String? location
 		) {
 			return await StorageHelper.Pick("LoadDirectory", host, location, null);
 		}
 
-		public static async Task<String?> PickSaveFile (
+		public static async Task<String?> PickSaveFile(
 			Window  host,
 			String? location,
 			String? name
@@ -396,7 +396,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static void Trash (
+		public static void Trash(
 			String target
 		) {
 			AssertTest(StorageHelper.Exist(target));

@@ -10,7 +10,7 @@ namespace KairosoftGameManager.Control {
 
 		#region life
 
-		public Box (
+		public Box(
 		) {
 			return;
 		}
@@ -23,7 +23,7 @@ namespace KairosoftGameManager.Control {
 
 		#region measure & arrange
 
-		protected override Windows.Foundation.Size MeasureWithoutPadding (
+		protected override Windows.Foundation.Size MeasureWithoutPadding(
 			Windows.Foundation.Size availableSize
 		) {
 			var reservedSize = new Windows.Foundation.Size(availableSize.Width, availableSize.Height);
@@ -36,7 +36,7 @@ namespace KairosoftGameManager.Control {
 			return desiredSize;
 		}
 
-		protected override Windows.Foundation.Size ArrangeWithoutPadding (
+		protected override Windows.Foundation.Size ArrangeWithoutPadding(
 			Windows.Foundation.Point finalOffset,
 			Windows.Foundation.Size  finalSize
 		) {

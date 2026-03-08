@@ -17,6 +17,9 @@
 # Environment - Visual Studio Code
 /**/.vscode
 
+# Environment - JetBrains
+/**/.idea
+
 # Common
 
 # Module - Windows

@@ -10,7 +10,7 @@ namespace KairosoftGameManager {
 
 		#region constructor
 
-		public CustomController (
+		public CustomController(
 		) {
 			return;
 		}
@@ -21,7 +21,7 @@ namespace KairosoftGameManager {
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 
-		public void NotifyPropertyChanged (
+		public void NotifyPropertyChanged(
 			String[] propertyNameList
 		) {
 			foreach (var propertyName in propertyNameList) {

@@ -66,7 +66,7 @@ public static class ApplicationInformation {
 
 public static class CommonUtility {
 
-	public static void AssertTest (
+	public static void AssertTest(
 		[DoesNotReturnIf(false)]                      Boolean condition,
 		[CallerArgumentExpression(nameof(condition))] String  expression = ""
 	) {
@@ -78,7 +78,7 @@ public static class CommonUtility {
 
 	// ----------------
 
-	public static TResult SelfLet<TType, TResult> (
+	public static TResult SelfLet<TType, TResult>(
 		this TType           self,
 		Func<TType, TResult> action
 	)
@@ -86,7 +86,7 @@ public static class CommonUtility {
 		return action(self);
 	}
 
-	public static TType SelfAlso<TType> (
+	public static TType SelfAlso<TType>(
 		this TType    self,
 		Action<TType> action
 	)
@@ -97,7 +97,7 @@ public static class CommonUtility {
 
 	// ----------------
 
-	public static TTarget As<TTarget> (
+	public static TTarget As<TTarget>(
 		this Object self
 	)
 		where TTarget : notnull {
@@ -109,14 +109,14 @@ public static class CommonUtility {
 
 	// ----------------
 
-	public static TType AsNotNull<TType> (
+	public static TType AsNotNull<TType>(
 		[NotNull] this TType? self
 	)
 		where TType : struct {
 		return self ?? throw new NullReferenceException();
 	}
 
-	public static TType AsNotNull<TType> (
+	public static TType AsNotNull<TType>(
 		[NotNull] this TType? self
 	)
 		where TType : class {
@@ -125,7 +125,7 @@ public static class CommonUtility {
 
 	// ----------------
 
-	public static TTarget CastPrimitive<TTarget> (
+	public static TTarget CastPrimitive<TTarget>(
 		this Object self
 	) {
 		var selfValue = self;
@@ -166,7 +166,7 @@ public static class CommonUtility {
 
 	// ----------------
 
-	public static ObservableCollection<TSource> ToObservableCollection<TSource> (
+	public static ObservableCollection<TSource> ToObservableCollection<TSource>(
 		this IEnumerable<TSource> self
 	) {
 		return new (self);

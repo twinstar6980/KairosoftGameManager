@@ -17,7 +17,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public SettingPage (
+		public SettingPage(
 		) {
 			this.InitializeComponent();
 			this.Controller = new () { View = this };
@@ -27,7 +27,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		protected override void OnNavigatedTo (
+		protected override void OnNavigatedTo(
 			NavigationEventArgs args
 		) {
 			ControlHelper.PostTask(this, async () => {
@@ -51,12 +51,12 @@ namespace KairosoftGameManager.View {
 
 		#region life
 
-		public void InitializeView (
+		public void InitializeView(
 		) {
 			return;
 		}
 
-		public async Task UpdateView (
+		public async Task UpdateView(
 		) {
 			return;
 		}
@@ -79,7 +79,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uSource_Click (
+		public async void uSource_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -92,7 +92,7 @@ namespace KairosoftGameManager.View {
 
 		#region setting
 
-		public async void uSettingFile_Click (
+		public async void uSettingFile_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -115,7 +115,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uThemeMode_SelectionChanged (
+		public async void uThemeMode_SelectionChanged(
 			Object                    sender,
 			SelectionChangedEventArgs args
 		) {
@@ -127,7 +127,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uRepositoryDirectoryAdd_Click (
+		public async void uRepositoryDirectoryAdd_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -143,7 +143,7 @@ namespace KairosoftGameManager.View {
 			return;
 		}
 
-		public async void uRepositoryDirectory_LostFocus (
+		public async void uRepositoryDirectory_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -164,7 +164,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uExternalToolOfIl2cppdumperPath_LostFocus (
+		public async void uExternalToolOfIl2cppdumperPath_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -183,7 +183,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uExternalToolOfIl2cppdumperPathPick_Click (
+		public async void uExternalToolOfIl2cppdumperPathPick_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -201,7 +201,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uExternalToolOfZipalignPath_LostFocus (
+		public async void uExternalToolOfZipalignPath_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -220,7 +220,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uExternalToolOfZipalignPathPick_Click (
+		public async void uExternalToolOfZipalignPathPick_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -238,7 +238,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uExternalToolOfApksignerPath_LostFocus (
+		public async void uExternalToolOfApksignerPath_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -257,7 +257,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uExternalToolOfApksignerPathPick_Click (
+		public async void uExternalToolOfApksignerPathPick_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -275,7 +275,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uExternalToolOfApkCertificateFile_LostFocus (
+		public async void uExternalToolOfApkCertificateFile_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -294,7 +294,7 @@ namespace KairosoftGameManager.View {
 			}
 		}
 
-		public async void uExternalToolOfApkCertificateFilePick_Click (
+		public async void uExternalToolOfApkCertificateFilePick_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
@@ -312,7 +312,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uExternalToolOfApkCertificatePassword_LostFocus (
+		public async void uExternalToolOfApkCertificatePassword_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {

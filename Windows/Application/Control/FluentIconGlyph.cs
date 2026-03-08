@@ -1,5 +1,5 @@
 #pragma warning disable 0,
-// ReSharper disable InconsistentNaming IdentifierTypo
+// ReSharper disable InconsistentNaming IdentifierTypo UnusedMember.Global
 
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
@@ -1418,7 +1418,7 @@ namespace KairosoftGameManager.Control {
 
 		#region utility
 
-		public static String FindGlyph (
+		public static String FindGlyph(
 			String name
 		) {
 			return typeof(FluentIconGlyph).GetField(name)?.GetRawConstantValue()?.As<String>() ?? throw new ($"Could not find glyph by name '{name}'.");

@@ -10,7 +10,7 @@ namespace KairosoftGameManager.Control {
 
 		#region life
 
-		public Panel (
+		public Panel(
 		) {
 			return;
 		}
@@ -23,7 +23,7 @@ namespace KairosoftGameManager.Control {
 			nameof(Panel.Padding),
 			typeof(Thickness),
 			typeof(Panel),
-			new (new Thickness(0.0), (o, e) => { o.As<Panel>().InvalidateMeasure(); })
+			new (new Thickness(0.0), (o, _) => o.As<Panel>().InvalidateMeasure())
 		);
 
 		public Thickness Padding {
@@ -35,7 +35,7 @@ namespace KairosoftGameManager.Control {
 
 		#region measure & arrange
 
-		protected override Windows.Foundation.Size MeasureOverride (
+		protected override Windows.Foundation.Size MeasureOverride(
 			Windows.Foundation.Size availableSize
 		) {
 			var parentPadding = this.Padding;
@@ -46,7 +46,7 @@ namespace KairosoftGameManager.Control {
 			return desiredSize;
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride (
+		protected override Windows.Foundation.Size ArrangeOverride(
 			Windows.Foundation.Size finalSize
 		) {
 			var parentPadding = this.Padding;
@@ -58,11 +58,11 @@ namespace KairosoftGameManager.Control {
 
 		// ----------------
 
-		protected abstract Windows.Foundation.Size MeasureWithoutPadding (
+		protected abstract Windows.Foundation.Size MeasureWithoutPadding(
 			Windows.Foundation.Size availableSize
 		);
 
-		protected abstract Windows.Foundation.Size ArrangeWithoutPadding (
+		protected abstract Windows.Foundation.Size ArrangeWithoutPadding(
 			Windows.Foundation.Point finalOffset,
 			Windows.Foundation.Size  finalSize
 		);

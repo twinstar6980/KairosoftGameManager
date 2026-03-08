@@ -2,7 +2,6 @@
 // ReSharper disable
 
 using KairosoftGameManager;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -17,7 +16,7 @@ namespace KairosoftGameManager.Utility {
 
 		[UnconditionalSuppressMessage("Trimming", "IL2026")]
 		[UnconditionalSuppressMessage("AOT", "IL3050")]
-		public static JsonNode SerializeNode<TValue> (
+		public static JsonNode SerializeNode<TValue>(
 			TValue value
 		)
 			where TValue : notnull {
@@ -26,7 +25,7 @@ namespace KairosoftGameManager.Utility {
 
 		[UnconditionalSuppressMessage("Trimming", "IL2026")]
 		[UnconditionalSuppressMessage("AOT", "IL3050")]
-		public static TValue DeserializeNode<TValue> (
+		public static TValue DeserializeNode<TValue>(
 			JsonNode node
 		)
 			where TValue : notnull {
@@ -37,7 +36,7 @@ namespace KairosoftGameManager.Utility {
 
 		[UnconditionalSuppressMessage("Trimming", "IL2026")]
 		[UnconditionalSuppressMessage("AOT", "IL3050")]
-		public static String SerializeText<TValue> (
+		public static String SerializeText<TValue>(
 			TValue  value,
 			Boolean indented = true
 		)
@@ -47,7 +46,7 @@ namespace KairosoftGameManager.Utility {
 
 		[UnconditionalSuppressMessage("Trimming", "IL2026")]
 		[UnconditionalSuppressMessage("AOT", "IL3050")]
-		public static TValue DeserializeText<TValue> (
+		public static TValue DeserializeText<TValue>(
 			String text
 		)
 			where TValue : notnull {
@@ -56,7 +55,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task SerializeFile<TValue> (
+		public static async Task SerializeFile<TValue>(
 			String  path,
 			TValue  value,
 			Boolean indented = true
@@ -66,7 +65,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static async Task<TValue> DeserializeFile<TValue> (
+		public static async Task<TValue> DeserializeFile<TValue>(
 			String path
 		)
 			where TValue : notnull {
@@ -75,7 +74,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static TValue DeepCopy<TValue> (
+		public static TValue DeepCopy<TValue>(
 			TValue value
 		)
 			where TValue : notnull {
@@ -100,7 +99,7 @@ namespace KairosoftGameManager.Utility {
 
 			[UnconditionalSuppressMessage("Trimming", "IL2026")]
 			[UnconditionalSuppressMessage("AOT", "IL3050")]
-			public override Object Read (
+			public override Object Read(
 				ref Utf8JsonReader    reader,
 				Type                  typeToConvert,
 				JsonSerializerOptions options
@@ -119,7 +118,7 @@ namespace KairosoftGameManager.Utility {
 
 			[UnconditionalSuppressMessage("Trimming", "IL2026")]
 			[UnconditionalSuppressMessage("AOT", "IL3050")]
-			public override void Write (
+			public override void Write(
 				Utf8JsonWriter        writer,
 				Object                value,
 				JsonSerializerOptions options
@@ -135,7 +134,7 @@ namespace KairosoftGameManager.Utility {
 
 			public override Boolean HandleNull => false;
 
-			public override TValue Read (
+			public override TValue Read(
 				ref Utf8JsonReader    reader,
 				Type                  typeToConvert,
 				JsonSerializerOptions options
@@ -150,7 +149,7 @@ namespace KairosoftGameManager.Utility {
 				return value;
 			}
 
-			public override void Write (
+			public override void Write(
 				Utf8JsonWriter        writer,
 				TValue                value,
 				JsonSerializerOptions options
@@ -176,7 +175,7 @@ namespace KairosoftGameManager.Utility {
 			[UnconditionalSuppressMessage("Trimming", "IL2026")]
 			[UnconditionalSuppressMessage("Trimming", "IL2070")]
 			[UnconditionalSuppressMessage("AOT", "IL3050")]
-			public override TValue Read (
+			public override TValue Read(
 				ref Utf8JsonReader    reader,
 				Type                  typeToConvert,
 				JsonSerializerOptions options
@@ -195,7 +194,7 @@ namespace KairosoftGameManager.Utility {
 
 			[UnconditionalSuppressMessage("Trimming", "IL2026")]
 			[UnconditionalSuppressMessage("AOT", "IL3050")]
-			public override void Write (
+			public override void Write(
 				Utf8JsonWriter        writer,
 				TValue                value,
 				JsonSerializerOptions options
@@ -214,13 +213,13 @@ namespace KairosoftGameManager.Utility {
 
 		private class TupleJsonConverterFactory : JsonConverterFactory {
 
-			public override Boolean CanConvert (
+			public override Boolean CanConvert(
 				Type typeToConvert
 			) {
 				return ConvertHelper.IsTypeOfTuple(typeToConvert) || ConvertHelper.IsTypeOfValueTuple(typeToConvert);
 			}
 
-			public override JsonConverter CreateConverter (
+			public override JsonConverter CreateConverter(
 				Type                  type,
 				JsonSerializerOptions options
 			) {
@@ -234,7 +233,7 @@ namespace KairosoftGameManager.Utility {
 		#region option
 
 		[UnconditionalSuppressMessage("AOT", "IL3050")]
-		private static JsonSerializerOptions GetCustomJsonSerializerOptions (
+		private static JsonSerializerOptions GetCustomJsonSerializerOptions(
 			Boolean indented
 		) {
 			return new () {

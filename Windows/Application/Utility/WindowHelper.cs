@@ -10,7 +10,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region utility
 
-		public static IntPtr GetHandle (
+		public static IntegerSN GetHandle(
 			Window window
 		) {
 			return WinRT.Interop.WindowNative.GetWindowHandle(window);
@@ -18,7 +18,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static void SetIcon (
+		public static void SetIcon(
 			Window window,
 			String icon
 		) {
@@ -26,7 +26,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static void SetTitle (
+		public static void SetTitle(
 			Window window,
 			String title
 		) {
@@ -34,7 +34,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static void SetTitleBar (
+		public static void SetTitleBar(
 			Window     window,
 			Boolean    extend,
 			UIElement? element,
@@ -54,7 +54,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static void SetPosition (
+		public static void SetPosition(
 			Window window,
 			Size   x,
 			Size   y
@@ -65,7 +65,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static void SetSize (
+		public static void SetSize(
 			Window window,
 			Size   width,
 			Size   height
@@ -77,7 +77,7 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static void SetAtCenter (
+		public static void SetAtCenter(
 			Window window
 		) {
 			var handle = WindowHelper.GetHandle(window);
@@ -95,7 +95,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static void SetAsForeground (
+		public static void SetAsForeground(
 			Window window
 		) {
 			var handle = WindowHelper.GetHandle(window);
@@ -106,14 +106,14 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static void Activate (
+		public static void Activate(
 			Window window
 		) {
 			window.Activate();
 			return;
 		}
 
-		public static void Close (
+		public static void Close(
 			Window window
 		) {
 			window.Close();

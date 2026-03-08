@@ -8,11 +8,11 @@ namespace KairosoftGameManager.Utility {
 	#region type
 
 	public record ExternalToolSetting {
-		public String Il2cppdumperPath       = default!;
-		public String ZipalignPath           = default!;
-		public String ApksignerPath          = default!;
-		public String ApkCertificateFile     = default!;
-		public String ApkCertificatePassword = default!;
+		public String Il2cppdumperPath       { get; set; } = default!;
+		public String ZipalignPath           { get; set; } = default!;
+		public String ApksignerPath          { get; set; } = default!;
+		public String ApkCertificateFile     { get; set; } = default!;
+		public String ApkCertificatePassword { get; set; } = default!;
 	}
 
 	#endregion
@@ -21,7 +21,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region basic
 
-		public static ExternalToolSetting ParseSetting (
+		public static ExternalToolSetting ParseSetting(
 			ExternalToolSetting original
 		) {
 			return new () {
@@ -37,7 +37,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region special
 
-		public static async Task<List<String>> RunIl2cppdumper (
+		public static async Task<List<String>> RunIl2cppdumper(
 			ExternalToolSetting setting,
 			String              programFile,
 			String              metadataFile
@@ -62,7 +62,7 @@ namespace KairosoftGameManager.Utility {
 			return result;
 		}
 
-		public static List<Tuple<Size, String, Boolean, String>> DoIl2cppdumperSearchFieldFromDumpData (
+		public static List<Tuple<Size, String, Boolean, String>> DoIl2cppdumperSearchFieldFromDumpData(
 			List<String> source,
 			String       className,
 			String       fieldName
@@ -95,7 +95,7 @@ namespace KairosoftGameManager.Utility {
 			return result;
 		}
 
-		public static List<Tuple<Size, String, Boolean, String, String>> DoIl2cppdumperSearchMethodFromDumpData (
+		public static List<Tuple<Size, String, Boolean, String, String>> DoIl2cppdumperSearchMethodFromDumpData(
 			List<String> source,
 			String       className,
 			String       methodName
@@ -134,7 +134,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task RunZipalign (
+		public static async Task RunZipalign(
 			ExternalToolSetting setting,
 			String              file
 		) {
@@ -164,7 +164,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static async Task RunApksigner (
+		public static async Task RunApksigner(
 			ExternalToolSetting setting,
 			String              file
 		) {
