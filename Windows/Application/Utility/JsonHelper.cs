@@ -85,7 +85,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region attribute
 
-		[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
+		[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 		public class JsonOptionalAttribute : JsonAttribute {
 		}
 
@@ -140,12 +140,11 @@ namespace KairosoftGameManager.Utility {
 				JsonSerializerOptions options
 			) {
 				var value = default(TValue);
-				if (value is FloaterS32) {
-					value = reader.GetSingle().As<TValue>();
-				}
-				if (value is FloaterS64) {
-					value = reader.GetDouble().As<TValue>();
-				}
+				value = value switch {
+					FloaterS32 => reader.GetSingle().As<TValue>(),
+					FloaterS64 => reader.GetDouble().As<TValue>(),
+					_          => throw new UnreachableException(),
+				};
 				return value;
 			}
 
@@ -155,12 +154,11 @@ namespace KairosoftGameManager.Utility {
 				JsonSerializerOptions options
 			) {
 				var text = value.ToString().AsNotNull();
-				if (value is FloaterS32) {
-					text += !FloaterS32.IsInteger(value.As<FloaterS32>()) ? "" : ".0";
-				}
-				if (value is FloaterS64) {
-					text += !FloaterS64.IsInteger(value.As<FloaterS64>()) ? "" : ".0";
-				}
+				text += value switch {
+					FloaterS32 => !FloaterS32.IsInteger(value.As<FloaterS32>()) ? "" : ".0",
+					FloaterS64 => !FloaterS64.IsInteger(value.As<FloaterS64>()) ? "" : ".0",
+					_          => throw new UnreachableException(),
+				};
 				writer.WriteRawValue(text);
 				return;
 			}
@@ -180,16 +178,16 @@ namespace KairosoftGameManager.Utility {
 				Type                  typeToConvert,
 				JsonSerializerOptions options
 			) {
-				var types = typeof(TValue).GetGenericArguments();
-				var values = Enumerable.Repeat<Object?>(null, types.Length).ToArray();
+				var typeList = typeof(TValue).GetGenericArguments();
+				var valueList = Enumerable.Repeat<Object?>(null, typeList.Length).ToArray();
 				AssertTest(reader.TokenType == JsonTokenType.StartArray);
-				for (var index = 0; index < types.Length; index++) {
+				for (var index = 0; index < typeList.Length; index++) {
 					reader.Read();
-					values[index] = JsonSerializer.Deserialize(ref reader, types[index], options);
+					valueList[index] = JsonSerializer.Deserialize(ref reader, typeList[index], options);
 				}
 				reader.Read();
 				AssertTest(reader.TokenType == JsonTokenType.EndArray);
-				return typeToConvert.GetConstructor(types).AsNotNull().Invoke(values).As<TValue>();
+				return typeToConvert.GetConstructor(typeList).AsNotNull().Invoke(valueList).As<TValue>();
 			}
 
 			[UnconditionalSuppressMessage("Trimming", "IL2026")]
@@ -199,11 +197,11 @@ namespace KairosoftGameManager.Utility {
 				TValue                value,
 				JsonSerializerOptions options
 			) {
-				var types = typeof(TValue).GetGenericArguments();
-				var values = value.As<ITuple>();
+				var typeList = typeof(TValue).GetGenericArguments();
+				var valueList = value.As<ITuple>();
 				writer.WriteStartArray();
-				for (var index = 0; index < types.Length; index++) {
-					JsonSerializer.Serialize(writer, values[index], types[index], options);
+				for (var index = 0; index < typeList.Length; index++) {
+					JsonSerializer.Serialize(writer, valueList[index], typeList[index], options);
 				}
 				writer.WriteEndArray();
 				return;

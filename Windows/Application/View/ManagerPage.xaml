@@ -11,79 +11,67 @@
 	mc:Ignorable="d"
 	x:DefaultBindMode="OneWay"
 	x:Class="KairosoftGameManager.View.ManagerPage"
-	NavigationCacheMode="Enabled"
-	>
+	NavigationCacheMode="Enabled">
 	<my:Stack
 		HorizontalAlignment="Stretch"
 		VerticalAlignment="Stretch"
 		Orientation="Vertical"
-		Spacing="0"
-		>
+		Spacing="0">
 		<my:Stack
 			HorizontalAlignment="Stretch"
 			VerticalAlignment="Stretch"
 			Padding="20,12"
 			Orientation="Horizontal"
-			Spacing="8"
-			>
+			Spacing="8">
 			<DropDownButton
 				my:Stack.Weight="1"
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Center"
 				HorizontalContentAlignment="Stretch"
-				Flyout="{x:Bind Controller.uRepositoryDirectoryList_Flyout}"
-				>
+				Flyout="{x:Bind Controller.uRepositoryDirectoryList_Flyout}">
 				<my:Stack
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					Orientation="Horizontal"
-					Spacing="8"
-					>
+					Spacing="8">
 					<FontIcon
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
 						FontSize="{StaticResource SmallIconSize}"
-						Glyph="{StaticResource FluentIconGlyph.FileExplorer}"
-						/>
+						Glyph="{StaticResource FluentIconGlyph.FileExplorer}" />
 					<TextBlock
 						my:Stack.Weight="1"
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
 						Style="{StaticResource BodyTextBlockStyle}"
 						TextWrapping="NoWrap"
-						Text="{x:Bind Controller.uRepositoryDirectoryText_Text}"
-						/>
+						Text="{x:Bind Controller.uRepositoryDirectoryText_Text}" />
 					<InfoBadge
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
 						Style="{StaticResource AttentionValueInfoBadgeStyle}"
-						Value="{x:Bind Controller.uRepositoryDirectoryGameCount_Value}"
-						/>
+						Value="{x:Bind Controller.uRepositoryDirectoryGameCount_Value}" />
 				</my:Stack>
 			</DropDownButton>
 			<Button
 				HorizontalAlignment="Stretch"
-				VerticalAlignment="Center"
-				>
+				VerticalAlignment="Center">
 				<my:Stack
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					Orientation="Horizontal"
-					Spacing="8"
-					>
+					Spacing="8">
 					<FontIcon
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
 						FontSize="{StaticResource SmallIconSize}"
-						Glyph="{StaticResource FluentIconGlyph.Calories}"
-						/>
+						Glyph="{StaticResource FluentIconGlyph.Calories}" />
 					<TextBlock
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
 						Style="{StaticResource BodyTextBlockStyle}"
 						TextWrapping="NoWrap"
-						Text="Action"
-						/>
+						Text="Action" />
 				</my:Stack>
 				<Button.Flyout>
 					<MenuFlyout Placement="BottomEdgeAlignedRight">
@@ -91,59 +79,50 @@
 							Tag="ReloadGame"
 							Click="{x:Bind Controller.uGameAction_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Refresh}}"
-							Text="Reload Game"
-							/>
+							Text="Reload Game" />
 						<MenuFlyoutItem
 							Tag="RevealGame"
 							Click="{x:Bind Controller.uGameAction_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.FolderOpen}}"
-							Text="Reveal Game"
-							/>
+							Text="Reveal Game" />
 						<MenuFlyoutItem
 							Tag="LaunchGame"
 							Click="{x:Bind Controller.uGameAction_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Play}}"
-							Text="Launch Game"
-							/>
+							Text="Launch Game" />
 						<MenuFlyoutSeparator />
 						<MenuFlyoutItem
 							Tag="ModifyProgram"
 							Click="{x:Bind Controller.uGameAction_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Repair}}"
-							Text="Modify Program"
-							/>
+							Text="Modify Program" />
 						<MenuFlyoutItem
 							Tag="RestoreProgram"
 							Click="{x:Bind Controller.uGameAction_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.History}}"
-							Text="Restore Program"
-							/>
+							Text="Restore Program" />
 						<MenuFlyoutSeparator />
 						<MenuFlyoutItem
 							Tag="EncryptRecord"
 							Click="{x:Bind Controller.uGameAction_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Lock}}"
-							Text="Encrypt Record"
-							/>
+							Text="Encrypt Record" />
 						<MenuFlyoutItem
 							Tag="DecryptRecord"
 							Click="{x:Bind Controller.uGameAction_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Unlock}}"
-							Text="Decrypt Record"
-							/>
+							Text="Decrypt Record" />
 						<MenuFlyoutSeparator />
 						<MenuFlyoutItem
 							Tag="ExportRecord"
 							Click="{x:Bind Controller.uGameAction_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Export}}"
-							Text="Export Record"
-							/>
+							Text="Export Record" />
 						<MenuFlyoutItem
 							Tag="ImportRecord"
 							Click="{x:Bind Controller.uGameAction_Click}"
 							Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Import}}"
-							Text="Import Record"
-							/>
+							Text="Import Record" />
 					</MenuFlyout>
 				</Button.Flyout>
 			</Button>
@@ -157,8 +136,7 @@
 			VerticalAlignment="Stretch"
 			Padding="16,8"
 			SelectionMode="Extended"
-			ItemsSource="{x:Bind Controller.uGameList_ItemsSource}"
-			>
+			ItemsSource="{x:Bind Controller.uGameList_ItemsSource}">
 			<GridView.ItemContainerStyle>
 				<Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
 					<Setter Property="Margin" Value="4,4" />
@@ -178,36 +156,31 @@
 						CornerRadius="{ThemeResource ControlCornerRadius}"
 						BorderThickness="{StaticResource BorderThickness}"
 						BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-						Background="{ThemeResource ControlFillColorDefaultBrush}"
-						>
+						Background="{ThemeResource ControlFillColorDefaultBrush}">
 						<my:Stack
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
 							Padding="12"
 							Orientation="Horizontal"
-							Spacing="20"
-							>
+							Spacing="20">
 							<Border
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Stretch"
 								Margin="4,0,0,0"
-								CornerRadius="8"
-								>
+								CornerRadius="8">
 								<Image
 									HorizontalAlignment="Left"
 									VerticalAlignment="Top"
 									Width="48"
 									Height="48"
-									Source="{x:Bind uIcon_Source}"
-									/>
+									Source="{x:Bind uIcon_Source}" />
 							</Border>
 							<my:Stack
 								my:Stack.Weight="1"
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Stretch"
 								Orientation="Vertical"
-								Spacing="8"
-								>
+								Spacing="8">
 								<TextBlock
 									ToolTipService.ToolTip="{x:Bind uName_ToolTip}"
 									HorizontalAlignment="Left"
@@ -216,27 +189,23 @@
 									IsTextSelectionEnabled="True"
 									FontSize="16"
 									TextWrapping="NoWrap"
-									Text="{x:Bind uName_Text}"
-									/>
+									Text="{x:Bind uName_Text}" />
 								<my:Stack
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Stretch"
 									Orientation="Horizontal"
-									Spacing="8"
-									>
+									Spacing="8">
 									<my:Stack
 										HorizontalAlignment="Stretch"
 										VerticalAlignment="Center"
 										Orientation="Horizontal"
-										Spacing="8"
-										>
+										Spacing="8">
 										<InfoBadge
 											HorizontalAlignment="Stretch"
 											VerticalAlignment="Center"
 											Width="8"
 											Height="8"
-											Style="{x:Bind uIdentifierBadge_Style}"
-											/>
+											Style="{x:Bind uIdentifierBadge_Style}" />
 										<TextBlock
 											HorizontalAlignment="Stretch"
 											VerticalAlignment="Center"
@@ -245,22 +214,19 @@
 											Style="{StaticResource BodyTextBlockStyle}"
 											IsTextSelectionEnabled="True"
 											TextWrapping="NoWrap"
-											Text="{x:Bind uIdentifierText_Text}"
-											/>
+											Text="{x:Bind uIdentifierText_Text}" />
 									</my:Stack>
 									<my:Stack
 										HorizontalAlignment="Stretch"
 										VerticalAlignment="Center"
 										Orientation="Horizontal"
-										Spacing="8"
-										>
+										Spacing="8">
 										<InfoBadge
 											HorizontalAlignment="Stretch"
 											VerticalAlignment="Center"
 											Width="8"
 											Height="8"
-											Style="{x:Bind uVersionBadge_Style}"
-											/>
+											Style="{x:Bind uVersionBadge_Style}" />
 										<TextBlock
 											HorizontalAlignment="Stretch"
 											VerticalAlignment="Center"
@@ -269,22 +235,19 @@
 											Style="{StaticResource BodyTextBlockStyle}"
 											IsTextSelectionEnabled="True"
 											TextWrapping="NoWrap"
-											Text="{x:Bind uVersionText_Text}"
-											/>
+											Text="{x:Bind uVersionText_Text}" />
 									</my:Stack>
 									<my:Stack
 										HorizontalAlignment="Stretch"
 										VerticalAlignment="Center"
 										Orientation="Horizontal"
-										Spacing="8"
-										>
+										Spacing="8">
 										<InfoBadge
 											HorizontalAlignment="Stretch"
 											VerticalAlignment="Center"
 											Width="8"
 											Height="8"
-											Style="{x:Bind uProgramBadge_Style}"
-											/>
+											Style="{x:Bind uProgramBadge_Style}" />
 										<TextBlock
 											HorizontalAlignment="Stretch"
 											VerticalAlignment="Center"
@@ -293,22 +256,19 @@
 											Style="{StaticResource BodyTextBlockStyle}"
 											IsTextSelectionEnabled="True"
 											TextWrapping="NoWrap"
-											Text="{x:Bind uProgramText_Text}"
-											/>
+											Text="{x:Bind uProgramText_Text}" />
 									</my:Stack>
 									<my:Stack
 										HorizontalAlignment="Stretch"
 										VerticalAlignment="Center"
 										Orientation="Horizontal"
-										Spacing="8"
-										>
+										Spacing="8">
 										<InfoBadge
 											HorizontalAlignment="Stretch"
 											VerticalAlignment="Center"
 											Width="8"
 											Height="8"
-											Style="{x:Bind uRecordBadge_Style}"
-											/>
+											Style="{x:Bind uRecordBadge_Style}" />
 										<TextBlock
 											HorizontalAlignment="Stretch"
 											VerticalAlignment="Center"
@@ -317,8 +277,7 @@
 											Style="{StaticResource BodyTextBlockStyle}"
 											IsTextSelectionEnabled="True"
 											TextWrapping="NoWrap"
-											Text="{x:Bind uRecordText_Text}"
-											/>
+											Text="{x:Bind uRecordText_Text}" />
 									</my:Stack>
 								</my:Stack>
 							</my:Stack>
@@ -327,73 +286,63 @@
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Bottom"
 								Background="Transparent"
-								Content="{community:FontIcon FontSize={StaticResource SmallIconSize}, Glyph={StaticResource FluentIconGlyph.Calories}}"
-								>
+								Content="{community:FontIcon FontSize={StaticResource SmallIconSize}, Glyph={StaticResource FluentIconGlyph.Calories}}">
 								<Button.Flyout>
 									<MenuFlyout Placement="BottomEdgeAlignedRight">
 										<MenuFlyoutItem
 											Tag="ReloadGame"
 											Click="{x:Bind uAction_Click}"
 											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Refresh}}"
-											Text="Reload Game"
-											/>
+											Text="Reload Game" />
 										<MenuFlyoutItem
 											Tag="RevealGame"
 											Click="{x:Bind uAction_Click}"
 											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.FolderOpen}}"
-											Text="Reveal Game"
-											/>
+											Text="Reveal Game" />
 										<MenuFlyoutItem
 											Tag="LaunchGame"
 											Click="{x:Bind uAction_Click}"
 											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Play}}"
-											Text="Launch Game"
-											/>
+											Text="Launch Game" />
 										<MenuFlyoutSeparator />
 										<MenuFlyoutItem
 											Tag="ModifyProgram"
 											IsEnabled="{x:Bind uActionModifyProgram_IsEnabled}"
 											Click="{x:Bind uAction_Click}"
 											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Repair}}"
-											Text="Modify Program"
-											/>
+											Text="Modify Program" />
 										<MenuFlyoutItem
 											Tag="RestoreProgram"
 											IsEnabled="{x:Bind uActionRestoreProgram_IsEnabled}"
 											Click="{x:Bind uAction_Click}"
 											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.History}}"
-											Text="Restore Program"
-											/>
+											Text="Restore Program" />
 										<MenuFlyoutSeparator />
 										<MenuFlyoutItem
 											Tag="EncryptRecord"
 											IsEnabled="{x:Bind uActionEncryptRecord_IsEnabled}"
 											Click="{x:Bind uAction_Click}"
 											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Lock}}"
-											Text="Encrypt Record"
-											/>
+											Text="Encrypt Record" />
 										<MenuFlyoutItem
 											Tag="DecryptRecord"
 											IsEnabled="{x:Bind uActionDecryptRecord_IsEnabled}"
 											Click="{x:Bind uAction_Click}"
 											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Unlock}}"
-											Text="Decrypt Record"
-											/>
+											Text="Decrypt Record" />
 										<MenuFlyoutSeparator />
 										<MenuFlyoutItem
 											Tag="ExportRecord"
 											IsEnabled="{x:Bind uActionExportRecord_IsEnabled}"
 											Click="{x:Bind uAction_Click}"
 											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Export}}"
-											Text="Export Record"
-											/>
+											Text="Export Record" />
 										<MenuFlyoutItem
 											Tag="ImportRecord"
 											IsEnabled="{x:Bind uActionImportRecord_IsEnabled}"
 											Click="{x:Bind uAction_Click}"
 											Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Import}}"
-											Text="Import Record"
-											/>
+											Text="Import Record" />
 									</MenuFlyout>
 								</Button.Flyout>
 							</Button>

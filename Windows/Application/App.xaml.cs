@@ -69,6 +69,7 @@ namespace KairosoftGameManager {
 					await this.Setting.Load();
 				}
 				catch (Exception) {
+					// ignored
 				}
 				await this.Setting.Save(apply: false);
 				this.MainWindow = new ();

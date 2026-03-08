@@ -24,9 +24,9 @@ namespace KairosoftGameManager {
 
 		#region constructor
 
-		public SettingData Data;
+		public SettingData Data { get; private set; }
 
-		public SettingState State;
+		public SettingState State { get; private set; }
 
 		// ----------------
 

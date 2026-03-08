@@ -4,8 +4,7 @@
 	xmlns:community="using:CommunityToolkit.WinUI"
 	xmlns:communityControls="using:CommunityToolkit.WinUI.Controls"
 	xmlns:local="using:KairosoftGameManager"
-	xmlns:my="using:KairosoftGameManager.Control"
-	>
+	xmlns:my="using:KairosoftGameManager.Control">
 	<!-- Common -->
 	<Thickness x:Key="BorderThickness">1</Thickness>
 	<x:Double x:Key="DividerThickness">1</x:Double>

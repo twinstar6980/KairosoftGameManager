@@ -275,12 +275,12 @@ namespace KairosoftGameManager.Utility {
 					.Select((it) => it.Item1)
 					.SelfAlso((it) => onNotify($"Tip: the symbol 'Encrypter.Decode' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
 				symbolAddress.RecordStore.ReadRecord.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "RecordStore", "ReadRecord")
-					.Where((value) => (!value.Item3 && value.Item5 == "int rcId"))
+					.Where((value) => !value.Item3 && value.Item5 == "int rcId")
 					.SelfAlso((it) => AssertTest(it.Count() == 1))
 					.Select((it) => it.Item1)
 					.SelfAlso((it) => onNotify($"Tip: the symbol 'RecordStore.ReadRecord' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
 				symbolAddress.RecordStore.WriteRecord.AddRange(ExternalToolHelper.DoIl2cppdumperSearchMethodFromDumpData(dumpData, "RecordStore", "WriteRecord")
-					.Where((value) => (!value.Item3 && value.Item5 == "int rcId, byte[][] data"))
+					.Where((value) => !value.Item3 && value.Item5 == "int rcId, byte[][] data")
 					.SelfAlso((it) => AssertTest(it.Count() == 1))
 					.Select((it) => it.Item1)
 					.SelfAlso((it) => onNotify($"Tip: the symbol 'RecordStore.WriteRecord' at {String.Join(',', it.Select((value) => $"{value:x8}"))}.")));
@@ -515,15 +515,6 @@ namespace KairosoftGameManager.Utility {
 				onNotify($"Phase: repack package file.");
 				AssertTest(packagePartList != null);
 				var replaceTaskList = new List<Tuple<ZipArchive, GamePlatform>>();
-				var replaceProgramFile = async (
-					ZipArchive   package,
-					GamePlatform platform
-				) => {
-					var fileName = GameHelper.GetProgramFilePath(platform);
-					package.GetEntry(fileName).AsNotNull().Delete();
-					await package.CreateEntryFromFileAsync($"{targetDirectory}/{fileName}", fileName);
-					return;
-				};
 				foreach (var platform in platformList) {
 					if (packageType == GamePackageType.Zip || packageType == GamePackageType.Apk) {
 						replaceTaskList.Add(new (packagePartList.First().Item2, platform));

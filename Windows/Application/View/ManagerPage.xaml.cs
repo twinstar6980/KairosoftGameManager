@@ -106,7 +106,7 @@ namespace KairosoftGameManager.View {
 					await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Warning, "The specified repository directory is invalid.", "");
 				}
 				else {
-					gameList.Sort((left, right) => (String.CompareOrdinal(left.Name, right.Name)));
+					gameList.Sort((left, right) => String.CompareOrdinal(left.Name, right.Name));
 					foreach (var game in gameList) {
 						this.uGameList_ItemsSource.Add(new () { Host = this, Configuration = game });
 					}
@@ -247,7 +247,7 @@ namespace KairosoftGameManager.View {
 							argumentDisableRecordEncryption,
 							argumentEnableDebugMode,
 							ExternalToolHelper.ParseSetting(App.Instance.Setting.Data.ExternalTool),
-							(_) => { }
+							(_) => {}
 						);
 						break;
 					}
@@ -273,7 +273,7 @@ namespace KairosoftGameManager.View {
 						await GameHelper.EncryptRecord(
 							recordDirectory,
 							GameHelper.MakeKeyFromSteamUser(game.User),
-							(_) => { }
+							(_) => {}
 						);
 						break;
 					}
@@ -287,7 +287,7 @@ namespace KairosoftGameManager.View {
 						await GameHelper.EncryptRecord(
 							recordDirectory,
 							GameHelper.MakeKeyFromSteamUser(game.User),
-							(_) => { }
+							(_) => {}
 						);
 						break;
 					}
@@ -494,13 +494,13 @@ namespace KairosoftGameManager.View {
 					}
 				}
 			}
-			if (result.Count != this.View.uGameList.SelectedItems.Count || !result.All((value) => (value.Item2 != null && value.Item2.AsNotNull()))) {
+			if (result.Count != this.View.uGameList.SelectedItems.Count || !result.All((value) => value.Item2 != null && value.Item2.AsNotNull())) {
 				await ControlHelper.ShowDialogAsAutomatic(this.View, "Result Report", new TextBlock() {
 					HorizontalAlignment = HorizontalAlignment.Stretch,
 					VerticalAlignment = VerticalAlignment.Stretch,
 					Style = this.View.FindResource("BodyTextBlockStyle").As<Style>(),
 					TextWrapping = TextWrapping.Wrap,
-					Text = String.Join('\n', result.Select((value) => ($"{(value.Item2 == null ? "Cancelled" : !value.Item2.AsNotNull() ? "Failed" : "Succeeded")} - {value.Item1.Configuration.Name}"))),
+					Text = String.Join('\n', result.Select((value) => $"{(value.Item2 == null ? "Cancelled" : !value.Item2.AsNotNull() ? "Failed" : "Succeeded")} - {value.Item1.Configuration.Name}")),
 				}, null);
 			}
 			else {

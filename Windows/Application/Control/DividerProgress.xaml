@@ -4,23 +4,20 @@
 	xmlns:community="using:CommunityToolkit.WinUI"
 	xmlns:communityControls="using:CommunityToolkit.WinUI.Controls"
 	xmlns:local="using:KairosoftGameManager"
-	xmlns:my="using:KairosoftGameManager.Control"
-	>
+	xmlns:my="using:KairosoftGameManager.Control">
 	<Style TargetType="my:DividerProgress">
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="my:DividerProgress">
 					<my:Box
 						HorizontalAlignment="Stretch"
-						VerticalAlignment="Stretch"
-						>
+						VerticalAlignment="Stretch">
 						<Rectangle
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
 							MinWidth="{StaticResource DividerThickness}"
 							MinHeight="{StaticResource DividerThickness}"
-							Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
-							/>
+							Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
 						<ProgressBar
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
@@ -29,8 +26,7 @@
 							Value="{TemplateBinding ProgressValue}"
 							IsIndeterminate="{TemplateBinding ProgressIndeterminate}"
 							ShowPaused="{TemplateBinding ProgressPaused}"
-							ShowError="{TemplateBinding ProgressError}"
-							/>
+							ShowError="{TemplateBinding ProgressError}" />
 					</my:Box>
 				</ControlTemplate>
 			</Setter.Value>

@@ -12,16 +12,14 @@
 	xmlns:my="using:KairosoftGameManager.Control"
 	mc:Ignorable="d"
 	x:DefaultBindMode="OneWay"
-	x:Class="KairosoftGameManager.View.MainWindow"
-	>
+	x:Class="KairosoftGameManager.View.MainWindow">
 	<Window.SystemBackdrop>
 		<MicaBackdrop Kind="Base" />
 	</Window.SystemBackdrop>
 	<my:Box
 		HorizontalAlignment="Stretch"
 		VerticalAlignment="Stretch"
-		IsTabStop="True"
-		>
+		IsTabStop="True">
 		<my:Stack
 			x:Name="uTitle"
 			x:FieldModifier="public"
@@ -30,22 +28,19 @@
 			Height="48"
 			Padding="14,0,180,0"
 			Orientation="Horizontal"
-			Spacing="12"
-			>
+			Spacing="12">
 			<ImageIcon
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Center"
 				Width="22"
 				Height="22"
-				Source="/Asset/Logo.png"
-				/>
+				Source="/Asset/Logo.png" />
 			<TextBlock
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Center"
 				Style="{StaticResource CaptionTextBlockStyle}"
 				TextWrapping="NoWrap"
-				Text="{x:Bind Controller.uTitleText_Text}"
-				/>
+				Text="{x:Bind Controller.uTitleText_Text}" />
 		</my:Stack>
 		<NavigationView
 			HorizontalAlignment="Stretch"
@@ -57,27 +52,23 @@
 			PaneDisplayMode="LeftCompact"
 			AlwaysShowHeader="False"
 			SelectionChanged="{x:Bind Controller.uNavigation_SelectionChanged}"
-			SelectedItem="{x:Bind uNavigationViewItemFirst, Mode=OneTime}"
-			>
+			SelectedItem="{x:Bind uNavigationViewItemFirst, Mode=OneTime}">
 			<NavigationView.MenuItems>
 				<NavigationViewItem
 					x:Name="uNavigationViewItemFirst"
 					Tag="Manager"
 					Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.OEM}}"
-					Content="Manager"
-					/>
+					Content="Manager" />
 				<NavigationViewItem
 					Tag="Function"
 					Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.HomeGroup}}"
-					Content="Function"
-					/>
+					Content="Function" />
 			</NavigationView.MenuItems>
 			<NavigationView.FooterMenuItems>
 				<NavigationViewItem
 					Tag="Setting"
 					Icon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.Settings}}"
-					Content="Setting"
-					/>
+					Content="Setting" />
 			</NavigationView.FooterMenuItems>
 			<Frame />
 		</NavigationView>
@@ -85,8 +76,7 @@
 			HorizontalAlignment="Center"
 			VerticalAlignment="Bottom"
 			Margin="8,4"
-			Transitions="{StaticResource ContentThemeTransitionCollection}"
-			>
+			Transitions="{StaticResource ContentThemeTransitionCollection}">
 			<interactivity:Interaction.Behaviors>
 				<communityBehaviors:StackedNotificationsBehavior x:Name="uNotificationsBehavior" x:FieldModifier="public" />
 			</interactivity:Interaction.Behaviors>

@@ -1,5 +1,5 @@
 #pragma warning disable 0, CA1050,
-// ReSharper disable CheckNamespace InconsistentNaming RedundantUsingDirective.Global UnusedMember.Global OperatorIsCanBeUsed
+// ReSharper disable CheckNamespace InconsistentNaming RedundantUsingDirective.Global UnusedMember.Global OperatorIsCanBeUsed ParameterOnlyUsedForPreconditionCheck.Global
 
 global using System;
 global using System.Collections;

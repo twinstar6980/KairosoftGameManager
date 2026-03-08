@@ -11,53 +11,45 @@
 	mc:Ignorable="d"
 	x:DefaultBindMode="OneWay"
 	x:Class="KairosoftGameManager.View.SettingPage"
-	NavigationCacheMode="Enabled"
-	>
+	NavigationCacheMode="Enabled">
 	<my:Stack
 		HorizontalAlignment="Stretch"
 		VerticalAlignment="Stretch"
 		Orientation="Vertical"
-		Spacing="0"
-		>
+		Spacing="0">
 		<my:Stack
 			HorizontalAlignment="Stretch"
 			VerticalAlignment="Stretch"
 			Padding="20,12"
 			Orientation="Horizontal"
-			Spacing="8"
-			>
+			Spacing="8">
 			<TextBlock
 				my:Stack.Weight="1"
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Center"
 				Style="{StaticResource SubtitleTextBlockStyle}"
 				TextWrapping="NoWrap"
-				Text="{x:Bind Controller.uVersion_Text}"
-				/>
+				Text="{x:Bind Controller.uVersion_Text}" />
 			<Button
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Center"
-				Click="{x:Bind Controller.uSource_Click}"
-				>
+				Click="{x:Bind Controller.uSource_Click}">
 				<my:Stack
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					Orientation="Horizontal"
-					Spacing="8"
-					>
+					Spacing="8">
 					<FontIcon
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
 						FontSize="{StaticResource SmallIconSize}"
-						Glyph="{StaticResource FluentIconGlyph.Link}"
-						/>
+						Glyph="{StaticResource FluentIconGlyph.Link}" />
 					<TextBlock
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
 						Style="{StaticResource BodyTextBlockStyle}"
 						TextWrapping="NoWrap"
-						Text="Source"
-						/>
+						Text="Source" />
 				</my:Stack>
 			</Button>
 		</my:Stack>
@@ -69,81 +61,69 @@
 			HorizontalScrollMode="Disabled"
 			HorizontalScrollBarVisibility="Disabled"
 			VerticalScrollMode="Enabled"
-			VerticalScrollBarVisibility="Visible"
-			>
+			VerticalScrollBarVisibility="Visible">
 			<my:Stack
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Stretch"
 				Padding="20,12"
 				Orientation="Vertical"
-				Spacing="4"
-				>
+				Spacing="4">
 				<communityControls:SettingsCard
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.KnowledgeArticle}}"
 					Header="Setting File"
 					IsClickEnabled="True"
-					Click="{x:Bind Controller.uSettingFile_Click}"
-					/>
+					Click="{x:Bind Controller.uSettingFile_Click}" />
 				<communityControls:SettingsCard
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.BlueLight}}"
-					Header="Theme Mode"
-					>
+					Header="Theme Mode">
 					<my:Stack
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Stretch"
 						Orientation="Horizontal"
-						Spacing="8"
-						>
+						Spacing="8">
 						<ComboBox
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Top"
 							Width="120"
 							ItemsSource="{x:Bind Controller.uThemeMode_ItemsSource}"
 							SelectedIndex="{x:Bind Controller.uThemeMode_SelectedIndex}"
-							SelectionChanged="{x:Bind Controller.uThemeMode_SelectionChanged}"
-							/>
+							SelectionChanged="{x:Bind Controller.uThemeMode_SelectionChanged}" />
 					</my:Stack>
 				</communityControls:SettingsCard>
 				<communityControls:SettingsExpander
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.FileExplorer}}"
-					Header="Repository Directory"
-					>
+					Header="Repository Directory">
 					<my:Stack
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Stretch"
 						Orientation="Horizontal"
-						Spacing="8"
-						>
+						Spacing="8">
 						<Button
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Top"
-							Click="{x:Bind Controller.uRepositoryDirectoryAdd_Click}"
-							>
+							Click="{x:Bind Controller.uRepositoryDirectoryAdd_Click}">
 							<my:Stack
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Stretch"
 								Orientation="Horizontal"
-								Spacing="8"
-								>
+								Spacing="8">
 								<FontIcon
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Center"
 									FontSize="{StaticResource SmallIconSize}"
-									Glyph="{StaticResource FluentIconGlyph.AddTo}"
-									/>
+									Glyph="{StaticResource FluentIconGlyph.AddTo}" />
 								<TextBlock
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Center"
 									Style="{StaticResource BodyTextBlockStyle}"
 									TextWrapping="NoWrap"
-									Text="Add"
-									/>
+									Text="Add" />
 							</my:Stack>
 						</Button>
 					</my:Stack>
@@ -151,14 +131,12 @@
 						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
-							Header="Path"
-							>
+							Header="Path">
 							<my:Stack
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Stretch"
 								Orientation="Horizontal"
-								Spacing="8"
-								>
+								Spacing="8">
 								<TextBox
 									my:Stack.Weight="1"
 									HorizontalAlignment="Stretch"
@@ -167,8 +145,7 @@
 									LostFocus="{x:Bind Controller.uRepositoryDirectory_LostFocus}"
 									TextWrapping="Wrap"
 									AcceptsReturn="True"
-									Text="{x:Bind Controller.uRepositoryDirectory_Text}"
-									/>
+									Text="{x:Bind Controller.uRepositoryDirectory_Text}" />
 							</my:Stack>
 						</communityControls:SettingsCard>
 					</communityControls:SettingsExpander.Items>
@@ -177,142 +154,121 @@
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					HeaderIcon="{community:FontIcon Glyph={StaticResource FluentIconGlyph.DeveloperTools}}"
-					Header="External Tool"
-					>
+					Header="External Tool">
 					<my:Stack
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Stretch"
 						Orientation="Horizontal"
-						Spacing="8"
-						>
+						Spacing="8">
 					</my:Stack>
 					<communityControls:SettingsExpander.Items>
 						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
-							Header="Il2CppDumper Path"
-							>
+							Header="Il2CppDumper Path">
 							<my:Stack
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Stretch"
 								Orientation="Horizontal"
-								Spacing="8"
-								>
+								Spacing="8">
 								<TextBox
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
 									Width="208"
 									LostFocus="{x:Bind Controller.uExternalToolOfIl2cppdumperPath_LostFocus}"
-									Text="{x:Bind Controller.uExternalToolOfIl2cppdumperPath_Text}"
-									/>
+									Text="{x:Bind Controller.uExternalToolOfIl2cppdumperPath_Text}" />
 								<Button
 									ToolTipService.ToolTip="Pick"
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
 									Click="{x:Bind Controller.uExternalToolOfIl2cppdumperPathPick_Click}"
-									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
-									/>
+									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}" />
 							</my:Stack>
 						</communityControls:SettingsCard>
 						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
-							Header="zipalign Path"
-							>
+							Header="zipalign Path">
 							<my:Stack
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Stretch"
 								Orientation="Horizontal"
-								Spacing="8"
-								>
+								Spacing="8">
 								<TextBox
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
 									Width="208"
 									LostFocus="{x:Bind Controller.uExternalToolOfZipalignPath_LostFocus}"
-									Text="{x:Bind Controller.uExternalToolOfZipalignPath_Text}"
-									/>
+									Text="{x:Bind Controller.uExternalToolOfZipalignPath_Text}" />
 								<Button
 									ToolTipService.ToolTip="Pick"
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
 									Click="{x:Bind Controller.uExternalToolOfZipalignPathPick_Click}"
-									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
-									/>
+									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}" />
 							</my:Stack>
 						</communityControls:SettingsCard>
 						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
-							Header="apksigner Path"
-							>
+							Header="apksigner Path">
 							<my:Stack
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Stretch"
 								Orientation="Horizontal"
-								Spacing="8"
-								>
+								Spacing="8">
 								<TextBox
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
 									Width="208"
 									LostFocus="{x:Bind Controller.uExternalToolOfApksignerPath_LostFocus}"
-									Text="{x:Bind Controller.uExternalToolOfApksignerPath_Text}"
-									/>
+									Text="{x:Bind Controller.uExternalToolOfApksignerPath_Text}" />
 								<Button
 									ToolTipService.ToolTip="Pick"
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
 									Click="{x:Bind Controller.uExternalToolOfApksignerPathPick_Click}"
-									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
-									/>
+									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}" />
 							</my:Stack>
 						</communityControls:SettingsCard>
 						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
-							Header="Apk Certificate File"
-							>
+							Header="Apk Certificate File">
 							<my:Stack
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Stretch"
 								Orientation="Horizontal"
-								Spacing="8"
-								>
+								Spacing="8">
 								<TextBox
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
 									Width="208"
 									LostFocus="{x:Bind Controller.uExternalToolOfApkCertificateFile_LostFocus}"
-									Text="{x:Bind Controller.uExternalToolOfApkCertificateFile_Text}"
-									/>
+									Text="{x:Bind Controller.uExternalToolOfApkCertificateFile_Text}" />
 								<Button
 									ToolTipService.ToolTip="Pick"
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
 									Click="{x:Bind Controller.uExternalToolOfApkCertificateFilePick_Click}"
-									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}"
-									/>
+									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}" />
 							</my:Stack>
 						</communityControls:SettingsCard>
 						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
-							Header="Apk Certificate Password"
-							>
+							Header="Apk Certificate Password">
 							<my:Stack
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Stretch"
 								Orientation="Horizontal"
-								Spacing="8"
-								>
+								Spacing="8">
 								<TextBox
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
 									Width="260"
 									LostFocus="{x:Bind Controller.uExternalToolOfApkCertificatePassword_LostFocus}"
-									Text="{x:Bind Controller.uExternalToolOfApkCertificatePassword_Text}"
-									/>
+									Text="{x:Bind Controller.uExternalToolOfApkCertificatePassword_Text}" />
 							</my:Stack>
 						</communityControls:SettingsCard>
 					</communityControls:SettingsExpander.Items>
@@ -323,8 +279,7 @@
 					Margin="8,12"
 					Foreground="{ThemeResource TextFillColorSecondaryBrush}"
 					Style="{StaticResource BodyTextBlockStyle}"
-					TextWrapping="NoWrap"
-					>
+					TextWrapping="NoWrap">
 					<Span xml:space="preserve"><Run Text="{x:Bind Controller.uCopyrightLabel_Text}" /></Span>
 					<LineBreak />
 					<Span xml:space="preserve">Released under <Hyperlink UnderlineStyle="None" NavigateUri="https://www.gnu.org/licenses/gpl-3.0.en.html">GPL-3.0</Hyperlink>. Icons by <Hyperlink UnderlineStyle="None" NavigateUri="https://icons8.com">Icons8</Hyperlink>.</Span>

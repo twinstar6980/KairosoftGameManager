@@ -379,7 +379,7 @@ namespace KairosoftGameManager.View {
 
 		public String uArgumentOfRecordOfKeyEditor_Text {
 			get {
-				return String.Join(' ', this.ArgumentOfRecordOfKey.Select((value) => ($"{value:x2}")));
+				return String.Join(' ', this.ArgumentOfRecordOfKey.Select((value) => $"{value:x2}"));
 			}
 		}
 
@@ -407,8 +407,22 @@ namespace KairosoftGameManager.View {
 				nameof(this.uProgress_ProgressIndeterminate),
 				nameof(this.uProgress_ProgressError),
 			]);
+			var publishMessage = (
+				String message
+			) => {
+				_ = App.Instance.MainWindow.DispatcherQueue.EnqueueAsync(async () => {
+					this.Message += message + "\n";
+					this.NotifyPropertyChanged([
+						nameof(this.uMessage_Text),
+					]);
+					await Task.Delay(40);
+					this.View.uMessageScrollViewer.ChangeView(null, this.View.uMessageScrollViewer.ScrollableHeight, null, true);
+					return;
+				}).SelfLet(ExceptionHelper.WrapTask);
+				return;
+			};
 			try {
-				PublishMessage($"Starting at {DateTime.Now:HH:mm:ss}.");
+				publishMessage($"Starting at {DateTime.Now:HH:mm:ss}.");
 				await Task.Run(async () => {
 					switch (this.Type) {
 						case GameFunctionType.ModifyProgram: {
@@ -417,7 +431,7 @@ namespace KairosoftGameManager.View {
 								this.ArgumentOfProgramOfDisableRecordEncryption,
 								this.ArgumentOfProgramOfEnableDebugMode,
 								ExternalToolHelper.ParseSetting(App.Instance.Setting.Data.ExternalTool),
-								PublishMessage
+								publishMessage
 							);
 							break;
 						}
@@ -425,7 +439,7 @@ namespace KairosoftGameManager.View {
 							await GameHelper.EncryptRecord(
 								this.ArgumentOfRecordOfTargetDirectory,
 								this.ArgumentOfRecordOfKey,
-								PublishMessage
+								publishMessage
 							);
 							break;
 						}
@@ -458,16 +472,16 @@ namespace KairosoftGameManager.View {
 					}
 					return;
 				});
-				PublishMessage($"Succeeded.");
+				publishMessage($"Succeeded.");
 				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
 			}
 			catch (Exception e) {
-				PublishMessage($"Failed.");
-				PublishMessage(ExceptionHelper.GenerateMessage(e));
+				publishMessage($"Failed.");
+				publishMessage(ExceptionHelper.GenerateMessage(e));
 				this.RunningFailed = true;
 				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", "");
 			}
-			PublishMessage($"");
+			publishMessage($"");
 			this.Running = false;
 			this.NotifyPropertyChanged([
 				nameof(this.uRun_IsEnabled),
@@ -475,20 +489,6 @@ namespace KairosoftGameManager.View {
 				nameof(this.uProgress_ProgressError),
 			]);
 			return;
-			async void PublishMessage(
-				String message
-			) {
-				await App.Instance.MainWindow.DispatcherQueue.EnqueueAsync(async () => {
-					this.Message += message + "\n";
-					this.NotifyPropertyChanged([
-						nameof(this.uMessage_Text),
-					]);
-					await Task.Delay(40);
-					this.View.uMessageScrollViewer.ChangeView(null, this.View.uMessageScrollViewer.ScrollableHeight, null, true);
-					return;
-				});
-				return;
-			}
 		}
 
 		#endregion
