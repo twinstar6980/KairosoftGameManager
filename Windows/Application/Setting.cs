@@ -95,7 +95,7 @@ namespace KairosoftGameManager {
 			if (apply) {
 				await this.Apply();
 			}
-			await JsonHelper.SerializeFile<SettingData>(file, this.Data);
+			await JsonHelper.SerializeFile(file, this.Data);
 			return;
 		}
 

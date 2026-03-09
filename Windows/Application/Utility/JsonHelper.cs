@@ -20,7 +20,7 @@ namespace KairosoftGameManager.Utility {
 			TValue value
 		)
 			where TValue : notnull {
-			return JsonSerializer.SerializeToNode<TValue>(value, JsonHelper.Option).AsNotNull();
+			return JsonSerializer.SerializeToNode(value, JsonHelper.Option).AsNotNull();
 		}
 
 		[UnconditionalSuppressMessage("Trimming", "IL2026")]
@@ -41,7 +41,7 @@ namespace KairosoftGameManager.Utility {
 			Boolean indented = true
 		)
 			where TValue : notnull {
-			return JsonSerializer.Serialize<TValue>(value, indented ? JsonHelper.Option : JsonHelper.OptionNoIndented);
+			return JsonSerializer.Serialize(value, indented ? JsonHelper.Option : JsonHelper.OptionNoIndented);
 		}
 
 		[UnconditionalSuppressMessage("Trimming", "IL2026")]
@@ -61,7 +61,7 @@ namespace KairosoftGameManager.Utility {
 			Boolean indented = true
 		)
 			where TValue : notnull {
-			await StorageHelper.WriteFileText(path, JsonHelper.SerializeText<TValue>(value, indented));
+			await StorageHelper.WriteFileText(path, JsonHelper.SerializeText(value, indented));
 			return;
 		}
 
