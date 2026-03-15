@@ -30,9 +30,9 @@ namespace KairosoftGameManager.View {
 		protected override void OnNavigatedTo(
 			NavigationEventArgs args
 		) {
-			ControlHelper.PostTask(this, async () => {
+			_ = ControlHelper.PostTask(this, async () => {
 				await this.Controller.UpdateView();
-			}).SelfLet(ExceptionHelper.WrapTask);
+			}).SelfLet(ApplicationExceptionManager.Instance.WrapTask);
 			base.OnNavigatedTo(args);
 			return;
 		}
@@ -418,7 +418,7 @@ namespace KairosoftGameManager.View {
 					await Task.Delay(40);
 					this.View.uMessageScrollViewer.ChangeView(null, this.View.uMessageScrollViewer.ScrollableHeight, null, true);
 					return;
-				}).SelfLet(ExceptionHelper.WrapTask);
+				}).SelfLet(ApplicationExceptionManager.Instance.WrapTask);
 				return;
 			};
 			try {
@@ -477,7 +477,7 @@ namespace KairosoftGameManager.View {
 			}
 			catch (Exception e) {
 				publishMessage($"Failed.");
-				publishMessage(ExceptionHelper.GenerateMessage(e));
+				publishMessage(ConvertHelper.GenerateExceptionMessage(e));
 				this.RunningFailed = true;
 				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", "");
 			}

@@ -60,9 +60,9 @@ namespace KairosoftGameManager {
 			LaunchActivatedEventArgs args
 		) {
 			try {
-				ExceptionHelper.Initialize(this);
-				ExceptionHelper.Listen(async (exception) => {
-					_ = this.HandleException(exception, this.MainWindow);
+				await ApplicationExceptionManager.Instance.Initialize(this);
+				await ApplicationExceptionManager.Instance.Listen(async (exception) => {
+					await this.HandleException(exception, this.MainWindow);
 					return;
 				});
 				try {
@@ -101,7 +101,7 @@ namespace KairosoftGameManager {
 								Style = window.Content.As<FrameworkElement>().FindResource("BodyTextBlockStyle").As<Style>(),
 								IsTextSelectionEnabled = true,
 								TextWrapping = TextWrapping.Wrap,
-								Text = ExceptionHelper.GenerateMessage(exception),
+								Text = ConvertHelper.GenerateExceptionMessage(exception),
 							}, null);
 						});
 					});

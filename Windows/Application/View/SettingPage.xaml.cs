@@ -30,9 +30,9 @@ namespace KairosoftGameManager.View {
 		protected override void OnNavigatedTo(
 			NavigationEventArgs args
 		) {
-			ControlHelper.PostTask(this, async () => {
+			_ = ControlHelper.PostTask(this, async () => {
 				await this.Controller.UpdateView();
-			}).SelfLet(ExceptionHelper.WrapTask);
+			}).SelfLet(ApplicationExceptionManager.Instance.WrapTask);
 			base.OnNavigatedTo(args);
 			return;
 		}

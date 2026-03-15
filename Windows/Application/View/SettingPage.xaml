@@ -159,8 +159,7 @@
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Stretch"
 						Orientation="Horizontal"
-						Spacing="8">
-					</my:Stack>
+						Spacing="8" />
 					<communityControls:SettingsExpander.Items>
 						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"

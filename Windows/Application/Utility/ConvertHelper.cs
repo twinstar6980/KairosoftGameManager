@@ -46,6 +46,25 @@ namespace KairosoftGameManager.Utility {
 
 		#endregion
 
+		#region exception
+
+		public static String GenerateExceptionMessage(
+			Exception exception
+		) {
+			var message = $"{exception.Message}";
+			if (exception.StackTrace != null) {
+				foreach (var frame in exception.StackTrace.Split(Environment.NewLine)) {
+					if (!frame.StartsWith("   at ")) {
+						continue;
+					}
+					message += $"\n@ {frame.Substring("   at ".Length)}";
+				}
+			}
+			return message;
+		}
+
+		#endregion
+
 		#region boolean
 
 		public static String MakeBooleanToStringOfConfirmation(

@@ -29,9 +29,9 @@ namespace KairosoftGameManager.View {
 		protected override void OnNavigatedTo(
 			NavigationEventArgs args
 		) {
-			ControlHelper.PostTask(this, async () => {
+			_ = ControlHelper.PostTask(this, async () => {
 				await this.Controller.UpdateView();
-			}).SelfLet(ExceptionHelper.WrapTask);
+			}).SelfLet(ApplicationExceptionManager.Instance.WrapTask);
 			base.OnNavigatedTo(args);
 			return;
 		}
@@ -113,7 +113,7 @@ namespace KairosoftGameManager.View {
 				}
 			}
 			catch (Exception e) {
-				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed to load repository.", ExceptionHelper.GenerateMessage(e));
+				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed to load repository.", ConvertHelper.GenerateExceptionMessage(e));
 			}
 			this.NotifyPropertyChanged([
 				nameof(this.uRepositoryDirectoryGameCount_Value),
@@ -487,7 +487,7 @@ namespace KairosoftGameManager.View {
 								$"Failed to action for '{item.Configuration.Name}'.",
 								$"Whether to proceed with the remaining item?",
 								$"",
-								$"{ExceptionHelper.GenerateMessage(exception.AsNotNull())}",
+								$"{ConvertHelper.GenerateExceptionMessage(exception.AsNotNull())}",
 							]),
 						})) {
 						break;
@@ -673,7 +673,7 @@ namespace KairosoftGameManager.View {
 				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Success, "Succeeded.", "");
 			}
 			else {
-				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", ExceptionHelper.GenerateMessage(exception.AsNotNull()));
+				await App.Instance.MainWindow.PushNotification(InfoBarSeverity.Error, "Failed.", ConvertHelper.GenerateExceptionMessage(exception.AsNotNull()));
 			}
 			return;
 		}
