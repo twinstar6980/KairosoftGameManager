@@ -295,3 +295,19 @@ def pack_iphone_ipa(
 			f'{destination}',
 		)
 	return
+
+# ----------------
+
+def check_platform(
+	value: str,
+	expect: list[str],
+) -> bool:
+	return value in expect
+
+def ensure_platform(
+	value: str,
+	expect: list[str],
+) -> None:
+	if not check_platform(value, expect):
+		raise RuntimeError(f'unsupported platform \'{value}\'')
+	return

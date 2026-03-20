@@ -9,11 +9,10 @@ from common.python.utility import *
 def main(
 	platform: str,
 ) -> None:
-	if platform not in ['windows.amd64']:
-		raise RuntimeError(f'invalid platform \'{platform}\'')
+	ensure_platform(platform, ['windows.amd64'])
 	module_directory, module_name = get_project_module(__file__)
 	module_distribution_file = get_project_distribution(f'{platform}.application')
-	if platform in ['windows.amd64']:
+	if check_platform(platform, ['windows.amd64']):
 		module_distribution_file += '.msix'
 		fs_remove(
 			f'{module_distribution_file}',
@@ -34,6 +33,7 @@ def main(
 			f'{module_distribution_file}',
 		)
 	print(f'>> BUILD >> {module_distribution_file}')
+	return
 
 if __name__ == '__main__':
 	main(sys.argv[1])

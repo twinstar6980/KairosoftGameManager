@@ -10,11 +10,11 @@ import Windows.BUILD
 def main(
 	platform: str,
 ) -> None:
-	if platform not in ['windows.amd64', 'linux.amd64', 'macintosh.arm64', 'android.arm64', 'iphone.arm64']:
-		raise RuntimeError(f'invalid platform \'{platform}\'')
+	ensure_platform(platform, ['windows.amd64'])
 	# build
-	if platform in ['windows.amd64']:
+	if check_platform(platform, ['windows.amd64']):
 		Windows.BUILD.main(platform)
+	return
 
 if __name__ == '__main__':
 	main(sys.argv[1])
