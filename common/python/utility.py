@@ -2,11 +2,17 @@ import os
 import sys
 import re
 import pathlib
+import glob
 import shutil
 import tempfile
 import subprocess
 
 # ----------------
+
+def fs_resolve(
+	pattern: str,
+) -> list[str]:
+	return glob.glob(pattern)
 
 def fs_copy(
 	source: str,
@@ -81,22 +87,39 @@ def get_project_module(
 	return (f'{get_project()}/{name}', name_snake)
 
 def get_project_local(
+	name: str | None = None,
 ) -> str:
-	return f'{get_project()}/.local'
+	return f'{get_project()}/.local{'' if name is None else f'/{name}'}'
 
 def get_project_certificate(
 	type: str,
 ) -> tuple[str | None, str]:
-	file = f'{get_project_local()}/certificate/file.{type}'
+	file = f'{get_project_local('certificate')}/file.{type}'
 	if not pathlib.Path(file).is_file():
 		return (None, '')
-	password = fs_read_file(f'{get_project_local()}/certificate/password.{type}.txt')
+	password = fs_read_file(f'{get_project_local('certificate')}/password.{type}.txt')
 	return (file, password)
 
 def get_project_distribution(
-	name: str | None,
+	name: str | None = None,
 ) -> str:
-	return f'{get_project_local()}/distribution{'' if name is None else f'/{name}'}'
+	return f'{get_project_local('distribution')}{'' if name is None else f'/{name}'}'
+
+# ----------------
+
+def check_platform(
+	value: str,
+	expect: list[str],
+) -> bool:
+	return value in expect
+
+def ensure_platform(
+	value: str,
+	expect: list[str],
+) -> None:
+	if not check_platform(value, expect):
+		raise RuntimeError(f'unsupported platform \'{value}\'')
+	return
 
 # ----------------
 
@@ -298,16 +321,37 @@ def pack_iphone_ipa(
 
 # ----------------
 
-def check_platform(
-	value: str,
-	expect: list[str],
-) -> bool:
-	return value in expect
-
-def ensure_platform(
-	value: str,
-	expect: list[str],
+def setup_common_cpp_library(
+	platform: str,
 ) -> None:
-	if not check_platform(value, expect):
-		raise RuntimeError(f'unsupported platform \'{value}\'')
+	library_directory = None
+	library_file_list = None
+	if check_platform(platform, ['windows.amd64']):
+		clang_file = shutil.which('clang')
+		if clang_file == None:
+			raise RuntimeError('can not found clang path')
+		library_directory_list = fs_resolve(str(pathlib.Path(clang_file).parent.parent / 'x86_64-w64-mingw32/bin'))
+		if len(library_directory_list) == 0:
+			raise RuntimeError('can not found library directory')
+		library_directory = library_directory_list[0]
+		library_file_list = ['libc++.dll', 'libunwind.dll']
+	if check_platform(platform, ['android.arm64']):
+		ndk_home = os.environ.get('ANDROID_NDK_HOME')
+		if ndk_home == None:
+			raise RuntimeError('can not found ndk path')
+		library_directory_list = fs_resolve(str(pathlib.Path(ndk_home) / 'toolchains/llvm/prebuilt/*/sysroot/usr/lib/aarch64-linux-android'))
+		if len(library_directory_list) == 0:
+			raise RuntimeError('can not found library directory')
+		library_directory = library_directory_list[0]
+		library_file_list = ['libc++_shared.so']
+	destination = f'{get_project_local('library')}/{platform}'
+	fs_create_directory(
+		destination,
+	)
+	if library_directory != None and library_file_list != None:
+		for library_file in library_file_list:
+			fs_copy(
+				f'{library_directory}/{library_file}',
+				f'{destination}/{library_file}',
+			)
 	return

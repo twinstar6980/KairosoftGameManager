@@ -26,7 +26,7 @@ def main(
 			'-property:GenerateAppxPackageOnBuild=true',
 		])
 		fs_copy(
-			f'{list(pathlib.Path(f'{module_directory}/.build/bin/Application/x64.Release/AppPackages').glob('Application_*_Test/Application_*.msix'))[0]}',
+			f'{fs_resolve(f'{module_directory}/.build/bin/Application/x64.Release/AppPackages/Application_*_Test/Application_*.msix')[0]}',
 			f'{module_distribution_file}',
 		)
 		sign_windows_msix(
