@@ -39,17 +39,6 @@ def fs_remove(
 		shutil.rmtree(source)
 	return
 
-def fs_read_file(
-	source: str,
-) -> str:
-	return pathlib.Path(source).read_text('utf-8')
-
-def fs_create_directory(
-	target: str,
-) -> None:
-	os.makedirs(target, exist_ok=True)
-	return
-
 def fs_create_link(
 	target: str,
 	object: str,
@@ -60,18 +49,39 @@ def fs_create_link(
 	os.symlink(object, target, is_directory)
 	return
 
+def fs_read_file(
+	target: str,
+) -> str:
+	return pathlib.Path(target).read_text('utf-8')
+
+def fs_write_file(
+	target: str,
+	data: str,
+) -> None:
+	pathlib.Path(target).write_text(data, encoding='utf-8')
+	return
+
+def fs_create_directory(
+	target: str,
+) -> None:
+	os.makedirs(target, exist_ok=True)
+	return
+
 # ----------------
 
 def execute_command(
 	location: str,
 	command: list[str],
 	environment: dict[str, str] = {},
-) -> None:
+	ensure_ok: bool = True,
+) -> int:
 	actual_environment = os.environ.copy()
 	for environment_name, environment_value in environment.items():
 		actual_environment[environment_name] = environment_value
-	subprocess.run(command, env=actual_environment, cwd=location, shell=sys.platform == 'win32').check_returncode()
-	return
+	result = subprocess.run(command, env=actual_environment, cwd=location, shell=sys.platform == 'win32')
+	if ensure_ok:
+		result.check_returncode()
+	return result.returncode
 
 # ----------------
 
@@ -241,6 +251,43 @@ def sign_windows_msix(
 
 # ----------------
 
+def sign_macintosh_app(
+	target: str,
+) -> None:
+	with tempfile.TemporaryDirectory() as temporary:
+		default_entitlements = f'{temporary}/default.entitlements'
+		fs_write_file(
+			default_entitlements,
+			'<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict></dict></plist>',
+		)
+		fs_create_directory(
+			f'{temporary}/original',
+		)
+		package_list: list[str] = []
+		package_list += fs_resolve(f'{target}/Frameworks/*.framework')
+		package_list += fs_resolve(f'{target}/PlugIns/*.appex')
+		package_list += fs_resolve(f'{target}/Contents/Frameworks/*.framework')
+		package_list += fs_resolve(f'{target}/Contents/PlugIns/*.appex')
+		package_list += [target]
+		for package in package_list:
+			package_entitlements = f'{temporary}/original/{str(pathlib.Path(package).relative_to(target)).replace('/', '_')}.entitlements'
+			execute_command(temporary, [
+				'codesign',
+				'-d',
+				'--entitlements', f':{package_entitlements}',
+				f'{package}',
+			], ensure_ok=False)
+			if not pathlib.Path(package_entitlements).exists():
+				package_entitlements = default_entitlements
+			execute_command(temporary, [
+				'codesign',
+				'--force',
+				'--sign', '-',
+				'--entitlements', f'{package_entitlements}',
+				f'{package}',
+			])
+	return
+
 def pack_macintosh_dmg(
 	name: str,
 	source: str,
@@ -296,6 +343,11 @@ def sign_iphone_binary(
 			f'{target}',
 		])
 	return
+
+def sign_iphone_app(
+	target: str,
+) -> None:
+	return sign_macintosh_app(target)
 
 def pack_iphone_ipa(
 	name: str,
