@@ -8,11 +8,11 @@ namespace KairosoftGameManager.Utility {
 	#region type
 
 	public record ExternalToolSetting {
-		public String Il2cppdumperPath       { get; set; } = default!;
-		public String ZipalignPath           { get; set; } = default!;
-		public String ApksignerPath          { get; set; } = default!;
-		public String ApkCertificateFile     { get; set; } = default!;
-		public String ApkCertificatePassword { get; set; } = default!;
+		public String Il2cppdumperPath    { get; set; } = default!;
+		public String ZipalignPath        { get; set; } = default!;
+		public String ApksignerPath       { get; set; } = default!;
+		public String ApkKeystoreFile     { get; set; } = default!;
+		public String ApkKeystorePassword { get; set; } = default!;
 	}
 
 	#endregion
@@ -28,8 +28,8 @@ namespace KairosoftGameManager.Utility {
 				Il2cppdumperPath = original.Il2cppdumperPath.SelfLet((it) => StorageHelper.ExistFile(it) ? it : ProcessHelper.SearchProgram(it) ?? ""),
 				ZipalignPath = original.ZipalignPath.SelfLet((it) => StorageHelper.ExistFile(it) ? it : ProcessHelper.SearchProgram(it) ?? ""),
 				ApksignerPath = original.ApksignerPath.SelfLet((it) => StorageHelper.ExistFile(it) ? it : ProcessHelper.SearchProgram(it) ?? ""),
-				ApkCertificateFile = original.ApkCertificateFile.SelfLet((it) => StorageHelper.ExistFile(it) ? it : ""),
-				ApkCertificatePassword = original.ApkCertificatePassword,
+				ApkKeystoreFile = original.ApkKeystoreFile.SelfLet((it) => StorageHelper.ExistFile(it) ? it : ""),
+				ApkKeystorePassword = original.ApkKeystorePassword,
 			};
 		}
 
@@ -176,8 +176,8 @@ namespace KairosoftGameManager.Utility {
 					"--v2-signing-enabled", "true",
 					"--v3-signing-enabled", "true",
 					"--v4-signing-enabled", "false",
-					"--ks", $"{setting.ApkCertificateFile}",
-					"--ks-pass", $"pass:{setting.ApkCertificatePassword}",
+					"--ks", $"{setting.ApkKeystoreFile}",
+					"--ks-pass", $"pass:{setting.ApkKeystorePassword}",
 					$"{file}",
 				],
 				null,

@@ -113,8 +113,8 @@
 
 	* [`apksigner Path`](https://developer.android.com/tools/apksigner) ：修改 `apk` 文件后进行包签名的工具，若未指定到有效路径，将跳过包签名。
 
-	* `Apk Certificate File` ：修改 `apk` 文件后进行包签名时使用的证书文件，若未指定到有效路径，将跳过包签名。
+	* `Apk Keystore File` ：修改 `apk` 文件后进行包签名时使用的密钥库文件，若未指定到有效路径，将跳过包签名。
 
-	* `Apk Certificate Password` ：修改 `apk` 文件后进行包签名时使用的证书密码，若为空，将跳过包签名。
+	* `Apk Keystore Password` ：修改 `apk` 文件后进行包签名时使用的密钥库密码，若为空，将跳过包签名。
 
   > 以上设置中，程序路径类型的设置项会先检测指定的路径是否存在，若不存在，将尝试从 `PATH` 环境变量中检索对应程序。

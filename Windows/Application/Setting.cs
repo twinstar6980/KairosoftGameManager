@@ -116,8 +116,8 @@ namespace KairosoftGameManager {
 					Il2cppdumperPath = "Il2CppDumper",
 					ZipalignPath = "zipalign",
 					ApksignerPath = "apksigner",
-					ApkCertificateFile = "",
-					ApkCertificatePassword = "",
+					ApkKeystoreFile = "",
+					ApkKeystorePassword = "",
 				},
 			};
 		}

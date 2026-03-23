@@ -553,12 +553,12 @@ namespace KairosoftGameManager.Utility {
 					onNotify($"Tip: skipping apk sign, the external tool 'apksigner' not found.");
 					enableSign = false;
 				}
-				if (!StorageHelper.ExistFile(externalToolSetting.ApkCertificateFile)) {
-					onNotify($"Tip: skipping apk sign, the custom apk certificate file not found.");
+				if (!StorageHelper.ExistFile(externalToolSetting.ApkKeystoreFile)) {
+					onNotify($"Tip: skipping apk sign, the custom apk keystore file not found.");
 					enableSign = false;
 				}
-				if (externalToolSetting.ApkCertificatePassword == "") {
-					onNotify($"Tip: skipping apk sign, the custom apk certificate password not set.");
+				if (externalToolSetting.ApkKeystorePassword == "") {
+					onNotify($"Tip: skipping apk sign, the custom apk keystore password not set.");
 					enableSign = false;
 				}
 				foreach (var packagePart in packagePartList) {

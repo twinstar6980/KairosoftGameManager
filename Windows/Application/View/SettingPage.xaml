@@ -233,7 +233,7 @@
 						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
-							Header="Apk Certificate File">
+							Header="Apk Keystore File">
 							<my:Stack
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Stretch"
@@ -243,20 +243,20 @@
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
 									Width="208"
-									LostFocus="{x:Bind Controller.uExternalToolOfApkCertificateFile_LostFocus}"
-									Text="{x:Bind Controller.uExternalToolOfApkCertificateFile_Text}" />
+									LostFocus="{x:Bind Controller.uExternalToolOfApkKeystoreFile_LostFocus}"
+									Text="{x:Bind Controller.uExternalToolOfApkKeystoreFile_Text}" />
 								<Button
 									ToolTipService.ToolTip="Pick"
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
-									Click="{x:Bind Controller.uExternalToolOfApkCertificateFilePick_Click}"
+									Click="{x:Bind Controller.uExternalToolOfApkKeystoreFilePick_Click}"
 									Content="{community:FontIcon FontSize={StaticResource MediumIconSize}, Glyph={StaticResource FluentIconGlyph.OpenInNewWindow}}" />
 							</my:Stack>
 						</communityControls:SettingsCard>
 						<communityControls:SettingsCard
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
-							Header="Apk Certificate Password">
+							Header="Apk Keystore Password">
 							<my:Stack
 								HorizontalAlignment="Stretch"
 								VerticalAlignment="Stretch"
@@ -266,8 +266,8 @@
 									HorizontalAlignment="Stretch"
 									VerticalAlignment="Top"
 									Width="260"
-									LostFocus="{x:Bind Controller.uExternalToolOfApkCertificatePassword_LostFocus}"
-									Text="{x:Bind Controller.uExternalToolOfApkCertificatePassword_Text}" />
+									LostFocus="{x:Bind Controller.uExternalToolOfApkKeystorePassword_LostFocus}"
+									Text="{x:Bind Controller.uExternalToolOfApkKeystorePassword_Text}" />
 							</my:Stack>
 						</communityControls:SettingsCard>
 					</communityControls:SettingsExpander.Items>

@@ -275,35 +275,35 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uExternalToolOfApkCertificateFile_LostFocus(
+		public async void uExternalToolOfApkKeystoreFile_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Instance.Setting.Data.ExternalTool.ApkCertificateFile = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.ApkKeystoreFile = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
-				nameof(this.uExternalToolOfApkCertificateFile_Text),
+				nameof(this.uExternalToolOfApkKeystoreFile_Text),
 			]);
 			await App.Instance.Setting.Save();
 			return;
 		}
 
-		public String uExternalToolOfApkCertificateFile_Text {
+		public String uExternalToolOfApkKeystoreFile_Text {
 			get {
-				return App.Instance.Setting.Data.ExternalTool.ApkCertificateFile;
+				return App.Instance.Setting.Data.ExternalTool.ApkKeystoreFile;
 			}
 		}
 
-		public async void uExternalToolOfApkCertificateFilePick_Click(
+		public async void uExternalToolOfApkKeystoreFilePick_Click(
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@ExternalToolOfApkCertificateFile");
+			var value = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@ExternalToolOfApkKeystoreFile");
 			if (value != null) {
-				App.Instance.Setting.Data.ExternalTool.ApkCertificateFile = value;
+				App.Instance.Setting.Data.ExternalTool.ApkKeystoreFile = value;
 				this.NotifyPropertyChanged([
-					nameof(this.uExternalToolOfApkCertificateFile_Text),
+					nameof(this.uExternalToolOfApkKeystoreFile_Text),
 				]);
 				await App.Instance.Setting.Save();
 			}
@@ -312,22 +312,22 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public async void uExternalToolOfApkCertificatePassword_LostFocus(
+		public async void uExternalToolOfApkKeystorePassword_LostFocus(
 			Object          sender,
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Instance.Setting.Data.ExternalTool.ApkCertificatePassword = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.ApkKeystorePassword = StorageHelper.Regularize(senders.Text);
 			this.NotifyPropertyChanged([
-				nameof(this.uExternalToolOfApkCertificatePassword_Text),
+				nameof(this.uExternalToolOfApkKeystorePassword_Text),
 			]);
 			await App.Instance.Setting.Save();
 			return;
 		}
 
-		public String uExternalToolOfApkCertificatePassword_Text {
+		public String uExternalToolOfApkKeystorePassword_Text {
 			get {
-				return App.Instance.Setting.Data.ExternalTool.ApkCertificatePassword;
+				return App.Instance.Setting.Data.ExternalTool.ApkKeystorePassword;
 			}
 		}
 

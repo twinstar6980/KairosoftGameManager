@@ -74,14 +74,22 @@ def execute_command(
 	command: list[str],
 	environment: dict[str, str] = {},
 	ensure_ok: bool = True,
-) -> int:
+	want_output: bool = False,
+) -> tuple[int, str, str]:
 	actual_environment = os.environ.copy()
 	for environment_name, environment_value in environment.items():
 		actual_environment[environment_name] = environment_value
-	result = subprocess.run(command, env=actual_environment, cwd=location, shell=sys.platform == 'win32')
-	if ensure_ok:
-		result.check_returncode()
-	return result.returncode
+	result = subprocess.run(
+		command,
+		env=actual_environment,
+		cwd=location,
+		shell=sys.platform == 'win32',
+		check=ensure_ok,
+		capture_output=want_output,
+		text=True,
+		encoding='utf-8',
+	)
+	return (result.returncode, result.stdout, result.stderr)
 
 # ----------------
 
@@ -101,19 +109,18 @@ def get_project_local(
 ) -> str:
 	return f'{get_project()}/.local{'' if name is None else f'/{name}'}'
 
-def get_project_certificate(
-	type: str,
-) -> tuple[str | None, str]:
-	file = f'{get_project_local('certificate')}/file.{type}'
-	if not pathlib.Path(file).is_file():
-		return (None, '')
-	password = fs_read_file(f'{get_project_local('certificate')}/password.{type}.txt')
-	return (file, password)
-
 def get_project_distribution(
 	name: str | None = None,
 ) -> str:
 	return f'{get_project_local('distribution')}{'' if name is None else f'/{name}'}'
+
+def get_project_keystore(
+) -> tuple[str | None, str]:
+	file = f'{get_project_local('keystore')}/file.p12'
+	if not pathlib.Path(file).is_file():
+		return (None, '')
+	password = fs_read_file(f'{get_project_local('keystore')}/password.txt')
+	return (file, password)
 
 # ----------------
 
@@ -235,42 +242,94 @@ def sign_windows_msix(
 	target: str,
 ) -> None:
 	with tempfile.TemporaryDirectory() as temporary:
-		certificate_file, certificate_password = get_project_certificate('pfx')
-		if certificate_file == None:
+		keystore_file, keystore_password = get_project_keystore()
+		if keystore_file == None:
 			return
 		execute_command(temporary, [
 			'signtool',
 			'sign',
 			'/q',
 			'/fd', f'SHA256',
-			'/f', f'{certificate_file}',
-			'/p', f'{certificate_password}',
+			'/f', f'{keystore_file}',
+			'/p', f'{keystore_password}',
 			f'{target}',
 		])
 	return
 
 # ----------------
 
-def sign_macintosh_app(
+def sign_macintosh_executable(
 	target: str,
 ) -> None:
 	with tempfile.TemporaryDirectory() as temporary:
+		keystore_file, keystore_password = get_project_keystore()
+		keystore_name = '-'
+		keychain_file = f'{temporary}/temporary.keychain'
+		keychain_password = 'temporary'
+		if keystore_file != None:
+			execute_command(temporary, [
+				'security',
+				'create-keychain',
+				'-p', f'{keychain_password}',
+				f'{keychain_file}',
+			])
+			execute_command(temporary, [
+				'security',
+				'import',
+				f'{keystore_file}',
+				'-k', f'{keychain_file}',
+				'-P', f'{keystore_password}',
+				'-T', f'/usr/bin/codesign',
+			])
+			execute_command(temporary, [
+				'security',
+				'unlock-keychain',
+				'-p', f'{keychain_password}',
+				f'{keychain_file}',
+			])
+			execute_command(temporary, [
+				'security',
+				'set-key-partition-list',
+				'-S', f'apple-tool:,apple:',
+				'-s',
+				'-k', f'{keychain_password}',
+				f'{keychain_file}',
+			])
+			_, list_keychains_output, _ = execute_command(temporary, [
+				'security',
+				'list-keychains',
+			], want_output=True)
+			execute_command(temporary, [
+				'security',
+				'list-keychains',
+				'-s', *map(lambda it: it.strip(' "'), list_keychains_output.splitlines()), keychain_file,
+			])
+			_, list_keychains_output, _ = execute_command(temporary, [
+				'security',
+				'list-keychains',
+			], want_output=True)
+			_, find_identity_output, _ = execute_command(temporary, [
+				'security',
+				'find-identity',
+				f'{keychain_file}',
+			], want_output=True)
+			find_identity_match = re.search(r" ([0-9A-F]{40}) ", find_identity_output, flags=re.RegexFlag.MULTILINE)
+			if find_identity_match == None:
+				raise RuntimeError('could not import keystore')
+			keystore_name = find_identity_match.group(1)
 		default_entitlements = f'{temporary}/default.entitlements'
 		fs_write_file(
 			default_entitlements,
 			'<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict></dict></plist>',
 		)
-		fs_create_directory(
-			f'{temporary}/original',
-		)
 		package_list: list[str] = []
-		package_list += fs_resolve(f'{target}/Frameworks/*.framework')
-		package_list += fs_resolve(f'{target}/PlugIns/*.appex')
 		package_list += fs_resolve(f'{target}/Contents/Frameworks/*.framework')
 		package_list += fs_resolve(f'{target}/Contents/PlugIns/*.appex')
+		package_list += fs_resolve(f'{target}/Frameworks/*.framework')
+		package_list += fs_resolve(f'{target}/PlugIns/*.appex')
 		package_list += [target]
 		for package in package_list:
-			package_entitlements = f'{temporary}/original/{str(pathlib.Path(package).relative_to(target)).replace('/', '_')}.entitlements'
+			package_entitlements = f'{temporary}/original.{str(pathlib.Path(package).relative_to(target)).replace('/', '_')}.entitlements'
 			execute_command(temporary, [
 				'codesign',
 				'-d',
@@ -281,10 +340,16 @@ def sign_macintosh_app(
 				package_entitlements = default_entitlements
 			execute_command(temporary, [
 				'codesign',
-				'--force',
-				'--sign', '-',
+				'-s', f'{keystore_name}',
 				'--entitlements', f'{package_entitlements}',
+				'--force',
 				f'{package}',
+			])
+		if keystore_file != None:
+			execute_command(temporary, [
+				'security',
+				'delete-keychain',
+				f'{keychain_file}',
 			])
 	return
 
@@ -315,8 +380,8 @@ def sign_android_apk(
 	target: str,
 ) -> None:
 	with tempfile.TemporaryDirectory() as temporary:
-		certificate_file, certificate_password = get_project_certificate('jks')
-		if certificate_file == None:
+		keystore_file, keystore_password = get_project_keystore()
+		if keystore_file == None:
 			return
 		execute_command(temporary, [
 			'apksigner',
@@ -325,29 +390,18 @@ def sign_android_apk(
 			'--v2-signing-enabled', f'false',
 			'--v3-signing-enabled', f'true',
 			'--v4-signing-enabled', f'false',
-			'--ks', f'{certificate_file}',
-			'--ks-pass', f'pass:{certificate_password}',
+			'--ks', f'{keystore_file}',
+			'--ks-pass', f'pass:{keystore_password}',
 			f'{target}',
 		])
 	return
 
 # ----------------
 
-def sign_iphone_binary(
+def sign_iphone_executable(
 	target: str,
 ) -> None:
-	with tempfile.TemporaryDirectory() as temporary:
-		execute_command(temporary, [
-			'ldid',
-			'-S',
-			f'{target}',
-		])
-	return
-
-def sign_iphone_app(
-	target: str,
-) -> None:
-	return sign_macintosh_app(target)
+	return sign_macintosh_executable(target)
 
 def pack_iphone_ipa(
 	name: str,
@@ -381,19 +435,19 @@ def setup_common_cpp_library(
 	if check_platform(platform, ['windows.amd64']):
 		clang_file = shutil.which('clang')
 		if clang_file == None:
-			raise RuntimeError('can not found clang path')
+			raise RuntimeError('could not found clang path')
 		library_directory_list = fs_resolve(str(pathlib.Path(clang_file).parent.parent / 'x86_64-w64-mingw32/bin'))
 		if len(library_directory_list) == 0:
-			raise RuntimeError('can not found library directory')
+			raise RuntimeError('could not found library directory')
 		library_directory = library_directory_list[0]
 		library_file_list = ['libc++.dll', 'libunwind.dll']
 	if check_platform(platform, ['android.arm64']):
 		ndk_home = os.environ.get('ANDROID_NDK_HOME')
 		if ndk_home == None:
-			raise RuntimeError('can not found ndk path')
+			raise RuntimeError('could not found ndk path')
 		library_directory_list = fs_resolve(str(pathlib.Path(ndk_home) / 'toolchains/llvm/prebuilt/*/sysroot/usr/lib/aarch64-linux-android'))
 		if len(library_directory_list) == 0:
-			raise RuntimeError('can not found library directory')
+			raise RuntimeError('could not found library directory')
 		library_directory = library_directory_list[0]
 		library_file_list = ['libc++_shared.so']
 	destination = f'{get_project_local('library')}/{platform}'
