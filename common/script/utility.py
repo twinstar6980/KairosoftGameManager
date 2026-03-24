@@ -17,15 +17,16 @@ def fs_resolve(
 def fs_copy(
 	source: str,
 	destination: str,
+	follow_link: bool = False,
 ) -> None:
 	if not pathlib.Path(source).exists():
 		raise RuntimeError(f'invalid source \'{source}\'')
 	if not pathlib.Path(destination).parent.exists():
 		fs_create_directory(f'{pathlib.Path(destination).parent}')
 	if pathlib.Path(source).is_file():
-		shutil.copy(source, destination, follow_symlinks=True)
+		shutil.copy(source, destination, follow_symlinks=follow_link)
 	if pathlib.Path(source).is_dir():
-		shutil.copytree(source, destination, symlinks=True)
+		shutil.copytree(source, destination, symlinks=follow_link)
 	return
 
 def fs_remove(
@@ -403,6 +404,7 @@ def pack_macintosh_dmg(
 		fs_copy(
 			f'{source}',
 			f'{temporary}/{name}.app',
+			follow_link=True,
 		)
 		execute_command(temporary, [
 			'create-dmg',
@@ -453,6 +455,7 @@ def pack_iphone_ipa(
 		fs_copy(
 			f'{source}',
 			f'{temporary}/Payload/{name}.app',
+			follow_link=True,
 		)
 		shutil.make_archive(
 			f'{temporary}/Payload',
