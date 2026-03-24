@@ -23,9 +23,9 @@ def fs_copy(
 	if not pathlib.Path(destination).parent.exists():
 		fs_create_directory(f'{pathlib.Path(destination).parent}')
 	if pathlib.Path(source).is_file():
-		shutil.copy(source, destination)
+		shutil.copy(source, destination, follow_symlinks=True)
 	if pathlib.Path(source).is_dir():
-		shutil.copytree(source, destination)
+		shutil.copytree(source, destination, symlinks=True)
 	return
 
 def fs_remove(
