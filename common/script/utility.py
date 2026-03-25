@@ -82,9 +82,9 @@ def execute_command(
 		actual_environment[environment_name] = environment_value
 	result = subprocess.run(
 		command,
-		env=actual_environment,
-		cwd=location,
 		shell=sys.platform == 'win32',
+		cwd=location,
+		env=actual_environment,
 		check=ensure_ok,
 		capture_output=want_output,
 		text=True,
@@ -357,7 +357,7 @@ def sign_macintosh_executable(
 			], want_output=True)
 			find_identity_match = re.search(r" ([0-9A-F]{40}) ", find_identity_output, flags=re.RegexFlag.MULTILINE)
 			if find_identity_match == None:
-				raise RuntimeError('could not import keystore')
+				raise RuntimeError(f'could not import keystore')
 			keystore_name = find_identity_match.group(1)
 		default_entitlements = f'{temporary}/default.entitlements'
 		fs_write_file(
@@ -408,6 +408,14 @@ def pack_macintosh_dmg(
 		)
 		execute_command(temporary, [
 			'create-dmg',
+			'--window-pos', f'0', f'0',
+			'--window-size', f'500', f'300',
+			'--text-size', f'16',
+			'--icon-size', f'128',
+			'--icon', f'{name}.app', f'150', f'100',
+			'--app-drop-link', f'350', f'100',
+			'--format', f'UDZO',
+			'--filesystem', f'APFS',
 			f'{temporary}/{name}.dmg',
 			f'{temporary}/{name}.app',
 		])
@@ -479,19 +487,19 @@ def setup_common_cpp_library(
 	if check_platform(platform, ['windows.amd64']):
 		clang_file = shutil.which('clang')
 		if clang_file == None:
-			raise RuntimeError('could not found clang path')
+			raise RuntimeError(f'could not found clang path')
 		library_directory_list = fs_resolve(str(pathlib.Path(clang_file).parent.parent / 'x86_64-w64-mingw32/bin'))
 		if len(library_directory_list) == 0:
-			raise RuntimeError('could not found library directory')
+			raise RuntimeError(f'could not found library directory')
 		library_directory = library_directory_list[0]
 		library_file_list = ['libc++.dll', 'libunwind.dll']
 	if check_platform(platform, ['android.arm64']):
 		ndk_home = os.environ.get('ANDROID_NDK_HOME')
 		if ndk_home == None:
-			raise RuntimeError('could not found ndk path')
+			raise RuntimeError(f'could not found ndk path')
 		library_directory_list = fs_resolve(str(pathlib.Path(ndk_home) / 'toolchains/llvm/prebuilt/*/sysroot/usr/lib/aarch64-linux-android'))
 		if len(library_directory_list) == 0:
-			raise RuntimeError('could not found library directory')
+			raise RuntimeError(f'could not found library directory')
 		library_directory = library_directory_list[0]
 		library_file_list = ['libc++_shared.so']
 	destination = f'{get_project_local('library')}/{platform}'
