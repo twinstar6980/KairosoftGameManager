@@ -7,14 +7,22 @@ import Windows.build as build_windows
 
 # ----------------
 
-def main(
+def build(
+	source: str,
+	local: str,
+	distribution: str,
+	keystore: tuple[str, str] | None,
+	temporary: str,
 	platform: str,
-) -> None:
-	utility.ensure_platform(platform, ['windows.amd64'])
+) -> tuple[str, str] | None:
+	destination = None
+	if not utility.check_platform(platform, ['windows.amd64']):
+		return destination
 	# build
 	if utility.check_platform(platform, ['windows.amd64']):
-		build_windows.main(platform)
-	return
+		utility.build_project_module(build_windows.__file__, build_windows.build, platform, is_single=True)
+		destination = ('', f'{distribution}/{platform}.{'application'}{'.msix'}')
+	return destination
 
 if __name__ == '__main__':
-	main(sys.argv[1])
+	utility.build_project_bundle(__file__, build, sys.argv[1], is_single=True)

@@ -6,18 +6,18 @@ import common.script.utility as utility
 
 # ----------------
 
-def main(
+def build(
+	source: str,
+	keystore: tuple[str, str] | None,
+	temporary: str,
 	platform: str,
-) -> None:
-	utility.ensure_platform(platform, ['windows.amd64'])
-	module_directory, module_name = utility.get_project_module(__file__)
-	module_distribution_file = utility.get_project_distribution(f'{platform}.application')
+) -> tuple[str, str] | None:
+	destination = None
 	if utility.check_platform(platform, ['windows.amd64']):
-		module_distribution_file += '.msix'
-		utility.fs_remove(
-			f'{module_distribution_file}',
+		utility.setup_project_library(
+			platform,
 		)
-		utility.execute_command(module_directory, [
+		utility.sh_execute_command(source, [
 			'MSBuild',
 			'-restore',
 			'-verbosity:minimal',
@@ -26,14 +26,17 @@ def main(
 			'-property:GenerateAppxPackageOnBuild=true',
 		])
 		utility.fs_copy(
-			f'{utility.fs_resolve(f'{module_directory}/.build/bin/Application/x64.Release/AppPackages/Application_*_Test/Application_*.msix')[0]}',
-			f'{module_distribution_file}',
+			f'{utility.fs_resolve(f'{source}/.build/bin/Application/x64.Release/AppPackages/Application_*_Test/Application_*.msix')[0]}',
+			f'{temporary}/artifact.msix',
 		)
 		utility.sign_windows_executable(
-			f'{module_distribution_file}',
+			f'{temporary}/artifact.msix',
+			f'{temporary}/artifact.msix',
+			'msix',
+			keystore,
 		)
-	print(f'>> BUILD >> {module_distribution_file}')
-	return
+		destination = ('.msix', f'{temporary}/artifact.msix')
+	return destination
 
 if __name__ == '__main__':
-	main(sys.argv[1])
+	utility.build_project_module(__file__, build, sys.argv[1], is_single=True)

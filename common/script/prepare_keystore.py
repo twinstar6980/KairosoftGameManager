@@ -10,20 +10,20 @@ def main(
 	password: str,
 	subject: str,
 ) -> None:
-	keystore_directory = utility.get_project_local('keystore')
+	keystore = utility.locate_project_local('keystore')
 	utility.fs_create_directory(
-		f'{keystore_directory}',
+		f'{keystore}',
 	)
 	utility.generate_keystore(
-		f'{keystore_directory}/file.p12',
+		f'{keystore}/file.p12',
 		password,
 		subject,
 	)
 	utility.fs_write_file(
-		f'{keystore_directory}/password.txt',
+		f'{keystore}/password.txt',
 		f'{password}',
 	)
-	print(f'>> KEYSTORE >> {keystore_directory}')
+	print(f'>> KEYSTORE >> {keystore}')
 	return
 
 if __name__ == '__main__':
