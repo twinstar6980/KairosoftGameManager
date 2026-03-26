@@ -14,9 +14,6 @@ def build(
 ) -> tuple[str, str] | None:
 	destination = None
 	if utility.check_platform(platform, ['windows.amd64']):
-		utility.setup_project_library(
-			platform,
-		)
 		utility.sh_execute_command(source, [
 			'MSBuild',
 			'-restore',
