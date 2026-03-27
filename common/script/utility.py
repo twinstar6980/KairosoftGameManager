@@ -26,6 +26,8 @@ def fs_copy(
 ) -> None:
 	if not pathlib.Path(source).exists():
 		raise RuntimeError(f'invalid source \'{source}\'')
+	if pathlib.Path(destination).exists():
+		fs_remove(destination)
 	if not pathlib.Path(destination).parent.exists():
 		fs_create_directory(f'{pathlib.Path(destination).parent}')
 	if pathlib.Path(source).is_file():
@@ -122,15 +124,21 @@ def generate_keystore(
 			'-days', f'365',
 			'-subj', f'{subject}',
 			'-addext', f'basicConstraints=CA:FALSE',
+			'-addext', f'keyUsage=digitalSignature',
+			'-addext', f'extendedKeyUsage=codeSigning',
 		])
 		sh_execute_command(temporary, [
 			'openssl',
 			'pkcs12',
 			'-export',
-			'-out', f'{temporary}/file.p12',
-			'-passout', f'pass:{password}',
 			'-inkey', f'{temporary}/file.key',
 			'-in', f'{temporary}/file.crt',
+			'-out', f'{temporary}/file.p12',
+			'-passout', f'pass:{password}',
+			'-legacy',
+			'-keypbe', f'PBE-SHA1-3DES',
+			'-certpbe', f'PBE-SHA1-3DES',
+			'-macalg', f'SHA1',
 		])
 		fs_copy(
 			f'{temporary}/file.p12',
@@ -200,6 +208,7 @@ def pack_zip(
 def unpack_zip(
 	source: str,
 	destination: str,
+	name: str | None,
 ) -> None:
 	with fs_temporary() as temporary:
 		fs_copy(
@@ -212,7 +221,7 @@ def unpack_zip(
 			'zip',
 		)
 		fs_copy(
-			f'{temporary}/package',
+			f'{temporary}/package{'' if name == None else f'/{name}'}',
 			f'{destination}',
 			follow_link=True,
 		)
@@ -290,8 +299,8 @@ def sign_windows_executable(
 				f'{temporary}/package/AppxManifest.xml',
 			)
 			manifest_content = re.sub(
-				r'(Publisher="[^"]*")',
-				f'Publisher="{keystore_subject}"',
+				r'(<Identity\s.*Publisher\s*=\s*")([^"]*)("\s.*\/>)',
+				rf'\1{keystore_subject}\3',
 				manifest_content,
 				re.RegexFlag.MULTILINE,
 			)
@@ -302,6 +311,7 @@ def sign_windows_executable(
 			pack_windows_msix(
 				f'{temporary}/package',
 				f'{temporary}/target.{type}',
+				False,
 			)
 		sh_execute_command(temporary, [
 			'signtool',
@@ -320,6 +330,7 @@ def sign_windows_executable(
 def pack_windows_msix(
 	source: str,
 	destination: str,
+	generate_pri: bool,
 ) -> None:
 	with fs_temporary() as temporary:
 		fs_copy(
@@ -327,21 +338,22 @@ def pack_windows_msix(
 			f'{temporary}/package',
 			follow_link=True,
 		)
-		sh_execute_command(temporary, [
-			'makepri',
-			'createconfig',
-			'/cf', f'{temporary}/package/priconfig.xml',
-			'/dq', f'en-US',
-			'/o',
-		])
-		sh_execute_command(temporary, [
-			'makepri',
-			'new',
-			'/cf', f'{temporary}/package/priconfig.xml',
-			'/pr', f'{temporary}/package',
-			'/of', f'{temporary}/package/resources.pri',
-			'/o',
-		])
+		if generate_pri:
+			sh_execute_command(temporary, [
+				'makepri',
+				'createconfig',
+				'/cf', f'{temporary}/priconfig.xml',
+				'/dq', f'en-US',
+				'/o',
+			])
+			sh_execute_command(temporary, [
+				'makepri',
+				'new',
+				'/cf', f'{temporary}/priconfig.xml',
+				'/pr', f'{temporary}/package',
+				'/of', f'{temporary}/package/resources.pri',
+				'/o',
+			])
 		sh_execute_command(temporary, [
 			'makeappx',
 			'pack',
@@ -429,10 +441,6 @@ def sign_macintosh_executable(
 				'list-keychains',
 				'-s', *[item.strip(' "') for item in list_keychains_output.splitlines()], keychain_file,
 			])
-			_, list_keychains_output, _ = sh_execute_command(temporary, [
-				'security',
-				'list-keychains',
-			], want_output=True)
 			_, find_identity_output, _ = sh_execute_command(temporary, [
 				'security',
 				'find-identity',
@@ -471,6 +479,7 @@ def sign_macintosh_executable(
 			sh_execute_command(temporary, [
 				'codesign',
 				'-s', f'{keystore_name}',
+				'--keychain', f'{keychain_file}',
 				'--entitlements', f'{target_item_entitlements}',
 				'--force',
 				f'{target_item}',
