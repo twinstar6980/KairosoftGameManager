@@ -135,7 +135,6 @@ def generate_keystore(
 			'-in', f'{temporary}/file.crt',
 			'-out', f'{temporary}/file.p12',
 			'-passout', f'pass:{password}',
-			'-legacy',
 			'-keypbe', f'PBE-SHA1-3DES',
 			'-certpbe', f'PBE-SHA1-3DES',
 			'-macalg', f'SHA1',
