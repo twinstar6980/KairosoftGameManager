@@ -105,6 +105,7 @@ def generate_keystore(
 	target: str,
 	password: str,
 	subject: str,
+	time: tuple[str, str],
 ) -> None:
 	with fs_temporary() as temporary:
 		sh_execute_command(temporary, [
@@ -121,7 +122,8 @@ def generate_keystore(
 			'-key', f'{temporary}/file.key',
 			'-out', f'{temporary}/file.crt',
 			'-utf8',
-			'-days', f'365',
+			'-not_before', f'{time[0]}',
+			'-not_after', f'{time[1]}',
 			'-subj', f'{subject}',
 			'-addext', f'basicConstraints=CA:FALSE',
 			'-addext', f'keyUsage=digitalSignature',
