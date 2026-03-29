@@ -525,6 +525,7 @@ def pack_macintosh_dmg(
 		)
 		sh_execute_command(temporary, [
 			'create-dmg',
+			'--volname', f'{name}',
 			'--window-pos', f'0', f'0',
 			'--window-size', f'500', f'300',
 			'--text-size', f'16',
