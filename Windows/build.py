@@ -23,7 +23,7 @@ def build(
 			'-property:GenerateAppxPackageOnBuild=true',
 		])
 		utility.fs_copy(
-			f'{utility.fs_resolve(f'{source}/.build/bin/Application/x64.Release/AppPackages/Application_*_Test/Application_*.msix')[0]}',
+			f'{utility.fs_find(f'{source}/.build/bin/Application/x64.Release/AppPackages/Application_*_Test/Application_*.msix')[0]}',
 			f'{temporary}/artifact.msix',
 		)
 		utility.sign_windows_executable(

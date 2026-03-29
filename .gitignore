@@ -1,4 +1,4 @@
-# Global
+# Common
 
 # System - Windows
 /**/desktop.ini
@@ -7,7 +7,23 @@
 /**/.DS_Store
 
 # Environment - Git
-/.git
+/**/.git
+
+# Environment - Xmake
+/**/.xmake
+
+# Environment - Node.js
+/**/package-lock.json
+/**/node_modules
+
+# Environment - Gradle
+/**/.gradle
+
+# Environment - Flutter
+/**/pubspec.lock
+/**/.dart_tool
+/**/.flutter-plugins-dependencies
+/**/default.profraw
 
 # Environment - Visual Studio
 /**/.vs
@@ -17,15 +33,12 @@
 # Environment - Visual Studio Code
 /**/.vscode
 
+# Environment - Xcode
+/**/xcuserdata
+/**/xcshareddata
+
 # Environment - JetBrains
 /**/.idea
 
-# Common
-
-# Module - Windows
-/Windows/.build
-
-# Miscellaneous
+# Project
 /.local
-
-# git clean -fdx -e /.local -e /.vscode

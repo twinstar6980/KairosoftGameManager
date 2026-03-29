@@ -430,7 +430,7 @@ namespace KairosoftGameManager.View {
 								this.ArgumentOfProgramOfTarget,
 								this.ArgumentOfProgramOfDisableRecordEncryption,
 								this.ArgumentOfProgramOfEnableDebugMode,
-								ExternalToolHelper.ParseSetting(App.Instance.Setting.Data.ExternalTool),
+								await ExternalToolHelper.ParseSetting(App.Instance.Setting.Data.ExternalTool),
 								publishMessage
 							);
 							break;

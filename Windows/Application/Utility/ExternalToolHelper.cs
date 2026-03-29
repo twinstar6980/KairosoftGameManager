@@ -21,14 +21,14 @@ namespace KairosoftGameManager.Utility {
 
 		#region basic
 
-		public static ExternalToolSetting ParseSetting(
+		public static async Task<ExternalToolSetting> ParseSetting(
 			ExternalToolSetting original
 		) {
 			return new () {
-				Il2cppdumperPath = original.Il2cppdumperPath.SelfLet((it) => StorageHelper.ExistFile(it) ? it : ProcessHelper.SearchProgram(it) ?? ""),
-				ZipalignPath = original.ZipalignPath.SelfLet((it) => StorageHelper.ExistFile(it) ? it : ProcessHelper.SearchProgram(it) ?? ""),
-				ApksignerPath = original.ApksignerPath.SelfLet((it) => StorageHelper.ExistFile(it) ? it : ProcessHelper.SearchProgram(it) ?? ""),
-				ApkKeystoreFile = original.ApkKeystoreFile.SelfLet((it) => StorageHelper.ExistFile(it) ? it : ""),
+				Il2cppdumperPath = await original.Il2cppdumperPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it) ?? ""),
+				ZipalignPath = await original.ZipalignPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it) ?? ""),
+				ApksignerPath = await original.ApksignerPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it) ?? ""),
+				ApkKeystoreFile = await original.ApkKeystoreFile.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : ""),
 				ApkKeystorePassword = original.ApkKeystorePassword,
 			};
 		}
@@ -42,10 +42,10 @@ namespace KairosoftGameManager.Utility {
 			String              programFile,
 			String              metadataFile
 		) {
-			var dumpDirectory = StorageHelper.Temporary();
-			StorageHelper.CreateDirectory(dumpDirectory);
+			var dumpDirectory = await StorageHelper.Temporary();
+			await StorageHelper.CreateDirectory(dumpDirectory);
 			await using var dumpDirectoryFinalizer = new Finalizer(async () => {
-				StorageHelper.Remove(dumpDirectory);
+				await StorageHelper.Remove(dumpDirectory);
 			});
 			var processResult = (await ProcessHelper.RunProcess(
 				setting.Il2cppdumperPath,
@@ -136,12 +136,12 @@ namespace KairosoftGameManager.Utility {
 
 		public static async Task RunZipalign(
 			ExternalToolSetting setting,
-			String              file
+			String              zipFile
 		) {
-			var alignedFile = StorageHelper.Temporary();
-			StorageHelper.CreateFile(alignedFile);
+			var alignedFile = await StorageHelper.Temporary();
+			await StorageHelper.CreateFile(alignedFile);
 			await using var alignedFileFinalizer = new Finalizer(async () => {
-				StorageHelper.Remove(alignedFile);
+				await StorageHelper.Remove(alignedFile);
 			});
 			var processResult = (await ProcessHelper.RunProcess(
 				setting.ZipalignPath,
@@ -149,7 +149,7 @@ namespace KairosoftGameManager.Utility {
 					"-P", "16",
 					"-f",
 					"4",
-					$"{file}",
+					$"{zipFile}",
 					$"{alignedFile}",
 				],
 				null,
@@ -158,7 +158,8 @@ namespace KairosoftGameManager.Utility {
 			if (processResult.Item1 != 0) {
 				throw new ($"External tool 'zipalign' error.\n{processResult.Item3}\n");
 			}
-			StorageHelper.Copy(alignedFile, file);
+			await StorageHelper.Remove(zipFile);
+			await StorageHelper.Copy(alignedFile, zipFile, false);
 			return;
 		}
 
@@ -166,7 +167,7 @@ namespace KairosoftGameManager.Utility {
 
 		public static async Task RunApksigner(
 			ExternalToolSetting setting,
-			String              file
+			String              apkFile
 		) {
 			var processResult = (await ProcessHelper.RunProcess(
 				setting.ApksignerPath,
@@ -178,7 +179,7 @@ namespace KairosoftGameManager.Utility {
 					"--v4-signing-enabled", "false",
 					"--ks", $"{setting.ApkKeystoreFile}",
 					"--ks-pass", $"pass:{setting.ApkKeystorePassword}",
-					$"{file}",
+					$"{apkFile}",
 				],
 				null,
 				true

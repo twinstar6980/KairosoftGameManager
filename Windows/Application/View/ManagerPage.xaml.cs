@@ -235,18 +235,18 @@ namespace KairosoftGameManager.View {
 						}
 						var programFile = $"{game.Path}/{GameHelper.ProgramFile}";
 						var backupFile = $"{game.Path}/{GameHelper.ProgramFile}.{game.Version ?? "0"}.bak";
-						if (!StorageHelper.ExistFile(backupFile)) {
-							StorageHelper.Rename(programFile, backupFile);
+						if (!await StorageHelper.ExistFile(backupFile)) {
+							await StorageHelper.Rename(programFile, backupFile);
 						}
-						if (StorageHelper.ExistFile(programFile)) {
-							StorageHelper.Trash(programFile);
+						if (await StorageHelper.ExistFile(programFile)) {
+							await StorageHelper.Trash(programFile);
 						}
-						StorageHelper.Copy(backupFile, programFile);
+						await StorageHelper.Copy(backupFile, programFile, false);
 						await GameHelper.ModifyProgram(
 							game.Path,
 							argumentDisableRecordEncryption,
 							argumentEnableDebugMode,
-							ExternalToolHelper.ParseSetting(App.Instance.Setting.Data.ExternalTool),
+							await ExternalToolHelper.ParseSetting(App.Instance.Setting.Data.ExternalTool),
 							(_) => {}
 						);
 						break;
@@ -259,8 +259,8 @@ namespace KairosoftGameManager.View {
 						}
 						var programFile = $"{game.Path}/{GameHelper.ProgramFile}";
 						var backupFile = $"{game.Path}/{GameHelper.ProgramFile}.{game.Version ?? "0"}.bak";
-						StorageHelper.Trash(programFile);
-						StorageHelper.Rename(backupFile, programFile);
+						await StorageHelper.Trash(programFile);
+						await StorageHelper.Rename(backupFile, programFile);
 						break;
 					}
 					case "EncryptRecord": {

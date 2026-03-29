@@ -12,16 +12,10 @@ namespace KairosoftGameManager.Utility {
 		public static String Regularize(
 			String path
 		) {
-			return StorageHelper.ToPosixStyle(path);
-		}
-
-		public static String ToPosixStyle(
-			String path
-		) {
 			return path.Replace('\\', '/');
 		}
 
-		public static String ToWindowsStyle(
+		public static String Nativize(
 			String path
 		) {
 			return path.Replace('/', '\\');
@@ -45,13 +39,13 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static String Temporary(
+		public static async Task<String> Temporary(
 		) {
 			var parent = App.Instance.CacheDirectory;
 			var name = DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
 			var result = $"{parent}/{name}";
 			var suffix = 0;
-			while (StorageHelper.Exist(result)) {
+			while (await StorageHelper.Exist(result)) {
 				suffix += 1;
 				result = $"{parent}/{name}.{suffix}";
 			}
@@ -88,89 +82,186 @@ namespace KairosoftGameManager.Utility {
 
 		#endregion
 
-		#region exist
+		#region basic
 
-		public static Boolean Exist(
+		public static async Task<Boolean> Exist(
 			String target
 		) {
-			return File.Exists(target) || Directory.Exists(target);
+			if (target.Length == 0) {
+				return false;
+			}
+			var type = new FileInfo(target).Attributes;
+			return type != ~FileAttributes.None;
 		}
 
-		public static Boolean ExistFile(
-			String target
+		public static async Task Copy(
+			String  target,
+			String  placement,
+			Boolean followLink
 		) {
-			return File.Exists(target);
+			AssertTest(await StorageHelper.Exist(target));
+			AssertTest(!await StorageHelper.Exist(placement));
+			if (StorageHelper.Parent(placement) != null && !await StorageHelper.ExistDirectory(StorageHelper.Parent(placement).AsNotNull())) {
+				await StorageHelper.CreateDirectory(StorageHelper.Parent(placement).AsNotNull());
+			}
+			var type = new FileInfo(target).Attributes;
+			if (followLink && type.HasFlag(FileAttributes.ReparsePoint)) {
+				var referentType = new FileInfo(target).ResolveLinkTarget(true).AsNotNull().Attributes;
+				if (referentType != ~FileAttributes.None) {
+					type = referentType;
+				}
+			}
+			if (type.HasFlag(FileAttributes.ReparsePoint)) {
+				var referent = await StorageHelper.ResolveLink(target);
+				var isDirectory = new FileInfo(target).Attributes.HasFlag(FileAttributes.Directory);
+				await StorageHelper.CreateLink(placement, referent, isDirectory);
+			}
+			else if (!type.HasFlag(FileAttributes.ReparsePoint) && !type.HasFlag(FileAttributes.Directory)) {
+				var data = await StorageHelper.ReadFile(target);
+				await StorageHelper.CreateFile(placement);
+				await StorageHelper.WriteFile(placement, data);
+			}
+			else if (!type.HasFlag(FileAttributes.ReparsePoint) && type.HasFlag(FileAttributes.Directory)) {
+				await StorageHelper.CreateDirectory(placement);
+				foreach (var item in new DirectoryInfo(target).EnumerateFileSystemInfos("*", new EnumerationOptions() {
+						AttributesToSkip = FileAttributes.None,
+						BufferSize = 0,
+						IgnoreInaccessible = false,
+						MatchCasing = MatchCasing.PlatformDefault,
+						MatchType = MatchType.Simple,
+						MaxRecursionDepth = 0,
+						RecurseSubdirectories = false,
+						ReturnSpecialDirectories = false,
+					})) {
+					var itemName = StorageHelper.Name(item.Name);
+					await StorageHelper.Copy(item.FullName, $"{placement}/{itemName}", followLink);
+				}
+			}
+			else {
+				throw new NotSupportedException();
+			}
+			return;
 		}
 
-		public static Boolean ExistDirectory(
+		public static async Task Rename(
+			String target,
+			String placement
+		) {
+			AssertTest(await StorageHelper.Exist(target));
+			AssertTest(!await StorageHelper.Exist(placement));
+			if (StorageHelper.Parent(placement) != null && !await StorageHelper.ExistDirectory(StorageHelper.Parent(placement).AsNotNull())) {
+				await StorageHelper.CreateDirectory(StorageHelper.Parent(placement).AsNotNull());
+			}
+			var type = new FileInfo(target).Attributes;
+			if (type.HasFlag(FileAttributes.ReparsePoint)) {
+				if (!type.HasFlag(FileAttributes.Directory)) {
+					File.Move(target, placement);
+				}
+				else {
+					Directory.Move(target, placement);
+				}
+			}
+			else if (!type.HasFlag(FileAttributes.ReparsePoint) && !type.HasFlag(FileAttributes.Directory)) {
+				File.Move(target, placement);
+			}
+			else if (!type.HasFlag(FileAttributes.ReparsePoint) && type.HasFlag(FileAttributes.Directory)) {
+				Directory.Move(target, placement);
+			}
+			else {
+				throw new NotSupportedException();
+			}
+			return;
+		}
+
+		public static async Task Remove(
 			String target
 		) {
-			return Directory.Exists(target);
+			AssertTest(await StorageHelper.Exist(target));
+			var type = new FileInfo(target).Attributes;
+			if (type.HasFlag(FileAttributes.ReparsePoint)) {
+				if (!type.HasFlag(FileAttributes.Directory)) {
+					File.Delete(target);
+				}
+				else {
+					Directory.Delete(target);
+				}
+			}
+			else if (!type.HasFlag(FileAttributes.ReparsePoint) && !type.HasFlag(FileAttributes.Directory)) {
+				File.Delete(target);
+			}
+			else if (!type.HasFlag(FileAttributes.ReparsePoint) && type.HasFlag(FileAttributes.Directory)) {
+				Directory.Delete(target, true);
+			}
+			else {
+				throw new NotSupportedException();
+			}
+			return;
 		}
 
 		#endregion
 
-		#region basic
+		#region link
 
-		public static void Copy(
-			String source,
-			String destination
+		public static async Task<Boolean> ExistLink(
+			String target
 		) {
-			AssertTest(StorageHelper.Exist(source));
-			if (StorageHelper.ExistFile(source)) {
-				StorageHelper.CreateFile(destination);
-				File.Copy(source, destination, true);
+			if (target.Length == 0) {
+				return false;
 			}
-			if (StorageHelper.ExistDirectory(source)) {
-				StorageHelper.CreateDirectory(destination);
-				foreach (var item in Directory.GetFiles(source)) {
-					StorageHelper.Copy(item, $"{destination}/{StorageHelper.Name(item)}");
-				}
-				foreach (var item in Directory.GetDirectories(source)) {
-					StorageHelper.Copy(item, $"{destination}/{StorageHelper.Name(item)}");
-				}
+			var type = new FileInfo(target).Attributes;
+			return type != ~FileAttributes.None && type.HasFlag(FileAttributes.ReparsePoint);
+		}
+
+		public static async Task CreateLink(
+			String  target,
+			String  referent,
+			Boolean isDirectory
+		) {
+			AssertTest(!await StorageHelper.Exist(target));
+			if (StorageHelper.Parent(target) != null && !await StorageHelper.ExistDirectory(StorageHelper.Parent(target).AsNotNull())) {
+				await StorageHelper.CreateDirectory(StorageHelper.Parent(target).AsNotNull());
+			}
+			if (!isDirectory) {
+				File.CreateSymbolicLink(target, StorageHelper.Nativize(referent));
+			}
+			else {
+				Directory.CreateSymbolicLink(target, StorageHelper.Nativize(referent));
 			}
 			return;
 		}
 
-		public static void Rename(
-			String source,
-			String destination
-		) {
-			AssertTest(StorageHelper.Exist(source));
-			StorageHelper.CreateDirectory(StorageHelper.Parent(destination).AsNotNull());
-			if (StorageHelper.ExistFile(source)) {
-				File.Move(source, destination);
-			}
-			if (StorageHelper.ExistDirectory(source)) {
-				Directory.Move(source, destination);
-			}
-			return;
-		}
+		// ----------------
 
-		public static void Remove(
-			String source
+		public static async Task<String> ResolveLink(
+			String target
 		) {
-			AssertTest(StorageHelper.Exist(source));
-			if (StorageHelper.ExistFile(source)) {
-				File.Delete(source);
-			}
-			if (StorageHelper.ExistDirectory(source)) {
-				Directory.Delete(source, true);
-			}
-			return;
+			AssertTest(await StorageHelper.ExistLink(target));
+			return StorageHelper.Regularize(new FileInfo(target).LinkTarget.AsNotNull());
 		}
 
 		#endregion
 
 		#region file
 
-		public static void CreateFile(
+		public static async Task<Boolean> ExistFile(
 			String target
 		) {
-			var parent = StorageHelper.Parent(target);
-			if (parent != null) {
-				Directory.CreateDirectory(parent);
+			if (target.Length == 0) {
+				return false;
+			}
+			var type = new FileInfo(target).Attributes;
+			if (type != ~FileAttributes.None && type.HasFlag(FileAttributes.ReparsePoint)) {
+				type = new FileInfo(target).ResolveLinkTarget(true).AsNotNull().Attributes;
+			}
+			return type != ~FileAttributes.None && !type.HasFlag(FileAttributes.Directory);
+		}
+
+		public static async Task CreateFile(
+			String target
+		) {
+			AssertTest(!await StorageHelper.Exist(target));
+			if (StorageHelper.Parent(target) != null && !await StorageHelper.ExistDirectory(StorageHelper.Parent(target).AsNotNull())) {
+				await StorageHelper.CreateDirectory(StorageHelper.Parent(target).AsNotNull());
 			}
 			File.Create(target).Close();
 			return;
@@ -178,9 +269,19 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
+		public static async Task<Integer> SizeFile(
+			String target
+		) {
+			AssertTest(await StorageHelper.ExistFile(target));
+			return new FileInfo(target).Length;
+		}
+
+		// ----------------
+
 		public static async Task<Byte[]> ReadFile(
 			String target
 		) {
+			AssertTest(await StorageHelper.ExistFile(target));
 			return await File.ReadAllBytesAsync(target);
 		}
 
@@ -188,8 +289,26 @@ namespace KairosoftGameManager.Utility {
 			String target,
 			Byte[] data
 		) {
-			StorageHelper.CreateFile(target);
+			AssertTest(await StorageHelper.ExistFile(target));
 			await File.WriteAllBytesAsync(target, data);
+			return;
+		}
+
+		// ----------------
+
+		public static async Task<String> ReadFileText(
+			String target
+		) {
+			AssertTest(await StorageHelper.ExistFile(target));
+			return await File.ReadAllTextAsync(target);
+		}
+
+		public static async Task WriteFileText(
+			String target,
+			String text
+		) {
+			AssertTest(await StorageHelper.ExistFile(target));
+			await File.WriteAllTextAsync(target, text);
 			return;
 		}
 
@@ -207,66 +326,86 @@ namespace KairosoftGameManager.Utility {
 			return data;
 		}
 
-		// ----------------
-
-		public static async Task<String> ReadFileText(
-			String target
-		) {
-			return await File.ReadAllTextAsync(target);
-		}
-
-		public static async Task WriteFileText(
-			String target,
-			String text
-		) {
-			StorageHelper.CreateFile(target);
-			await File.WriteAllTextAsync(target, text);
-			return;
-		}
-
 		#endregion
 
 		#region directory
 
-		public static void CreateDirectory(
+		public static async Task<Boolean> ExistDirectory(
 			String target
 		) {
+			if (target.Length == 0) {
+				return false;
+			}
+			var type = new FileInfo(target).Attributes;
+			if (type != ~FileAttributes.None && type.HasFlag(FileAttributes.ReparsePoint)) {
+				type = new FileInfo(target).ResolveLinkTarget(true).AsNotNull().Attributes;
+			}
+			return type != ~FileAttributes.None && type.HasFlag(FileAttributes.Directory);
+		}
+
+		public static async Task CreateDirectory(
+			String target
+		) {
+			AssertTest(!await StorageHelper.Exist(target));
 			Directory.CreateDirectory(target);
 			return;
 		}
 
 		// ----------------
 
-		public static List<String> ListDirectory(
+		public static async Task<List<String>> ListDirectory(
 			String  target,
 			Size?   depth,
+			Boolean followLink,
+			Boolean allowLink,
 			Boolean allowFile,
-			Boolean allowDirectory,
-			String  pattern = "*"
+			Boolean allowDirectory
 		) {
-			if (depth == 0) {
-				return [];
+			AssertTest(await StorageHelper.ExistDirectory(target));
+			var result = new List<String>();
+			async Task iterate(
+				String  currentTarget,
+				String  currentItem,
+				Integer currentDepth
+			) {
+				if (depth == null || currentDepth < depth) {
+					foreach (var item in new DirectoryInfo(currentTarget).EnumerateFileSystemInfos("*", new EnumerationOptions() {
+							AttributesToSkip = FileAttributes.None,
+							BufferSize = 0,
+							IgnoreInaccessible = false,
+							MatchCasing = MatchCasing.PlatformDefault,
+							MatchType = MatchType.Simple,
+							MaxRecursionDepth = 0,
+							RecurseSubdirectories = false,
+							ReturnSpecialDirectories = false,
+						})) {
+						var itemType = item.Attributes;
+						var itemName = StorageHelper.Name(item.Name);
+						var itemPath = $"{(currentItem.Length == 0 ? "" : $"{currentItem}/")}{itemName}";
+						if (followLink && itemType.HasFlag(FileAttributes.ReparsePoint)) {
+							var referentType = item.ResolveLinkTarget(true).AsNotNull().Attributes;
+							if (referentType != ~FileAttributes.None) {
+								itemType = referentType;
+							}
+						}
+						if (allowLink && itemType.HasFlag(FileAttributes.ReparsePoint)) {
+							result.Add(itemPath);
+						}
+						if (allowFile && !itemType.HasFlag(FileAttributes.ReparsePoint) && !itemType.HasFlag(FileAttributes.Directory)) {
+							result.Add(itemPath);
+						}
+						if (allowDirectory && !itemType.HasFlag(FileAttributes.ReparsePoint) && itemType.HasFlag(FileAttributes.Directory)) {
+							result.Add(itemPath);
+						}
+						if (!itemType.HasFlag(FileAttributes.ReparsePoint) && itemType.HasFlag(FileAttributes.Directory)) {
+							await iterate($"{currentTarget}/{itemName}", itemPath, currentDepth + 1);
+						}
+					}
+				}
+				return;
 			}
-			var result = new List<String>().AsEnumerable();
-			var option = new EnumerationOptions() {
-				AttributesToSkip = FileAttributes.None,
-				MaxRecursionDepth = depth == null ? Int32.MaxValue : depth.AsNotNull() - 1,
-				RecurseSubdirectories = true,
-			};
-			if (!allowFile && !allowDirectory) {
-				result = [];
-			}
-			if (!allowFile && allowDirectory) {
-				result = Directory.EnumerateDirectories(target, pattern, option);
-			}
-			if (allowFile && !allowDirectory) {
-				result = Directory.EnumerateFiles(target, pattern, option);
-			}
-			if (allowFile && allowDirectory) {
-				result = Directory.EnumerateFileSystemEntries(target, pattern, option);
-			}
-			var targetFullPath = new DirectoryInfo(target).FullName;
-			return result.Select((value) => StorageHelper.Regularize(value[(targetFullPath.Length + 1)..])).Order().ToList();
+			await iterate(target, "", 0);
+			return result;
 		}
 
 		#endregion
@@ -276,6 +415,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task Reveal(
 			String target
 		) {
+			AssertTest(await StorageHelper.Exist(target));
 			var result = Win32.PInvoke.ShellExecute(new (IntegerSN.Zero), "open", $"file://{target}", null, null, Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOWNORMAL);
 			AssertTest(result >= 32);
 			return;
@@ -296,7 +436,7 @@ namespace KairosoftGameManager.Utility {
 			if (locationTag != null) {
 				locationPath = App.Instance.Setting.Data.StoragePickerHistoryLocation.GetValueOrDefault(locationTag);
 			}
-			if (locationPath != null && !StorageHelper.ExistDirectory(locationPath)) {
+			if (locationPath != null && !await StorageHelper.ExistDirectory(locationPath)) {
 				locationPath = null;
 			}
 			locationPath ??= "C:/";
@@ -329,7 +469,7 @@ namespace KairosoftGameManager.Utility {
 					}
 					dialog->SetOptions(option).ThrowOnFailure();
 					Win32.PInvoke.SHCreateItemFromParsingName(
-						StorageHelper.ToWindowsStyle(locationPath),
+						StorageHelper.Nativize(locationPath),
 						null,
 						typeof(Win32.UI.Shell.IShellItem).GUID,
 						out var locationItem
@@ -396,14 +536,14 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static void Trash(
+		public static async Task Trash(
 			String target
 		) {
-			AssertTest(StorageHelper.Exist(target));
-			if (StorageHelper.ExistFile(target)) {
+			AssertTest(await StorageHelper.Exist(target));
+			if (await StorageHelper.ExistFile(target)) {
 				Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
 			}
-			if (StorageHelper.ExistDirectory(target)) {
+			if (await StorageHelper.ExistDirectory(target)) {
 				Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(target, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin, Microsoft.VisualBasic.FileIO.UICancelOption.ThrowException);
 			}
 			return;

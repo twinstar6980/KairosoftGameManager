@@ -10,7 +10,7 @@ import typing
 
 # ----------------
 
-def fs_resolve(
+def fs_find(
 	pattern: str,
 ) -> list[str]:
 	return glob.glob(pattern)
@@ -20,41 +20,41 @@ def fs_temporary(
 	return tempfile.TemporaryDirectory()
 
 def fs_copy(
-	source: str,
-	destination: str,
+	target: str,
+	placement: str,
 	follow_link: bool = False,
 ) -> None:
-	if not pathlib.Path(source).exists():
-		raise RuntimeError(f'invalid source \'{source}\'')
-	if pathlib.Path(destination).exists():
-		fs_remove(destination)
-	if not pathlib.Path(destination).parent.exists():
-		fs_create_directory(f'{pathlib.Path(destination).parent}')
-	if pathlib.Path(source).is_file():
-		shutil.copy(source, destination, follow_symlinks=follow_link)
-	if pathlib.Path(source).is_dir():
-		shutil.copytree(source, destination, symlinks=follow_link, dirs_exist_ok=True)
+	if not pathlib.Path(target).exists():
+		raise RuntimeError(f'invalid source \'{target}\'')
+	if pathlib.Path(placement).exists():
+		fs_remove(placement)
+	if not pathlib.Path(placement).parent.exists():
+		fs_create_directory(f'{pathlib.Path(placement).parent}')
+	if pathlib.Path(target).is_file():
+		shutil.copy(target, placement, follow_symlinks=follow_link)
+	if pathlib.Path(target).is_dir():
+		shutil.copytree(target, placement, symlinks=follow_link, dirs_exist_ok=True)
 	return
 
 def fs_remove(
-	source: str,
+	target: str,
 ) -> None:
-	if pathlib.Path(source).is_symlink():
-		os.remove(source)
-	if pathlib.Path(source).is_file():
-		os.remove(source)
-	if pathlib.Path(source).is_dir():
-		shutil.rmtree(source)
+	if pathlib.Path(target).is_symlink():
+		os.remove(target)
+	if pathlib.Path(target).is_file():
+		os.remove(target)
+	if pathlib.Path(target).is_dir():
+		shutil.rmtree(target)
 	return
 
 def fs_create_link(
 	target: str,
-	object: str,
+	referent: str,
 	is_directory: bool,
 ) -> None:
 	if pathlib.Path(target).exists():
 		fs_remove(target)
-	os.symlink(object, target, is_directory)
+	os.symlink(referent, target, is_directory)
 	return
 
 def fs_read_file(
@@ -147,6 +147,20 @@ def generate_keystore(
 		)
 	return
 
+def verify_keystore(
+	target: str,
+	password: str,
+) -> bool:
+	with fs_temporary() as temporary:
+		openssl_result, _, _ = sh_execute_command(temporary, [
+			'openssl',
+			'pkcs12',
+			'-in', f'{target}',
+			'-passin', f'pass:{password}',
+			'-noout',
+		], ensure_ok=False)
+	return openssl_result == 0
+
 def query_keystore(
 	target: str,
 	password: str,
@@ -155,16 +169,16 @@ def query_keystore(
 		sh_execute_command(temporary, [
 			'openssl',
 			'pkcs12',
-			'-out', f'{temporary}/file.crt',
 			'-in', f'{target}',
-			'-nokeys',
 			'-passin', f'pass:{password}',
+			'-out', f'{temporary}/file.crt',
+			'-nokeys',
 		])
 		sh_execute_command(temporary, [
 			'openssl',
 			'x509',
-			'-out', f'{temporary}/result.txt',
 			'-in', f'{temporary}/file.crt',
+			'-out', f'{temporary}/result.txt',
 			'-noout',
 			'-subject',
 		])
@@ -300,7 +314,7 @@ def sign_windows_executable(
 				f'{temporary}/package/AppxManifest.xml',
 			)
 			manifest_content = re.sub(
-				r'(<Identity\s.*Publisher\s*=\s*")([^"]*)("\s.*\/>)',
+				r'(<Identity\s.*Publisher\s*=\s*")([^"]*)("\s.*/>)',
 				rf'\1{keystore_subject}\3',
 				manifest_content,
 				re.RegexFlag.MULTILINE,
@@ -462,10 +476,10 @@ def sign_macintosh_executable(
 			follow_link=True,
 		)
 		target_item_list: list[str] = []
-		target_item_list += fs_resolve(f'{temporary}/target/Contents/Frameworks/*.framework')
-		target_item_list += fs_resolve(f'{temporary}/target/Contents/PlugIns/*.appex')
-		target_item_list += fs_resolve(f'{temporary}/target/Frameworks/*.framework')
-		target_item_list += fs_resolve(f'{temporary}/target/PlugIns/*.appex')
+		target_item_list += fs_find(f'{temporary}/target/Contents/Frameworks/*.framework')
+		target_item_list += fs_find(f'{temporary}/target/Contents/PlugIns/*.appex')
+		target_item_list += fs_find(f'{temporary}/target/Frameworks/*.framework')
+		target_item_list += fs_find(f'{temporary}/target/PlugIns/*.appex')
 		target_item_list += [f'{temporary}/target']
 		for target_item in target_item_list:
 			target_item_entitlements = f'{temporary}/original.{str(pathlib.Path(target_item).relative_to(f'{temporary}/target')).replace('/', '_')}.entitlements'
@@ -631,6 +645,8 @@ def locate_project_keystore(
 	if not pathlib.Path(file).is_file():
 		return None
 	password = fs_read_file(f'{locate_project_local('keystore')}/password.txt')
+	if not verify_keystore(file, password):
+		raise RuntimeError('invaild keystore password')
 	return (file, password)
 
 # ----------------
@@ -644,7 +660,7 @@ def setup_project_library(
 		clang_file = shutil.which('clang')
 		if clang_file == None:
 			raise RuntimeError(f'could not found clang path')
-		library_directory_list = fs_resolve(str(pathlib.Path(clang_file).parent.parent / 'x86_64-w64-mingw32/bin'))
+		library_directory_list = fs_find(str(pathlib.Path(clang_file).parent.parent / 'x86_64-w64-mingw32/bin'))
 		if len(library_directory_list) == 0:
 			raise RuntimeError(f'could not found library directory')
 		library_directory = library_directory_list[0]
@@ -653,7 +669,7 @@ def setup_project_library(
 		ndk_home = os.environ.get('ANDROID_NDK_HOME')
 		if ndk_home == None:
 			raise RuntimeError(f'could not found ndk path')
-		library_directory_list = fs_resolve(str(pathlib.Path(ndk_home) / 'toolchains/llvm/prebuilt/*/sysroot/usr/lib/aarch64-linux-android'))
+		library_directory_list = fs_find(str(pathlib.Path(ndk_home) / 'toolchains/llvm/prebuilt/*/sysroot/usr/lib/aarch64-linux-android'))
 		if len(library_directory_list) == 0:
 			raise RuntimeError(f'could not found library directory')
 		library_directory = library_directory_list[0]

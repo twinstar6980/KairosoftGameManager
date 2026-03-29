@@ -1,17 +1,70 @@
-# Global
+# Common
 /**/*                                        binary
 
 # General - Article
 /**/*.txt                                    text eol=lf
 /**/*.md                                     text eol=lf
 
+# General - Script
+/**/*.sh                                     text eol=lf
+/**/*.cmd                                    text eol=crlf
+/**/*.bat                                    text eol=crlf
+
+# General - Configuration
+/**/*.json                                   text eol=lf
+/**/*.yaml                                   text eol=lf
+/**/*.yml                                    text eol=lf
+/**/*.xml                                    text eol=lf
+/**/*.plist                                  text eol=lf
+/**/*.properties                             text eol=lf
+
 # General - Media
 /**/*.ico                                    binary
 /**/*.png                                    binary
+/**/*.svg                                    text eol=lf
+
+# General - Program
+/**/*.so                                     binary
+/**/*.dll                                    binary
+/**/*.jar                                    binary
+
+# Language - C/C++
+/**/*.h                                      text eol=lf
+/**/*.hpp                                    text eol=lf
+/**/*.inl                                    text eol=lf
+/**/*.c                                      text eol=lf
+/**/*.cc                                     text eol=lf
+/**/*.cpp                                    text eol=lf
+/**/*.cppm                                   text eol=lf
+
+# Language - JavaScript/TypeScript
+/**/*.js                                     text eol=lf
+/**/*.jsx                                    text eol=lf
+/**/*.ts                                     text eol=lf
+/**/*.tsx                                    text eol=lf
+
+# Language - Dart
+/**/*.dart                                   text eol=lf
+
+# Language - Java
+/**/*.java                                   text eol=lf
+
+# Language - Kotlin
+/**/*.kt                                     text eol=lf
+/**/*.kts                                    text eol=lf
+
+# Language - ObjectiveC
+/**/*.m                                      text eol=lf
+
+# Language - Swift
+/**/*.swift                                  text eol=lf
 
 # Language - C#/XAML
 /**/*.cs                                     text eol=lf
 /**/*.xaml                                   text eol=lf
+
+# Language - Lua
+/**/*.lua                                    text eol=lf
 
 # Language - Python
 /**/*.py                                     text eol=lf
@@ -21,6 +74,31 @@
 
 # Environment - EditConfig
 /**/.editorconfig                            text eol=lf
+
+# Environment - CMake
+/**/CMakeLists.txt                           text eol=lf
+/**/*.cmake                                  text eol=lf
+
+# Environment - Xmake
+/**/xmake.lua                                text eol=lf
+
+# Environment - Node.js
+/**/package.json                             text eol=lf
+/**/tsconfig.json                            text eol=lf
+
+# Environment - Gradle
+/**/gradlew                                  text eol=lf
+/**/gradlew.bat                              text eol=crlf
+/**/gradle.properties                        text eol=lf
+/**/settings.gradle.kts                      text eol=lf
+/**/build.gradle.kts                         text eol=lf
+/**/gradle/wrapper/gradle-wrapper.properties text eol=lf
+/**/gradle/wrapper/gradle-wrapper.jar        binary
+
+# Environment - Flutter
+/**/pubspec.yaml                             text eol=lf
+/**/analysis_options.yaml                    text eol=lf
+/**/devtools_options.yaml                    text eol=lf
 
 # Environment - Visual Studio
 /**/*.slnx                                   text eol=crlf
@@ -41,9 +119,13 @@
 /**/*.pubxml                                 text eol=crlf
 /**/launchSettings.json                      text eol=crlf
 
-# Common
+# Environment - Xcode
+/**/*.pbxproj                                text eol=lf
+/**/*.xcworkspacedata                        text eol=lf
+/**/*.xcconfig                               text eol=lf
+/**/*.entitlements                           text eol=lf
+/**/*.xib                                    text eol=lf
+/**/*.storyboard                             text eol=lf
+
+# Project
 /LICENSE                                     text eol=lf
-
-# Module - Windows
-
-# Miscellaneous

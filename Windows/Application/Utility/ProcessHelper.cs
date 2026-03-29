@@ -65,7 +65,7 @@ namespace KairosoftGameManager.Utility {
 
 		#region program
 
-		public static String? SearchProgram(
+		public static async Task<String?> SearchProgram(
 			String name
 		) {
 			var result = default(String?);
@@ -74,7 +74,13 @@ namespace KairosoftGameManager.Utility {
 			pathExtensionList.Insert(0, "");
 			foreach (var path in pathList) {
 				var pathBase = $"{path}/{name}";
-				var pathExtension = pathExtensionList.FirstOrDefault((value) => StorageHelper.ExistFile($"{pathBase}{value}"));
+				var pathExtension = null as String;
+				foreach (var pathExtensionItem in pathExtensionList) {
+					if (await StorageHelper.ExistFile($"{pathBase}{pathExtensionItem}")) {
+						pathExtension = pathExtensionItem;
+						break;
+					}
+				}
 				if (pathExtension != null) {
 					result = $"{pathBase}{pathExtension}";
 					break;

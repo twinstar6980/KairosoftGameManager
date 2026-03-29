@@ -95,6 +95,9 @@ namespace KairosoftGameManager {
 			if (apply) {
 				await this.Apply();
 			}
+			if (!await StorageHelper.ExistFile(file)) {
+				await StorageHelper.CreateFile(file);
+			}
 			await JsonHelper.SerializeFile(file, this.Data);
 			return;
 		}
