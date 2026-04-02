@@ -18,13 +18,13 @@ namespace KairosoftGameManager {
 
 		#region life
 
-		public String PackageDirectory { get; }
+		public StoragePath PackageDirectory { get; }
 
-		public String ProgramFile { get; }
+		public StoragePath ProgramFile { get; }
 
-		public String SharedDirectory { get; }
+		public StoragePath SharedDirectory { get; }
 
-		public String CacheDirectory { get; }
+		public StoragePath CacheDirectory { get; }
 
 		public SettingProvider Setting { get; }
 
@@ -44,10 +44,10 @@ namespace KairosoftGameManager {
 			// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 			AssertTest(App.Instance == null);
 			App.Instance = this;
-			this.PackageDirectory = StorageHelper.Regularize(Package.Current.InstalledPath);
-			this.ProgramFile = $"{this.PackageDirectory}/Application.exe";
-			this.SharedDirectory = StorageHelper.Regularize(Windows.Storage.ApplicationData.Current.LocalFolder.Path);
-			this.CacheDirectory = $"{this.SharedDirectory}/cache";
+			this.PackageDirectory = StorageHelper.QueryApplicationPackageDirectory();
+			this.ProgramFile = this.PackageDirectory.Join("Application.exe");
+			this.SharedDirectory = StorageHelper.QueryApplicationPackageSharedDirectory().Join(ApplicationInformation.Identifier);
+			this.CacheDirectory = this.SharedDirectory.Join("cache");
 			this.Setting = new ();
 			this.MainWindow = null!;
 			this.InitializeComponent();

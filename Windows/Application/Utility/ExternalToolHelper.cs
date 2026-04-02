@@ -8,11 +8,11 @@ namespace KairosoftGameManager.Utility {
 	#region type
 
 	public record ExternalToolSetting {
-		public String Il2cppdumperPath    { get; set; } = default!;
-		public String ZipalignPath        { get; set; } = default!;
-		public String ApksignerPath       { get; set; } = default!;
-		public String ApkKeystoreFile     { get; set; } = default!;
-		public String ApkKeystorePassword { get; set; } = default!;
+		public StoragePath Il2cppdumperPath    { get; set; } = default!;
+		public StoragePath ZipalignPath        { get; set; } = default!;
+		public StoragePath ApksignerPath       { get; set; } = default!;
+		public StoragePath ApkKeystoreFile     { get; set; } = default!;
+		public String      ApkKeystorePassword { get; set; } = default!;
 	}
 
 	#endregion
@@ -25,10 +25,11 @@ namespace KairosoftGameManager.Utility {
 			ExternalToolSetting original
 		) {
 			return new () {
-				Il2cppdumperPath = await original.Il2cppdumperPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it) ?? ""),
-				ZipalignPath = await original.ZipalignPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it) ?? ""),
-				ApksignerPath = await original.ApksignerPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it) ?? ""),
-				ApkKeystoreFile = await original.ApkKeystoreFile.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : ""),
+				// TODO: convert
+				Il2cppdumperPath = await original.Il2cppdumperPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it.Name() ?? "", true) ?? new ()),
+				ZipalignPath = await original.ZipalignPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it.Name() ?? "", true) ?? new ()),
+				ApksignerPath = await original.ApksignerPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it.Name() ?? "", true) ?? new ()),
+				ApkKeystoreFile = await original.ApkKeystoreFile.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : new ()),
 				ApkKeystorePassword = original.ApkKeystorePassword,
 			};
 		}
@@ -39,8 +40,8 @@ namespace KairosoftGameManager.Utility {
 
 		public static async Task<List<String>> RunIl2cppdumper(
 			ExternalToolSetting setting,
-			String              programFile,
-			String              metadataFile
+			StoragePath         programFile,
+			StoragePath         metadataFile
 		) {
 			var dumpDirectory = await StorageHelper.Temporary();
 			await StorageHelper.CreateDirectory(dumpDirectory);
@@ -50,15 +51,15 @@ namespace KairosoftGameManager.Utility {
 			var processResult = (await ProcessHelper.RunProcess(
 				setting.Il2cppdumperPath,
 				[
-					programFile,
-					metadataFile,
-					dumpDirectory,
+					programFile.EmitGeneric(),
+					metadataFile.EmitGeneric(),
+					dumpDirectory.EmitGeneric(),
 				],
 				null,
 				true
 			)).AsNotNull();
 			AssertTest(processResult.Item2.ReplaceLineEndings("\n").EndsWith("Done!\nPress any key to exit...\n"));
-			var result = (await StorageHelper.ReadFileText($"{dumpDirectory}/dump.cs")).Split('\n').ToList();
+			var result = (await StorageHelper.ReadFileText(dumpDirectory.Join("dump.cs"))).Split('\n').ToList();
 			return result;
 		}
 
@@ -136,7 +137,7 @@ namespace KairosoftGameManager.Utility {
 
 		public static async Task RunZipalign(
 			ExternalToolSetting setting,
-			String              zipFile
+			StoragePath         zipFile
 		) {
 			var alignedFile = await StorageHelper.Temporary();
 			await StorageHelper.CreateFile(alignedFile);
@@ -149,8 +150,8 @@ namespace KairosoftGameManager.Utility {
 					"-P", "16",
 					"-f",
 					"4",
-					$"{zipFile}",
-					$"{alignedFile}",
+					$"{zipFile.EmitGeneric()}",
+					$"{alignedFile.EmitGeneric()}",
 				],
 				null,
 				true
@@ -167,7 +168,7 @@ namespace KairosoftGameManager.Utility {
 
 		public static async Task RunApksigner(
 			ExternalToolSetting setting,
-			String              apkFile
+			StoragePath         apkFile
 		) {
 			var processResult = (await ProcessHelper.RunProcess(
 				setting.ApksignerPath,
@@ -177,9 +178,9 @@ namespace KairosoftGameManager.Utility {
 					"--v2-signing-enabled", "true",
 					"--v3-signing-enabled", "true",
 					"--v4-signing-enabled", "false",
-					"--ks", $"{setting.ApkKeystoreFile}",
+					"--ks", $"{setting.ApkKeystoreFile.EmitGeneric()}",
 					"--ks-pass", $"pass:{setting.ApkKeystorePassword}",
-					$"{apkFile}",
+					$"{apkFile.EmitGeneric()}",
 				],
 				null,
 				true

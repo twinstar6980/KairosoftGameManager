@@ -56,9 +56,9 @@ namespace KairosoftGameManager.Utility {
 		// ----------------
 
 		public static async Task SerializeFile<TValue>(
-			String  path,
-			TValue  value,
-			Boolean indented = true
+			StoragePath path,
+			TValue      value,
+			Boolean     indented = true
 		)
 			where TValue : notnull {
 			await StorageHelper.WriteFileText(path, JsonHelper.SerializeText(value, indented));
@@ -66,7 +66,7 @@ namespace KairosoftGameManager.Utility {
 		}
 
 		public static async Task<TValue> DeserializeFile<TValue>(
-			String path
+			StoragePath path
 		)
 			where TValue : notnull {
 			return JsonHelper.DeserializeText<TValue>(await StorageHelper.ReadFileText(path));
@@ -226,6 +226,31 @@ namespace KairosoftGameManager.Utility {
 
 		}
 
+		private class StoragePathJsonConverter : JsonConverter<StoragePath> {
+
+			public override Boolean HandleNull => false;
+
+			public override StoragePath Read(
+				ref Utf8JsonReader    reader,
+				Type                  typeToConvert,
+				JsonSerializerOptions options
+			) {
+				var value = reader.GetString().AsNotNull().SelfLet((it) => new StoragePath(it));
+				return value;
+			}
+
+			public override void Write(
+				Utf8JsonWriter        writer,
+				StoragePath           value,
+				JsonSerializerOptions options
+			) {
+				var text = value.Emit();
+				writer.WriteStringValue(text);
+				return;
+			}
+
+		}
+
 		#endregion
 
 		#region option
@@ -240,7 +265,7 @@ namespace KairosoftGameManager.Utility {
 						return;
 					}
 					foreach (var propertyInfo in typeInfo.Properties) {
-						propertyInfo.IsRequired = !propertyInfo.IsExtensionData && propertyInfo.AttributeProvider.AsNotNull().GetCustomAttributes(typeof(JsonOptionalAttribute), false).Length == 0;
+						propertyInfo.IsRequired = !propertyInfo.IsExtensionData && propertyInfo.AttributeProvider.AsNotNull().GetCustomAttributes(typeof(JsonOptionalAttribute), false).IsEmpty();
 					}
 					return;
 				}),
@@ -265,6 +290,7 @@ namespace KairosoftGameManager.Utility {
 					new FloaterJsonConverter<FloaterS32>(),
 					new FloaterJsonConverter<FloaterS64>(),
 					new TupleJsonConverterFactory(),
+					new StoragePathJsonConverter(),
 				},
 			};
 		}

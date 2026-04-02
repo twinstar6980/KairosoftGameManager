@@ -97,7 +97,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<SettingsCard>();
-			await StorageHelper.Reveal(StorageHelper.Parent(App.Instance.Setting.File).AsNotNull());
+			await StorageHelper.Reveal(App.Instance.Setting.File.Parent().AsNotNull());
 			return;
 		}
 
@@ -148,7 +148,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Instance.Setting.Data.RepositoryDirectory = ConvertHelper.ParseStringListFromStringWithLine(senders.Text).Select(StorageHelper.Regularize).Distinct().ToList();
+			App.Instance.Setting.Data.RepositoryDirectory = ConvertHelper.ParseStringListFromStringWithLine(senders.Text).Select((it) => new StoragePath(it)).Distinct().ToList();
 			this.NotifyPropertyChanged([
 				nameof(this.uRepositoryDirectory_Text),
 			]);
@@ -158,7 +158,7 @@ namespace KairosoftGameManager.View {
 
 		public String uRepositoryDirectory_Text {
 			get {
-				return ConvertHelper.MakeStringListToStringWithLine(App.Instance.Setting.Data.RepositoryDirectory);
+				return ConvertHelper.MakeStringListToStringWithLine(App.Instance.Setting.Data.RepositoryDirectory.Select((it) => it.Emit()).ToList());
 			}
 		}
 
@@ -169,7 +169,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Instance.Setting.Data.ExternalTool.Il2cppdumperPath = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.Il2cppdumperPath = new (senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uExternalToolOfIl2cppdumperPath_Text),
 			]);
@@ -179,7 +179,7 @@ namespace KairosoftGameManager.View {
 
 		public String uExternalToolOfIl2cppdumperPath_Text {
 			get {
-				return App.Instance.Setting.Data.ExternalTool.Il2cppdumperPath;
+				return App.Instance.Setting.Data.ExternalTool.Il2cppdumperPath.Emit();
 			}
 		}
 
@@ -206,7 +206,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Instance.Setting.Data.ExternalTool.ZipalignPath = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.ZipalignPath = new (senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uExternalToolOfZipalignPath_Text),
 			]);
@@ -216,7 +216,7 @@ namespace KairosoftGameManager.View {
 
 		public String uExternalToolOfZipalignPath_Text {
 			get {
-				return App.Instance.Setting.Data.ExternalTool.ZipalignPath;
+				return App.Instance.Setting.Data.ExternalTool.ZipalignPath.Emit();
 			}
 		}
 
@@ -243,7 +243,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Instance.Setting.Data.ExternalTool.ApksignerPath = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.ApksignerPath = new (senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uExternalToolOfApksignerPath_Text),
 			]);
@@ -253,7 +253,7 @@ namespace KairosoftGameManager.View {
 
 		public String uExternalToolOfApksignerPath_Text {
 			get {
-				return App.Instance.Setting.Data.ExternalTool.ApksignerPath;
+				return App.Instance.Setting.Data.ExternalTool.ApksignerPath.Emit();
 			}
 		}
 
@@ -280,7 +280,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Instance.Setting.Data.ExternalTool.ApkKeystoreFile = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.ApkKeystoreFile = new (senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uExternalToolOfApkKeystoreFile_Text),
 			]);
@@ -290,7 +290,7 @@ namespace KairosoftGameManager.View {
 
 		public String uExternalToolOfApkKeystoreFile_Text {
 			get {
-				return App.Instance.Setting.Data.ExternalTool.ApkKeystoreFile;
+				return App.Instance.Setting.Data.ExternalTool.ApkKeystoreFile.Emit();
 			}
 		}
 
@@ -317,7 +317,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			App.Instance.Setting.Data.ExternalTool.ApkKeystorePassword = StorageHelper.Regularize(senders.Text);
+			App.Instance.Setting.Data.ExternalTool.ApkKeystorePassword = new (senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uExternalToolOfApkKeystorePassword_Text),
 			]);

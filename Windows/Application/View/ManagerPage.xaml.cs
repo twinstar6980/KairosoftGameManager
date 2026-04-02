@@ -48,7 +48,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public String? ActiveRepositoryDirectory { get; set; } = null;
+		public StoragePath? ActiveRepositoryDirectory { get; set; } = null;
 
 		#endregion
 
@@ -82,7 +82,7 @@ namespace KairosoftGameManager.View {
 		#region action
 
 		public async Task LoadRepository(
-			String? repositoryDirectory
+			StoragePath? repositoryDirectory
 		) {
 			this.uGameList_ItemsSource.Clear();
 			this.ActiveRepositoryDirectory = repositoryDirectory;
@@ -180,7 +180,7 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "LaunchGame": {
-						await ProcessHelper.RunProcess($"{game.Path}/{GameHelper.ExecutableFile}", [], null, false);
+						await ProcessHelper.RunProcess(game.Path.Join(GameHelper.ExecutableFile), [], null, false);
 						break;
 					}
 					case "ModifyProgram": {
@@ -233,8 +233,8 @@ namespace KairosoftGameManager.View {
 							}
 							temporaryStateMap.Add(action, new Tuple<Boolean, Boolean>(argumentDisableRecordEncryption, argumentEnableDebugMode));
 						}
-						var programFile = $"{game.Path}/{GameHelper.ProgramFile}";
-						var backupFile = $"{game.Path}/{GameHelper.ProgramFile}.{game.Version ?? "0"}.bak";
+						var programFile = game.Path.Join(GameHelper.ProgramFile);
+						var backupFile = game.Path.Join($"{GameHelper.ProgramFile}.{game.Version ?? "0"}.bak");
 						if (!await StorageHelper.ExistFile(backupFile)) {
 							await StorageHelper.Rename(programFile, backupFile);
 						}
@@ -257,8 +257,8 @@ namespace KairosoftGameManager.View {
 							cancelled = true;
 							break;
 						}
-						var programFile = $"{game.Path}/{GameHelper.ProgramFile}";
-						var backupFile = $"{game.Path}/{GameHelper.ProgramFile}.{game.Version ?? "0"}.bak";
+						var programFile = game.Path.Join(GameHelper.ProgramFile);
+						var backupFile = game.Path.Join($"{GameHelper.ProgramFile}.{game.Version ?? "0"}.bak");
 						await StorageHelper.Trash(programFile);
 						await StorageHelper.Rename(backupFile, programFile);
 						break;
@@ -269,7 +269,7 @@ namespace KairosoftGameManager.View {
 							cancelled = true;
 							break;
 						}
-						var recordDirectory = $"{game.Path}/{GameHelper.RecordBundleDirectory}/{game.User}";
+						var recordDirectory = game.Path.Join(GameHelper.RecordBundleDirectory).Join(game.User);
 						await GameHelper.EncryptRecord(
 							recordDirectory,
 							GameHelper.MakeKeyFromSteamUser(game.User),
@@ -283,7 +283,7 @@ namespace KairosoftGameManager.View {
 							cancelled = true;
 							break;
 						}
-						var recordDirectory = $"{game.Path}/{GameHelper.RecordBundleDirectory}/{game.User}";
+						var recordDirectory = game.Path.Join(GameHelper.RecordBundleDirectory).Join(game.User);
 						await GameHelper.EncryptRecord(
 							recordDirectory,
 							GameHelper.MakeKeyFromSteamUser(game.User),
@@ -303,7 +303,7 @@ namespace KairosoftGameManager.View {
 							cancelled = true;
 							break;
 						}
-						var recordDirectory = $"{game.Path}/{GameHelper.RecordBundleDirectory}/{game.User}";
+						var recordDirectory = game.Path.Join(GameHelper.RecordBundleDirectory).Join(game.User);
 						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() {
 							Platform = GameHelper.GetPlatformSystemName(GamePlatform.WindowsIntel32),
 							Identifier = game.Identifier ?? "unknown",
@@ -377,7 +377,7 @@ namespace KairosoftGameManager.View {
 							cancelled = true;
 							break;
 						}
-						var recordDirectory = $"{game.Path}/{GameHelper.RecordBundleDirectory}/{game.User}";
+						var recordDirectory = game.Path.Join(GameHelper.RecordBundleDirectory).Join(game.User);
 						var archiveConfigurationForLocal = new GameRecordArchiveConfiguration() {
 							Platform = GameHelper.GetPlatformSystemName(GamePlatform.WindowsIntel32),
 							Identifier = game.Identifier ?? "unknown",
@@ -433,7 +433,7 @@ namespace KairosoftGameManager.View {
 				};
 				foreach (var item in App.Instance.Setting.Data.RepositoryDirectory) {
 					menu.Items.Add(new MenuFlyoutItem() {
-						Text = item,
+						Text = item.Emit(),
 					}.SelfAlso((it) => {
 						it.Click += async (_, _) => {
 							await this.LoadRepository(item);
@@ -447,7 +447,7 @@ namespace KairosoftGameManager.View {
 
 		public String uRepositoryDirectoryText_Text {
 			get {
-				return this.ActiveRepositoryDirectory ?? "None";
+				return this.ActiveRepositoryDirectory?.Emit() ?? "None";
 			}
 		}
 

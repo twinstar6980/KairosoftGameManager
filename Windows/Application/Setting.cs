@@ -8,16 +8,16 @@ using Microsoft.UI;
 namespace KairosoftGameManager {
 
 	public record SettingData {
-		public String                     Version                      { get; set; } = default!;
-		public ElementTheme               ThemeMode                    { get; set; } = default!;
-		public Dictionary<String, String> StoragePickerHistoryLocation { get; set; } = default!;
-		public List<String>               RepositoryDirectory          { get; set; } = default!;
-		public ExternalToolSetting        ExternalTool                 { get; set; } = default!;
+		public String                          Version                      { get; set; } = default!;
+		public ElementTheme                    ThemeMode                    { get; set; } = default!;
+		public Dictionary<String, StoragePath> StoragePickerHistoryLocation { get; set; } = default!;
+		public List<StoragePath>               RepositoryDirectory          { get; set; } = default!;
+		public ExternalToolSetting             ExternalTool                 { get; set; } = default!;
 	}
 
 	public record SettingState {
-		public ElementTheme? ThemeMode                  { get; set; } = default!;
-		public List<String>  CurrentRepositoryDirectory { get; set; } = default!;
+		public ElementTheme?     ThemeMode                  { get; set; } = default!;
+		public List<StoragePath> CurrentRepositoryDirectory { get; set; } = default!;
 	}
 
 	public class SettingProvider {
@@ -71,16 +71,16 @@ namespace KairosoftGameManager {
 
 		#region storage
 
-		public String File {
+		public StoragePath File {
 			get {
-				return $"{App.Instance.SharedDirectory}/setting.json";
+				return App.Instance.SharedDirectory.Join("setting.json");
 			}
 		}
 
 		// ----------------
 
 		public async Task Load(
-			String? file = null
+			StoragePath? file = null
 		) {
 			file ??= this.File;
 			this.Data = (await JsonHelper.DeserializeFile<SettingData>(file)).SelfAlso((it) => AssertTest(it.Version == ApplicationInformation.VersionMainly));
@@ -88,8 +88,8 @@ namespace KairosoftGameManager {
 		}
 
 		public async Task Save(
-			String? file  = null,
-			Boolean apply = true
+			StoragePath? file  = null,
+			Boolean      apply = true
 		) {
 			file ??= this.File;
 			if (apply) {
@@ -113,13 +113,14 @@ namespace KairosoftGameManager {
 				ThemeMode = ElementTheme.Default,
 				StoragePickerHistoryLocation = [],
 				RepositoryDirectory = [
-					"C:/Program Files (x86)/Steam",
+					new ("C:/Program Files (x86)/Steam"),
 				],
 				ExternalTool = new () {
-					Il2cppdumperPath = "Il2CppDumper",
-					ZipalignPath = "zipalign",
-					ApksignerPath = "apksigner",
-					ApkKeystoreFile = "",
+					// TODO: special path
+					Il2cppdumperPath = new ("Il2CppDumper"),
+					ZipalignPath = new ("zipalign"),
+					ApksignerPath = new ("apksigner"),
+					ApkKeystoreFile = new (),
 					ApkKeystorePassword = "",
 				},
 			};

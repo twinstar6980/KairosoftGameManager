@@ -30,7 +30,7 @@ namespace KairosoftGameManager.Utility {
 		#region process
 
 		public static async Task<Tuple<Size, String, String>?> RunProcess(
-			String                      program,
+			StoragePath                 program,
 			List<String>                argument,
 			Dictionary<String, String>? environment,
 			Boolean                     waitForExit
@@ -40,7 +40,7 @@ namespace KairosoftGameManager.Utility {
 			}
 			using var process = new Process();
 			process.StartInfo.UseShellExecute = false;
-			process.StartInfo.FileName = program;
+			process.StartInfo.FileName = program.EmitNative();
 			foreach (var argumentItem in argument) {
 				process.StartInfo.ArgumentList.Add(argumentItem);
 			}
@@ -65,25 +65,28 @@ namespace KairosoftGameManager.Utility {
 
 		#region program
 
-		public static async Task<String?> SearchProgram(
-			String name
+		public static async Task<StoragePath?> SearchProgram(
+			String  name,
+			Boolean allowExtension
 		) {
-			var result = default(String?);
-			var pathList = ProcessHelper.QueryEnvironment("PATH").AsNotNull().Split(";").Select(StorageHelper.Regularize).ToList();
-			var pathExtensionList = ProcessHelper.QueryEnvironment("PATHEXT").AsNotNull().Split(";").ToList();
-			pathExtensionList.Insert(0, "");
+			var result = null as StoragePath;
+			var itemDelimiter = ';';
+			var pathEnvironment = ProcessHelper.QueryEnvironment("PATH");
+			AssertTest(pathEnvironment != null);
+			var pathList = pathEnvironment.Split(itemDelimiter).Select((it) => new StoragePath(it)).ToList();
+			var pathExtensionList = new List<String>([""]);
+			if (allowExtension) {
+				var pathExtensionEnvironment = ProcessHelper.QueryEnvironment("PATHEXT");
+				AssertTest(pathExtensionEnvironment != null);
+				pathExtensionList.AddRange(pathExtensionEnvironment.Split(itemDelimiter));
+			}
 			foreach (var path in pathList) {
-				var pathBase = $"{path}/{name}";
-				var pathExtension = null as String;
-				foreach (var pathExtensionItem in pathExtensionList) {
-					if (await StorageHelper.ExistFile($"{pathBase}{pathExtensionItem}")) {
-						pathExtension = pathExtensionItem;
+				foreach (var pathExtension in pathExtensionList) {
+					var currentPath = path.Join($"{name}{pathExtension}");
+					if (await StorageHelper.ExistFile(currentPath)) {
+						result = currentPath;
 						break;
 					}
-				}
-				if (pathExtension != null) {
-					result = $"{pathBase}{pathExtension}";
-					break;
 				}
 			}
 			return result;

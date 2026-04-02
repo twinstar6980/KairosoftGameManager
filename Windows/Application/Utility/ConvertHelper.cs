@@ -78,6 +78,23 @@ namespace KairosoftGameManager.Utility {
 
 		#endregion
 
+		#region character
+
+		public static Boolean IsPathSeparator(
+			Character value
+		) {
+			return value == '/' || value == '\\';
+		}
+
+		public static Boolean IsLetter(
+			Character value
+		) {
+			var code = (value | 0x20).CastPrimitive<Character>();
+			return 'a' <= code && code <= 'z';
+		}
+
+		#endregion
+
 		#region string list
 
 		public static String MakeStringListToStringWithLine(

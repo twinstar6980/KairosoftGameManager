@@ -53,7 +53,7 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public String ArgumentOfProgramOfTarget { get; set; } = "";
+		public StoragePath ArgumentOfProgramOfTarget { get; set; } = new ();
 
 		public Boolean ArgumentOfProgramOfDisableRecordEncryption { get; set; } = true;
 
@@ -61,9 +61,9 @@ namespace KairosoftGameManager.View {
 
 		// ----------------
 
-		public String ArgumentOfRecordOfTargetDirectory { get; set; } = "";
+		public StoragePath ArgumentOfRecordOfTargetDirectory { get; set; } = new ();
 
-		public String ArgumentOfRecordOfArchiveFile { get; set; } = "";
+		public StoragePath ArgumentOfRecordOfArchiveFile { get; set; } = new ();
 
 		public List<Byte> ArgumentOfRecordOfKey { get; set; } = [0x00];
 
@@ -159,7 +159,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			this.ArgumentOfProgramOfTarget = StorageHelper.Regularize(senders.Text);
+			this.ArgumentOfProgramOfTarget = new (senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uArgumentOfProgramOfTargetEditor_Text),
 			]);
@@ -168,7 +168,7 @@ namespace KairosoftGameManager.View {
 
 		public String uArgumentOfProgramOfTargetEditor_Text {
 			get {
-				return this.ArgumentOfProgramOfTarget;
+				return this.ArgumentOfProgramOfTarget.Emit();
 			}
 		}
 
@@ -256,7 +256,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			this.ArgumentOfRecordOfTargetDirectory = StorageHelper.Regularize(senders.Text);
+			this.ArgumentOfRecordOfTargetDirectory = new (senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uArgumentOfRecordOfTargetDirectoryEditor_Text),
 			]);
@@ -265,7 +265,7 @@ namespace KairosoftGameManager.View {
 
 		public String uArgumentOfRecordOfTargetDirectoryEditor_Text {
 			get {
-				return this.ArgumentOfRecordOfTargetDirectory;
+				return this.ArgumentOfRecordOfTargetDirectory.Emit();
 			}
 		}
 
@@ -298,7 +298,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<TextBox>();
-			this.ArgumentOfRecordOfArchiveFile = StorageHelper.Regularize(senders.Text);
+			this.ArgumentOfRecordOfArchiveFile = new (senders.Text);
 			this.NotifyPropertyChanged([
 				nameof(this.uArgumentOfRecordOfArchiveFileEditor_Text),
 			]);
@@ -307,7 +307,7 @@ namespace KairosoftGameManager.View {
 
 		public String uArgumentOfRecordOfArchiveFileEditor_Text {
 			get {
-				return this.ArgumentOfRecordOfArchiveFile;
+				return this.ArgumentOfRecordOfArchiveFile.Emit();
 			}
 		}
 

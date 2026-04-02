@@ -19,7 +19,7 @@ namespace KairosoftGameManager.View {
 		public MainWindow(
 		) {
 			this.InitializeComponent();
-			WindowHelper.SetIcon(this, $"{App.Instance.PackageDirectory}/Asset/Logo.ico");
+			WindowHelper.SetIcon(this, App.Instance.PackageDirectory.Join("Asset").Join("Logo.ico").EmitNative());
 			WindowHelper.SetTitle(this, ApplicationInformation.Name);
 			WindowHelper.SetTitleBar(this, true, this.uTitle, true);
 			this.Controller = new () { View = this };

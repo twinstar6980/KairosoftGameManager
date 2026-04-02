@@ -4,6 +4,7 @@
 using KairosoftGameManager;
 using System.Buffers.Binary;
 using System.IO.Compression;
+using Windows.Foundation.Metadata;
 using Microsoft.UI.Xaml.Media;
 using Gameloop.Vdf;
 using Gameloop.Vdf.Linq;
@@ -41,8 +42,8 @@ namespace KairosoftGameManager.Utility {
 	// ----------------
 
 	public record GameConfiguration {
-		public String           Path       { get; set; } = "";
-		public String?          Library    { get; set; } = null;
+		public StoragePath      Path       { get; set; } = new ();
+		public StoragePath?     Library    { get; set; } = null;
 		public String?          Identifier { get; set; } = null;
 		public String?          Version    { get; set; } = null;
 		public String           Name       { get; set; } = "";
@@ -98,37 +99,37 @@ namespace KairosoftGameManager.Utility {
 
 		#region program
 
-		private static String GetProgramFilePath(
+		private static StoragePath GetProgramFilePath(
 			GamePlatform platform
 		) {
 			return platform switch {
-				GamePlatform.WindowsIntel32 => "GameAssembly.dll",
-				GamePlatform.AndroidArm32   => "lib/armeabi-v7a/libil2cpp.so",
-				GamePlatform.AndroidArm64   => "lib/arm64-v8a/libil2cpp.so",
+				GamePlatform.WindowsIntel32 => new ("GameAssembly.dll"),
+				GamePlatform.AndroidArm32   => new ("lib/armeabi-v7a/libil2cpp.so"),
+				GamePlatform.AndroidArm64   => new ("lib/arm64-v8a/libil2cpp.so"),
 				_                           => throw new UnreachableException(),
 			};
 		}
 
-		private static String GetMetadataFilePath(
+		private static StoragePath GetMetadataFilePath(
 			GamePlatform platform
 		) {
 			return platform switch {
-				GamePlatform.WindowsIntel32 => "KairoGames_Data/il2cpp_data/Metadata/global-metadata.dat",
-				GamePlatform.AndroidArm32   => "assets/bin/Data/Managed/Metadata/global-metadata.dat",
-				GamePlatform.AndroidArm64   => "assets/bin/Data/Managed/Metadata/global-metadata.dat",
+				GamePlatform.WindowsIntel32 => new ("KairoGames_Data/il2cpp_data/Metadata/global-metadata.dat"),
+				GamePlatform.AndroidArm32   => new ("assets/bin/Data/Managed/Metadata/global-metadata.dat"),
+				GamePlatform.AndroidArm64   => new ("assets/bin/Data/Managed/Metadata/global-metadata.dat"),
 				_                           => throw new UnreachableException(),
 			};
 		}
 
 		private static async Task<List<GamePlatform>> DetectPlatform(
-			String gameDirectory
+			StoragePath gameDirectory
 		) {
 			var result = new List<GamePlatform>();
 			foreach (var platform in Enum.GetValues<GamePlatform>()) {
-				if (!await StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.GetProgramFilePath(platform)}")) {
+				if (!await StorageHelper.ExistFile(gameDirectory.Push(GameHelper.GetProgramFilePath(platform)))) {
 					continue;
 				}
-				if (!await StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.GetMetadataFilePath(platform)}")) {
+				if (!await StorageHelper.ExistFile(gameDirectory.Push(GameHelper.GetMetadataFilePath(platform)))) {
 					continue;
 				}
 				result.Add(platform);
@@ -234,8 +235,8 @@ namespace KairosoftGameManager.Utility {
 
 		private static async Task ModifyProgramFlat(
 			GamePlatform        platform,
-			String              programFile,
-			String              metadataFile,
+			StoragePath         programFile,
+			StoragePath         metadataFile,
 			Boolean             disableRecordEncryption,
 			Boolean             enableDebugMode,
 			ExternalToolSetting externalToolSetting,
@@ -409,7 +410,7 @@ namespace KairosoftGameManager.Utility {
 		}
 
 		public static async Task ModifyProgram(
-			String              target,
+			StoragePath         target,
 			Boolean             disableRecordEncryption,
 			Boolean             enableDebugMode,
 			ExternalToolSetting externalToolSetting,
@@ -426,13 +427,13 @@ namespace KairosoftGameManager.Utility {
 				packageType = GamePackageType.Flat;
 			}
 			if (await StorageHelper.ExistFile(target)) {
-				if (target.ToLower().EndsWith(".zip")) {
+				if (target.Extension()?.ToLower() == "zip") {
 					packageType = GamePackageType.Zip;
 				}
-				if (target.ToLower().EndsWith(".apk")) {
+				if (target.Extension()?.ToLower() == "apk") {
 					packageType = GamePackageType.Apk;
 				}
-				if (target.ToLower().EndsWith(".apks")) {
+				if (target.Extension()?.ToLower() == "apks") {
 					packageType = GamePackageType.Apks;
 				}
 			}
@@ -452,50 +453,49 @@ namespace KairosoftGameManager.Utility {
 			});
 			if (packageType != GamePackageType.Flat) {
 				onNotify($"Phase: load package file'.");
-				var packageMainPath = $"{temporaryDirectory}/package/main";
+				var packageMainPath = temporaryDirectory.Join("package").Join("main");
 				await StorageHelper.Copy(target, packageMainPath, false);
-				var packageMain = await ZipFile.OpenAsync(packageMainPath, ZipArchiveMode.Update);
+				packageBundle = await ZipFile.OpenAsync(packageMainPath.Emit(), ZipArchiveMode.Update);
 				packagePartList = [];
 				if (packageType == GamePackageType.Zip) {
-					packagePartList.Add(new ("main", packageMain));
+					packagePartList.Add(new ("main", packageBundle));
 				}
 				if (packageType == GamePackageType.Apk) {
-					packagePartList.Add(new ("main", packageMain));
+					packagePartList.Add(new ("main", packageBundle));
 				}
 				if (packageType == GamePackageType.Apks) {
-					packageBundle = packageMain;
 					foreach (var packagePartFile in packageBundle.Entries) {
 						if (!packagePartFile.Name.ToLower().EndsWith(".apk")) {
 							continue;
 						}
-						var packagePartPath = $"{temporaryDirectory}/package/{packagePartFile.Name}";
-						await packagePartFile.ExtractToFileAsync(packagePartPath);
-						packagePartList.Add(new (packagePartFile.Name, await ZipFile.OpenAsync(packagePartPath, ZipArchiveMode.Update)));
+						var packagePartPath = temporaryDirectory.Join("package").Join(packagePartFile.Name);
+						await packagePartFile.ExtractToFileAsync(packagePartPath.Emit());
+						packagePartList.Add(new (packagePartFile.Name, await ZipFile.OpenAsync(packagePartPath.Emit(), ZipArchiveMode.Update)));
 					}
 				}
 			}
 			onNotify($"Phase: extract necessary file.");
-			var targetDirectory = $"{temporaryDirectory}/flat";
-			var necessaryFileNameList = Enum.GetValues<GamePlatform>().SelectMany((it) => new[] { GameHelper.GetProgramFilePath(it), GameHelper.GetMetadataFilePath(it) }).Distinct();
+			var targetDirectory = temporaryDirectory.Join("flat");
+			var necessaryFilePathList = Enum.GetValues<GamePlatform>().SelectMany((it) => new[] { GameHelper.GetProgramFilePath(it), GameHelper.GetMetadataFilePath(it) }).Distinct();
 			if (packageType == GamePackageType.Flat) {
-				foreach (var necessaryFileName in necessaryFileNameList) {
-					if (await StorageHelper.ExistFile($"{target}/{necessaryFileName}")) {
-						await StorageHelper.Copy($"{target}/{necessaryFileName}", $"{targetDirectory}/{necessaryFileName}", false);
+				foreach (var necessaryFilePath in necessaryFilePathList) {
+					if (await StorageHelper.ExistFile(target.Push(necessaryFilePath))) {
+						await StorageHelper.Copy(target.Push(necessaryFilePath), targetDirectory.Push(necessaryFilePath), false);
 					}
 				}
 			}
 			else {
 				AssertTest(packagePartList != null);
 				foreach (var packagePart in packagePartList) {
-					foreach (var necessaryFileName in necessaryFileNameList) {
-						var necessaryFile = packagePart.Item2.GetEntry(necessaryFileName);
+					foreach (var necessaryFilePath in necessaryFilePathList) {
+						var necessaryFile = packagePart.Item2.GetEntry(necessaryFilePath.EmitGeneric()[2..]);
 						if (necessaryFile == null) {
 							continue;
 						}
-						if (!await StorageHelper.ExistDirectory(StorageHelper.Parent($"{targetDirectory}/{necessaryFileName}").AsNotNull())) {
-							await StorageHelper.CreateDirectory(StorageHelper.Parent($"{targetDirectory}/{necessaryFileName}").AsNotNull());
+						if (!await StorageHelper.ExistDirectory(targetDirectory.Push(necessaryFilePath).Parent().AsNotNull())) {
+							await StorageHelper.CreateDirectory(targetDirectory.Push(necessaryFilePath).Parent().AsNotNull());
 						}
-						await necessaryFile.ExtractToFileAsync($"{targetDirectory}/{necessaryFileName}");
+						await necessaryFile.ExtractToFileAsync(targetDirectory.Push(necessaryFilePath).EmitGeneric());
 					}
 				}
 			}
@@ -507,8 +507,8 @@ namespace KairosoftGameManager.Utility {
 				onNotify($"Phase: modify program of '{platform}'.");
 				await GameHelper.ModifyProgramFlat(
 					platform,
-					$"{targetDirectory}/{GameHelper.GetProgramFilePath(platform)}",
-					$"{targetDirectory}/{GameHelper.GetMetadataFilePath(platform)}",
+					targetDirectory.Push(GameHelper.GetProgramFilePath(platform)),
+					targetDirectory.Push(GameHelper.GetMetadataFilePath(platform)),
 					disableRecordEncryption,
 					enableDebugMode,
 					externalToolSetting,
@@ -536,9 +536,9 @@ namespace KairosoftGameManager.Utility {
 				foreach (var replaceTask in replaceTaskList) {
 					var packagePart = replaceTask.Item1;
 					var platform = replaceTask.Item2;
-					var fileName = GameHelper.GetProgramFilePath(platform);
-					packagePart.GetEntry(fileName).AsNotNull().Delete();
-					await packagePart.CreateEntryFromFileAsync($"{targetDirectory}/{fileName}", fileName);
+					var filePath = GameHelper.GetProgramFilePath(platform);
+					packagePart.GetEntry(filePath.EmitGeneric()[2..]).AsNotNull().Delete();
+					await packagePart.CreateEntryFromFileAsync(targetDirectory.Push(filePath).EmitGeneric(), filePath.EmitGeneric()[2..]);
 				}
 				foreach (var packagePart in packagePartList) {
 					await packagePart.Item2.DisposeAsync();
@@ -566,7 +566,7 @@ namespace KairosoftGameManager.Utility {
 					enableSign = false;
 				}
 				foreach (var packagePart in packagePartList) {
-					var packagePartFile = $"{temporaryDirectory}/package/{packagePart.Item1}";
+					var packagePartFile = temporaryDirectory.Join("package").Join(packagePart.Item1);
 					if (enableAlign) {
 						await ExternalToolHelper.RunZipalign(externalToolSetting, packagePartFile);
 					}
@@ -578,25 +578,28 @@ namespace KairosoftGameManager.Utility {
 			onNotify($"Phase: generate result.");
 			if (packageType == GamePackageType.Flat) {
 				foreach (var platform in platformList) {
-					await StorageHelper.Trash($"{target}/{GameHelper.GetProgramFilePath(platform)}");
-					await StorageHelper.Copy($"{targetDirectory}/{GameHelper.GetProgramFilePath(platform)}", $"{target}/{GameHelper.GetProgramFilePath(platform)}", false);
+					await StorageHelper.Trash(target.Push(GameHelper.GetProgramFilePath(platform)));
+					await StorageHelper.Copy(targetDirectory.Push(GameHelper.GetProgramFilePath(platform)), target.Push(GameHelper.GetProgramFilePath(platform)), false);
 				}
 			}
 			if (packageType == GamePackageType.Zip || packageType == GamePackageType.Apk) {
 				AssertTest(packagePartList != null);
+				var packagePartPath = temporaryDirectory.Join("package").Join(packagePartList.First().Item1);
 				await StorageHelper.Trash(target);
-				await StorageHelper.Copy($"{temporaryDirectory}/package/{packagePartList.First().Item1}", target, false);
+				await StorageHelper.Copy(packagePartPath, target, false);
 			}
 			if (packageType == GamePackageType.Apks) {
 				AssertTest(packageBundle != null);
 				AssertTest(packagePartList != null);
 				foreach (var packagePart in packagePartList) {
+					var packagePartPath = temporaryDirectory.Join("package").Join(packagePart.Item1);
 					packageBundle.GetEntry(packagePart.Item1).AsNotNull().Delete();
-					await packageBundle.CreateEntryFromFileAsync($"{temporaryDirectory}/package/{packagePart.Item1}", packagePart.Item1);
+					await packageBundle.CreateEntryFromFileAsync(packagePartPath.EmitGeneric(), packagePart.Item1);
 				}
 				await packageBundle.DisposeAsync();
+				var packageMainPath = temporaryDirectory.Join("package").Join("main");
 				await StorageHelper.Trash(target);
-				await StorageHelper.Copy($"{temporaryDirectory}/package/main", target, false);
+				await StorageHelper.Copy(packageMainPath, target, false);
 			}
 			onNotify($"Phase: done.");
 			return;
@@ -606,16 +609,16 @@ namespace KairosoftGameManager.Utility {
 
 		#region record
 
-		private static async Task<List<String>> ListRecordFile(
-			String recordDirectory
+		private static async Task<List<StoragePath>> ListRecordFile(
+			StoragePath recordDirectory
 		) {
 			return (await StorageHelper.ListDirectory(recordDirectory, 1, true, false, true, false))
-				.Where((value) => new Regex(@"^\d{4,4}(_backup)?$").IsMatch(value))
+				.Where((value) => new Regex(@"^\d{4,4}(_backup)?$").IsMatch(value.Name().AsNotNull()))
 				.ToList();
 		}
 
 		private static async Task<GameRecordState> DetectRecordState(
-			String      recordDirectory,
+			StoragePath recordDirectory,
 			List<Byte>? key
 		) {
 			var state = GameRecordState.Invalid;
@@ -623,8 +626,8 @@ namespace KairosoftGameManager.Utility {
 			if (itemNameList.Count == 0) {
 				state = GameRecordState.None;
 			}
-			else if (itemNameList.Contains("0000")) {
-				var itemFile = $"{recordDirectory}/0000";
+			else if (itemNameList.Find((it) => it.Name().AsNotNull() == "0000") != null) {
+				var itemFile = recordDirectory.Join("0000");
 				var itemData = await StorageHelper.ReadFileLimited(itemFile, 8);
 				if (itemData.Length == 8) {
 					var firstNumber = BinaryPrimitives.ReadUInt32LittleEndian(itemData);
@@ -659,8 +662,8 @@ namespace KairosoftGameManager.Utility {
 		}
 
 		private static async Task EncryptRecordFile(
-			String      sourceFile,
-			String      destinationFile,
+			StoragePath sourceFile,
+			StoragePath destinationFile,
 			List<Byte>? key
 		) {
 			var data = await StorageHelper.ReadFile(sourceFile);
@@ -673,17 +676,17 @@ namespace KairosoftGameManager.Utility {
 		}
 
 		public static async Task EncryptRecord(
-			String         targetDirectory,
+			StoragePath    targetDirectory,
 			List<Byte>     key,
 			Action<String> onNotify
 		) {
-			var itemNameList = await GameHelper.ListRecordFile(targetDirectory);
-			if (itemNameList.Count == 0) {
+			var itemList = await GameHelper.ListRecordFile(targetDirectory);
+			if (itemList.Count == 0) {
 				onNotify($"The target directory does not contain a record file.");
 			}
-			foreach (var itemName in itemNameList) {
-				onNotify($"Phase: {itemName}.");
-				await GameHelper.EncryptRecordFile($"{targetDirectory}/{itemName}", $"{targetDirectory}/{itemName}", key);
+			foreach (var item in itemList) {
+				onNotify($"Phase: {item}.");
+				await GameHelper.EncryptRecordFile(targetDirectory.Push(item), targetDirectory.Push(item), key);
 			}
 			return;
 		}
@@ -710,8 +713,8 @@ namespace KairosoftGameManager.Utility {
 		// ----------------
 
 		public static async Task ExportRecordArchive(
-			String                                              targetDirectory,
-			String                                              archiveFile,
+			StoragePath                                         targetDirectory,
+			StoragePath                                         archiveFile,
 			List<Byte>?                                         key,
 			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
 		) {
@@ -725,24 +728,24 @@ namespace KairosoftGameManager.Utility {
 			if (!await doArchiveConfiguration(archiveConfiguration)) {
 				return;
 			}
-			await StorageHelper.CreateFile($"{archiveDirectory}/configuration.txt");
-			await StorageHelper.WriteFileText($"{archiveDirectory}/configuration.txt", GameHelper.MakeRecordArchiveConfigurationText(archiveConfiguration));
+			await StorageHelper.CreateFile(archiveDirectory.Join("configuration.txt"));
+			await StorageHelper.WriteFileText(archiveDirectory.Join("configuration.txt"), GameHelper.MakeRecordArchiveConfigurationText(archiveConfiguration));
 			// data
-			await StorageHelper.CreateDirectory($"{archiveDirectory}/data");
+			await StorageHelper.CreateDirectory(archiveDirectory.Join("data"));
 			foreach (var dataFile in await GameHelper.ListRecordFile(targetDirectory)) {
-				await GameHelper.EncryptRecordFile($"{targetDirectory}/{dataFile}", $"{archiveDirectory}/data/{dataFile}", key);
+				await GameHelper.EncryptRecordFile(targetDirectory.Push(dataFile), archiveDirectory.Join("data").Push(dataFile), key);
 			}
 			// save
 			if (await StorageHelper.Exist(archiveFile)) {
 				await StorageHelper.Trash(archiveFile);
 			}
-			await ZipFile.CreateFromDirectoryAsync(archiveDirectory, archiveFile, CompressionLevel.SmallestSize, false, Encoding.UTF8);
+			await ZipFile.CreateFromDirectoryAsync(archiveDirectory.Emit(), archiveFile.Emit(), CompressionLevel.SmallestSize, false, Encoding.UTF8);
 			return;
 		}
 
 		public static async Task ImportRecordArchive(
-			String                                              targetDirectory,
-			String                                              archiveFile,
+			StoragePath                                         targetDirectory,
+			StoragePath                                         archiveFile,
 			List<Byte>?                                         key,
 			Func<GameRecordArchiveConfiguration, Task<Boolean>> doArchiveConfiguration
 		) {
@@ -752,9 +755,9 @@ namespace KairosoftGameManager.Utility {
 				await StorageHelper.Remove(archiveDirectory);
 			});
 			// load
-			await ZipFile.ExtractToDirectoryAsync(archiveFile, archiveDirectory, Encoding.UTF8);
+			await ZipFile.ExtractToDirectoryAsync(archiveFile.Emit(), archiveDirectory.Emit(), Encoding.UTF8);
 			// configuration
-			var archiveConfiguration = GameHelper.ParseRecordArchiveConfigurationText(await StorageHelper.ReadFileText($"{archiveDirectory}/configuration.txt"));
+			var archiveConfiguration = GameHelper.ParseRecordArchiveConfigurationText(await StorageHelper.ReadFileText(archiveDirectory.Join("configuration.txt")));
 			if (!await doArchiveConfiguration(archiveConfiguration)) {
 				return;
 			}
@@ -763,8 +766,8 @@ namespace KairosoftGameManager.Utility {
 				await StorageHelper.Trash(targetDirectory);
 			}
 			await StorageHelper.CreateDirectory(targetDirectory);
-			foreach (var dataFile in await GameHelper.ListRecordFile($"{archiveDirectory}/data")) {
-				await GameHelper.EncryptRecordFile($"{archiveDirectory}/data/{dataFile}", $"{targetDirectory}/{dataFile}", key);
+			foreach (var dataFile in await GameHelper.ListRecordFile(archiveDirectory.Join("data"))) {
+				await GameHelper.EncryptRecordFile(archiveDirectory.Join("data").Push(dataFile), targetDirectory.Push(dataFile), key);
 			}
 			return;
 		}
@@ -774,19 +777,19 @@ namespace KairosoftGameManager.Utility {
 		#region repository
 
 		public static async Task<Tuple<GameProgramState, GameRecordState>> CheckGameState(
-			String  gameDirectory,
-			String? version,
-			String  user
+			StoragePath gameDirectory,
+			String?     version,
+			String      user
 		) {
 			var programState = GameProgramState.None;
 			var recordState = GameRecordState.None;
-			if (await StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.ProgramFile}")) {
-				programState = !await StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.ProgramFile}.{version ?? "0"}.bak")
+			if (await StorageHelper.ExistFile(gameDirectory.Join(GameHelper.ProgramFile))) {
+				programState = !await StorageHelper.ExistFile(gameDirectory.Join($"{GameHelper.ProgramFile}.{version ?? "0"}.bak"))
 					? GameProgramState.Original
 					: GameProgramState.Modified;
 			}
-			if (await StorageHelper.ExistDirectory($"{gameDirectory}/{GameHelper.RecordBundleDirectory}/{user}")) {
-				recordState = await GameHelper.DetectRecordState($"{gameDirectory}/{GameHelper.RecordBundleDirectory}/{user}", GameHelper.MakeKeyFromSteamUser(user));
+			if (await StorageHelper.ExistDirectory(gameDirectory.Join(GameHelper.RecordBundleDirectory).Join(user))) {
+				recordState = await GameHelper.DetectRecordState(gameDirectory.Join(GameHelper.RecordBundleDirectory).Join(user), GameHelper.MakeKeyFromSteamUser(user));
 			}
 			return new (programState, recordState);
 		}
@@ -794,9 +797,9 @@ namespace KairosoftGameManager.Utility {
 		// ----------------
 
 		public static async Task<GameConfiguration?> LoadCustomGame(
-			String gameDirectory
+			StoragePath gameDirectory
 		) {
-			if (!await StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.ExecutableFile}")) {
+			if (!await StorageHelper.ExistFile(gameDirectory.Join(GameHelper.ExecutableFile))) {
 				return null;
 			}
 			var configuration = new GameConfiguration();
@@ -804,11 +807,11 @@ namespace KairosoftGameManager.Utility {
 			configuration.Library = null;
 			configuration.Identifier = null;
 			configuration.Version = null;
-			configuration.Name = StorageHelper.Name(gameDirectory);
-			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon($"{gameDirectory}/{GameHelper.ExecutableFile}", 0, 48).AsNotNull().ToBitmap());
+			configuration.Name = gameDirectory.Name().AsNotNull();
+			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon(gameDirectory.Join(GameHelper.ExecutableFile).EmitGeneric(), 0, 48).AsNotNull().ToBitmap());
 			configuration.User = "0";
-			if (await StorageHelper.ExistDirectory($"{gameDirectory}/{GameHelper.RecordBundleDirectory}")) {
-				configuration.User = (await StorageHelper.ListDirectory($"{gameDirectory}/{GameHelper.RecordBundleDirectory}", 1, true, false, false, true)).FirstOrDefault((it) => new Regex(@"^\d+$").IsMatch(it)) ?? "0";
+			if (await StorageHelper.ExistDirectory(gameDirectory.Join(GameHelper.RecordBundleDirectory))) {
+				configuration.User = (await StorageHelper.ListDirectory(gameDirectory.Join(GameHelper.RecordBundleDirectory), 1, true, false, false, true)).FirstOrDefault((it) => new Regex(@"^\d+$").IsMatch(it.Name().AsNotNull()))?.Name().AsNotNull() ?? new ("0");
 			}
 			var gameState = await GameHelper.CheckGameState(gameDirectory, configuration.Version, configuration.User);
 			configuration.Program = gameState.Item1;
@@ -817,19 +820,19 @@ namespace KairosoftGameManager.Utility {
 		}
 
 		public static async Task<Boolean> CheckCustomRepository(
-			String repositoryDirectory
+			StoragePath repositoryDirectory
 		) {
-			return await StorageHelper.ExistDirectory($"{repositoryDirectory}")
-				&& !await StorageHelper.ExistFile($"{repositoryDirectory}/steam.exe");
+			return await StorageHelper.ExistDirectory(repositoryDirectory)
+				&& !await StorageHelper.ExistFile(repositoryDirectory.Join("steam.exe"));
 		}
 
 		public static async Task<List<GameConfiguration>> LoadCustomRepository(
-			String repositoryDirectory
+			StoragePath repositoryDirectory
 		) {
 			var libraryList = await StorageHelper.ListDirectory(repositoryDirectory, 1, true, false, false, true);
 			var result = new List<GameConfiguration>();
 			foreach (var library in libraryList) {
-				var libraryDirectory = $"{repositoryDirectory}/{library}";
+				var libraryDirectory = repositoryDirectory.Push(library);
 				var gameConfiguration = await GameHelper.LoadCustomGame(libraryDirectory);
 				if (gameConfiguration != null) {
 					result.Add(gameConfiguration);
@@ -850,18 +853,18 @@ namespace KairosoftGameManager.Utility {
 		}
 
 		public static async Task<GameConfiguration?> LoadSteamGame(
-			String libraryDirectory,
-			String gameIdentifier
+			StoragePath libraryDirectory,
+			String      gameIdentifier
 		) {
-			var gameManifestFile = $"{libraryDirectory}/steamapps/appmanifest_{gameIdentifier}.acf";
+			var gameManifestFile = libraryDirectory.Join("steamapps").Join($"appmanifest_{gameIdentifier}.acf");
 			if (!await StorageHelper.ExistFile(gameManifestFile)) {
 				return null;
 			}
 			var gameManifest = VdfConvert.Deserialize(await StorageHelper.ReadFileText(gameManifestFile));
 			AssertTest(gameManifest.Key == "AppState");
 			AssertTest(gameManifest.Value["appid"].AsNotNull().Value<String>() == gameIdentifier);
-			var gameDirectory = $"{libraryDirectory}/steamapps/common/{gameManifest.Value["installdir"].AsNotNull().Value<String>()}";
-			if (!await StorageHelper.ExistFile($"{gameDirectory}/{GameHelper.ExecutableFile}")) {
+			var gameDirectory = libraryDirectory.Join("steamapps").Join("common").Join($"{gameManifest.Value["installdir"].AsNotNull().Value<String>()}");
+			if (!await StorageHelper.ExistFile(gameDirectory.Join(GameHelper.ExecutableFile))) {
 				return null;
 			}
 			var configuration = new GameConfiguration();
@@ -870,7 +873,7 @@ namespace KairosoftGameManager.Utility {
 			configuration.Identifier = gameIdentifier;
 			configuration.Version = gameManifest.Value["buildid"].AsNotNull().Value<String>();
 			configuration.Name = gameManifest.Value["name"].AsNotNull().Value<String>();
-			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon($"{gameDirectory}/{GameHelper.ExecutableFile}", 0, 48).AsNotNull().ToBitmap());
+			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon(gameDirectory.Join(GameHelper.ExecutableFile).EmitGeneric(), 0, 48).AsNotNull().ToBitmap());
 			configuration.User = gameManifest.Value["LastOwner"].AsNotNull().Value<String>();
 			var gameState = await GameHelper.CheckGameState(gameDirectory, configuration.Version, configuration.User);
 			configuration.Program = gameState.Item1;
@@ -879,20 +882,20 @@ namespace KairosoftGameManager.Utility {
 		}
 
 		public static async Task<Boolean> CheckSteamRepository(
-			String repositoryDirectory
+			StoragePath repositoryDirectory
 		) {
-			return await StorageHelper.ExistDirectory($"{repositoryDirectory}")
-				&& await StorageHelper.ExistFile($"{repositoryDirectory}/steam.exe");
+			return await StorageHelper.ExistDirectory(repositoryDirectory)
+				&& await StorageHelper.ExistFile(repositoryDirectory.Join("steam.exe"));
 		}
 
 		public static async Task<List<GameConfiguration>> LoadSteamRepository(
-			String repositoryDirectory
+			StoragePath repositoryDirectory
 		) {
-			var libraryList = VdfConvert.Deserialize(await StorageHelper.ReadFileText($"{repositoryDirectory}/steamapps/libraryfolders.vdf"));
+			var libraryList = VdfConvert.Deserialize(await StorageHelper.ReadFileText(repositoryDirectory.Join("steamapps").Join("libraryfolders.vdf")));
 			AssertTest(libraryList.Key == "libraryfolders");
 			var result = new List<GameConfiguration>();
 			foreach (var library in libraryList.Value.Children<VProperty>()) {
-				var libraryDirectory = StorageHelper.Regularize(library.Value["path"].AsNotNull().Value<String>());
+				var libraryDirectory = new StoragePath(library.Value["path"].AsNotNull().Value<String>());
 				foreach (var game in library.Value["apps"].AsNotNull().Children<VProperty>()) {
 					var gameIdentifier = game.Key;
 					var gameConfiguration = await GameHelper.LoadSteamGame(libraryDirectory, gameIdentifier);
