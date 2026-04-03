@@ -105,14 +105,13 @@ namespace KairosoftGameManager.Utility {
 				JsonSerializerOptions options
 			) {
 				return reader.TokenType switch {
-					JsonTokenType.False                                                => false,
-					JsonTokenType.True                                                 => true,
-					JsonTokenType.Number when reader.TryGetInt64(out var valueInteger) => valueInteger,
-					JsonTokenType.Number                                               => reader.GetDouble(),
-					JsonTokenType.String                                               => reader.GetString().AsNotNull(),
-					JsonTokenType.StartArray                                           => JsonSerializer.Deserialize<List<Object>>(ref reader, options).AsNotNull(),
-					JsonTokenType.StartObject                                          => JsonSerializer.Deserialize<Dictionary<String, Object>>(ref reader, options).AsNotNull(),
-					_                                                                  => throw new (),
+					JsonTokenType.False       => false,
+					JsonTokenType.True        => true,
+					JsonTokenType.Number      => reader.TryGetInt64(out var valueInteger) ? valueInteger : reader.GetDouble(),
+					JsonTokenType.String      => reader.GetString().AsNotNull(),
+					JsonTokenType.StartArray  => JsonSerializer.Deserialize<List<Object>>(ref reader, options).AsNotNull(),
+					JsonTokenType.StartObject => JsonSerializer.Deserialize<Dictionary<String, Object>>(ref reader, options).AsNotNull(),
+					_                         => throw new (),
 				};
 			}
 

@@ -2,12 +2,10 @@
 
 ## 安装
 
-在 [Release](https://github.com/twinstar6980/KairosoftGameManager/releases/tag/latest) 页中可以下载到最新版本的 `msix` 安装包文件。
+在 [Release](https://github.com/twinstar6980/Automation/releases/tag/KairosoftGameManager-latest) 页中可以下载到最新版本的 `msix` 安装包文件。
 
 > 安装前需要先信任 `msix` 中的签名证书。\
 > 右键查看 `msix` 的属性，切换到 ⌈ 数字签名 ⌋ 页，选择列表中第一项，再点击 ⌈ 详细信息 ⌋ ，在弹出的窗口中依次选择 ⌈ 查看证书 ⌋ - ⌈ 安装证书 ⌋ - ⌈ 本地计算机 ⌋ - ⌈ 将所有证书都放入下列存储 ⌋ - ⌈ 受信任人 ⌋ ，完成证书的安装。
-
-> GitHub Release 中仅保留最后一次分发，历史分发可以在我的 [OneDrive](https://1drv.ms/f/c/2d321feb9cd374ed/Eu1005zrHzIggC2GAAAAAAABZClnjoZtr_WdR-EfZLTLkA?e=JZRzDV) 中找到。
 
 ## `Manager` 管理页
 
