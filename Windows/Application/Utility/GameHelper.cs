@@ -4,7 +4,6 @@
 using KairosoftGameManager;
 using System.Buffers.Binary;
 using System.IO.Compression;
-using Windows.Foundation.Metadata;
 using Microsoft.UI.Xaml.Media;
 using Gameloop.Vdf;
 using Gameloop.Vdf.Linq;
@@ -103,9 +102,9 @@ namespace KairosoftGameManager.Utility {
 			GamePlatform platform
 		) {
 			return platform switch {
-				GamePlatform.WindowsIntel32 => new ("GameAssembly.dll"),
-				GamePlatform.AndroidArm32   => new ("lib/armeabi-v7a/libil2cpp.so"),
-				GamePlatform.AndroidArm64   => new ("lib/arm64-v8a/libil2cpp.so"),
+				GamePlatform.WindowsIntel32 => new ("./GameAssembly.dll"),
+				GamePlatform.AndroidArm32   => new ("./lib/armeabi-v7a/libil2cpp.so"),
+				GamePlatform.AndroidArm64   => new ("./lib/arm64-v8a/libil2cpp.so"),
 				_                           => throw new UnreachableException(),
 			};
 		}
@@ -114,9 +113,9 @@ namespace KairosoftGameManager.Utility {
 			GamePlatform platform
 		) {
 			return platform switch {
-				GamePlatform.WindowsIntel32 => new ("KairoGames_Data/il2cpp_data/Metadata/global-metadata.dat"),
-				GamePlatform.AndroidArm32   => new ("assets/bin/Data/Managed/Metadata/global-metadata.dat"),
-				GamePlatform.AndroidArm64   => new ("assets/bin/Data/Managed/Metadata/global-metadata.dat"),
+				GamePlatform.WindowsIntel32 => new ("./KairoGames_Data/il2cpp_data/Metadata/global-metadata.dat"),
+				GamePlatform.AndroidArm32   => new ("./assets/bin/Data/Managed/Metadata/global-metadata.dat"),
+				GamePlatform.AndroidArm64   => new ("./assets/bin/Data/Managed/Metadata/global-metadata.dat"),
 				_                           => throw new UnreachableException(),
 			};
 		}
@@ -811,7 +810,7 @@ namespace KairosoftGameManager.Utility {
 			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon(gameDirectory.Join(GameHelper.ExecutableFile).EmitGeneric(), 0, 48).AsNotNull().ToBitmap());
 			configuration.User = "0";
 			if (await StorageHelper.ExistDirectory(gameDirectory.Join(GameHelper.RecordBundleDirectory))) {
-				configuration.User = (await StorageHelper.ListDirectory(gameDirectory.Join(GameHelper.RecordBundleDirectory), 1, true, false, false, true)).FirstOrDefault((it) => new Regex(@"^\d+$").IsMatch(it.Name().AsNotNull()))?.Name().AsNotNull() ?? new ("0");
+				configuration.User = (await StorageHelper.ListDirectory(gameDirectory.Join(GameHelper.RecordBundleDirectory), 1, true, false, false, true)).FirstOrDefault((it) => new Regex(@"^\d+$").IsMatch(it.Name().AsNotNull()))?.Name().AsNotNull() ?? "0";
 			}
 			var gameState = await GameHelper.CheckGameState(gameDirectory, configuration.Version, configuration.User);
 			configuration.Program = gameState.Item1;
@@ -860,7 +859,7 @@ namespace KairosoftGameManager.Utility {
 			if (!await StorageHelper.ExistFile(gameManifestFile)) {
 				return null;
 			}
-			var gameManifest = VdfConvert.Deserialize(await StorageHelper.ReadFileText(gameManifestFile));
+			var gameManifest = await VdfHelper.DecodeFile(gameManifestFile);
 			AssertTest(gameManifest.Key == "AppState");
 			AssertTest(gameManifest.Value["appid"].AsNotNull().Value<String>() == gameIdentifier);
 			var gameDirectory = libraryDirectory.Join("steamapps").Join("common").Join($"{gameManifest.Value["installdir"].AsNotNull().Value<String>()}");

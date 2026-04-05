@@ -78,7 +78,7 @@ namespace KairosoftGameManager.Utility {
 			if (allowExtension) {
 				var pathExtensionEnvironment = ProcessHelper.QueryEnvironment("PATHEXT");
 				AssertTest(pathExtensionEnvironment != null);
-				pathExtensionList.AddRange(pathExtensionEnvironment.Split(itemDelimiter));
+				pathExtensionList.AddRange(pathExtensionEnvironment.Split(itemDelimiter).Select((it) => it.ToLower()));
 			}
 			foreach (var path in pathList) {
 				foreach (var pathExtension in pathExtensionList) {
@@ -88,6 +88,17 @@ namespace KairosoftGameManager.Utility {
 						break;
 					}
 				}
+			}
+			return result;
+		}
+
+		public static async Task<StoragePath?> SearchProgramEnsure(
+			String  name,
+			Boolean allowExtension
+		) {
+			var result = await ProcessHelper.SearchProgram(name, allowExtension);
+			if (result == null) {
+				throw new ($"Could not find \'{name}\' program from \'PATH\' environment.");
 			}
 			return result;
 		}

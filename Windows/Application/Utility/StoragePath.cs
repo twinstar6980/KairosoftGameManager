@@ -41,16 +41,30 @@ namespace KairosoftGameManager.Utility {
 		}
 
 		public StoragePath(
-			StoragePathType type
-		) : this() {
-			this.mType = type;
+			StoragePath other
+		) {
+			this.mType = other.mType;
+			this.mRoot = other.mRoot;
+			this.mPart = other.mPart.ToList();
 			return;
 		}
 
 		public StoragePath(
-			String path
-		) : this() {
-			this.Parse(path);
+			StoragePathType type
+		) {
+			this.mType = type;
+			this.mRoot = null;
+			this.mPart = [];
+			return;
+		}
+
+		public StoragePath(
+			String text
+		) {
+			this.mType = StoragePathType.Nothing;
+			this.mRoot = null;
+			this.mPart = [];
+			this.Parse(text);
 			return;
 		}
 
@@ -72,14 +86,14 @@ namespace KairosoftGameManager.Utility {
 		// ----------------
 
 		public static Boolean operator ==(
-			StoragePath? left,
-			Object?      right
-		) => Object.Equals(left, right);
+			StoragePath? self,
+			Object?      other
+		) => Object.Equals(self, other);
 
 		public static Boolean operator !=(
-			StoragePath? left,
-			Object?      right
-		) => !Object.Equals(left, right);
+			StoragePath? self,
+			Object?      other
+		) => !Object.Equals(self, other);
 
 		#endregion
 
@@ -186,18 +200,18 @@ namespace KairosoftGameManager.Utility {
 		#region convert
 
 		public void Parse(
-			String path
+			String text
 		) {
 			this.mType = StoragePathType.Nothing;
 			this.mRoot = null;
 			this.mPart = [];
-			if (!path.IsEmpty()) {
+			if (!text.IsEmpty()) {
 				var position = 0;
-				if (path.Length >= 2 && path[1] == ':' && ConvertHelper.IsLetter(path[0])) {
-					this.mRoot = path.Substring(0, 2);
+				if (text.Length >= 2 && text[1] == ':' && ConvertHelper.IsLetter(text[0])) {
+					this.mRoot = text.Substring(0, 2);
 					position += 2;
 				}
-				if (path.Length > position && ConvertHelper.IsPathSeparator(path[position])) {
+				if (text.Length > position && ConvertHelper.IsPathSeparator(text[position])) {
 					this.mType = StoragePathType.Absolute;
 					position += 1;
 				}
@@ -206,8 +220,8 @@ namespace KairosoftGameManager.Utility {
 				}
 				var location = position;
 				while (true) {
-					if (position == path.Length || ConvertHelper.IsPathSeparator(path[position])) {
-						var segment = path.Substring(location, position - location);
+					if (position == text.Length || ConvertHelper.IsPathSeparator(text[position])) {
+						var segment = text.Substring(location, position - location);
 						if (segment == "" || segment == ".") {
 						}
 						else if (segment == ".." && !this.mPart.IsEmpty() && this.mPart.Last() != "..") {
@@ -216,7 +230,7 @@ namespace KairosoftGameManager.Utility {
 						else {
 							this.mPart.Add(segment);
 						}
-						if (position == path.Length) {
+						if (position == text.Length) {
 							break;
 						}
 						position += 1;
@@ -232,7 +246,7 @@ namespace KairosoftGameManager.Utility {
 		public String Emit(
 			StoragePathStyle style = StoragePathStyle.Generic
 		) {
-			var result = "";
+			var text = "";
 			if (this.mType != StoragePathType.Nothing) {
 				var mappedStyle = style;
 				if (style == StoragePathStyle.Generic) {
@@ -243,18 +257,18 @@ namespace KairosoftGameManager.Utility {
 				}
 				var separator = mappedStyle == StoragePathStyle.Posix ? '/' : '\\';
 				if (this.mRoot != null) {
-					result += this.mRoot!;
+					text += this.mRoot!;
 				}
 				if (this.mType == StoragePathType.Relative) {
-					result += '.';
+					text += '.';
 				}
 				if (this.mPart.IsEmpty()) {
-					result += separator;
+					text += separator;
 				}
 				foreach (var segment in this.mPart) {
-					result += separator;
+					text += separator;
 					if (mappedStyle == StoragePathStyle.Posix) {
-						result += segment;
+						text += segment;
 					}
 					if (mappedStyle == StoragePathStyle.Windows) {
 						var segmentSize = segment.Length;
@@ -269,11 +283,11 @@ namespace KairosoftGameManager.Utility {
 							}
 							break;
 						}
-						result += segment.Substring(0, segmentSize);
+						text += segment.Substring(0, segmentSize);
 					}
 				}
 			}
-			return result;
+			return text;
 		}
 
 		// ----------------
