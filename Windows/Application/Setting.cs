@@ -116,7 +116,6 @@ namespace KairosoftGameManager {
 					new ("C:/Program Files (x86)/Steam"),
 				],
 				ExternalTool = new () {
-					// TODO: special path
 					Il2cppdumperPath = new ("Il2CppDumper"),
 					ZipalignPath = new ("zipalign"),
 					ApksignerPath = new ("apksigner"),

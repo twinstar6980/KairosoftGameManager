@@ -24,11 +24,13 @@ namespace KairosoftGameManager.Utility {
 		public static async Task<ExternalToolSetting> ParseSetting(
 			ExternalToolSetting original
 		) {
+			var locateProgramPath = async (StoragePath path) => path.Type() == StoragePathType.Detached && path.Segment().Count == 1
+				? await ProcessHelper.SearchProgram(path.Name().AsNotNull(), true)
+				: null;
 			return new () {
-				// TODO: convert
-				Il2cppdumperPath = await original.Il2cppdumperPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it.Name() ?? "", true) ?? new ()),
-				ZipalignPath = await original.ZipalignPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it.Name() ?? "", true) ?? new ()),
-				ApksignerPath = await original.ApksignerPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await ProcessHelper.SearchProgram(it.Name() ?? "", true) ?? new ()),
+				Il2cppdumperPath = await original.Il2cppdumperPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await locateProgramPath(it) ?? new ()),
+				ZipalignPath = await original.ZipalignPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await locateProgramPath(it) ?? new ()),
+				ApksignerPath = await original.ApksignerPath.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : await locateProgramPath(it) ?? new ()),
 				ApkKeystoreFile = await original.ApkKeystoreFile.SelfLet(async (it) => await StorageHelper.ExistFile(it) ? it : new ()),
 				ApkKeystorePassword = original.ApkKeystorePassword,
 			};
@@ -51,9 +53,9 @@ namespace KairosoftGameManager.Utility {
 			var processResult = (await ProcessHelper.RunProcess(
 				setting.Il2cppdumperPath,
 				[
-					programFile.EmitGeneric(),
-					metadataFile.EmitGeneric(),
-					dumpDirectory.EmitGeneric(),
+					programFile.EmitNative(),
+					metadataFile.EmitNative(),
+					dumpDirectory.EmitNative(),
 				],
 				null,
 				true
@@ -150,8 +152,8 @@ namespace KairosoftGameManager.Utility {
 					"-P", "16",
 					"-f",
 					"4",
-					$"{zipFile.EmitGeneric()}",
-					$"{alignedFile.EmitGeneric()}",
+					$"{zipFile.EmitNative()}",
+					$"{alignedFile.EmitNative()}",
 				],
 				null,
 				true
@@ -178,9 +180,9 @@ namespace KairosoftGameManager.Utility {
 					"--v2-signing-enabled", "true",
 					"--v3-signing-enabled", "true",
 					"--v4-signing-enabled", "false",
-					"--ks", $"{setting.ApkKeystoreFile.EmitGeneric()}",
+					"--ks", $"{setting.ApkKeystoreFile.EmitNative()}",
 					"--ks-pass", $"pass:{setting.ApkKeystorePassword}",
-					$"{apkFile.EmitGeneric()}",
+					$"{apkFile.EmitNative()}",
 				],
 				null,
 				true

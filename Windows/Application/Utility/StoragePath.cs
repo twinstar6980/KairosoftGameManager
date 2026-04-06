@@ -6,14 +6,12 @@ using KairosoftGameManager;
 namespace KairosoftGameManager.Utility {
 
 	public enum StoragePathType {
-		Nothing,
+		Detached,
 		Relative,
 		Absolute,
 	}
 
 	public enum StoragePathStyle {
-		Generic,
-		Native,
 		Posix,
 		Windows,
 	}
@@ -28,15 +26,15 @@ namespace KairosoftGameManager.Utility {
 
 		private String? mRoot;
 
-		private List<String> mPart;
+		private List<String> mSegment;
 
 		// ----------------
 
 		public StoragePath(
 		) {
-			this.mType = StoragePathType.Nothing;
+			this.mType = StoragePathType.Detached;
 			this.mRoot = null;
-			this.mPart = [];
+			this.mSegment = [];
 			return;
 		}
 
@@ -45,7 +43,7 @@ namespace KairosoftGameManager.Utility {
 		) {
 			this.mType = other.mType;
 			this.mRoot = other.mRoot;
-			this.mPart = other.mPart.ToList();
+			this.mSegment = other.mSegment.ToList();
 			return;
 		}
 
@@ -54,16 +52,16 @@ namespace KairosoftGameManager.Utility {
 		) {
 			this.mType = type;
 			this.mRoot = null;
-			this.mPart = [];
+			this.mSegment = [];
 			return;
 		}
 
 		public StoragePath(
 			String text
 		) {
-			this.mType = StoragePathType.Nothing;
+			this.mType = StoragePathType.Detached;
 			this.mRoot = null;
-			this.mPart = [];
+			this.mSegment = [];
 			this.Parse(text);
 			return;
 		}
@@ -75,12 +73,12 @@ namespace KairosoftGameManager.Utility {
 		public override Boolean Equals(
 			Object? other
 		) {
-			return other is StoragePath that && this.mType == that.mType && this.mRoot == that.mRoot && this.mPart.SequenceEqual(that.mPart);
+			return other is StoragePath that && this.mType == that.mType && this.mRoot == that.mRoot && this.mSegment.SequenceEqual(that.mSegment);
 		}
 
 		public override Size GetHashCode(
 		) {
-			return new List<Object?>([this.mType, this.mRoot, ..this.mPart]).GetMixedHashCode();
+			return new List<Object?>([this.mType, this.mRoot, ..this.mSegment]).GetMixedHashCode();
 		}
 
 		// ----------------
@@ -109,23 +107,23 @@ namespace KairosoftGameManager.Utility {
 			return this.mRoot;
 		}
 
-		public List<String> Part(
+		public List<String> Segment(
 		) {
-			return this.mPart;
+			return this.mSegment;
 		}
 
 		#endregion
 
-		#region segment
+		#region part
 
 		public StoragePath? Parent(
 		) {
 			var result = null as StoragePath;
-			if (this.mType != StoragePathType.Nothing && !this.mPart.IsEmpty()) {
+			if (!this.mSegment.IsEmpty()) {
 				result = new ();
 				result.mType = this.mType;
 				result.mRoot = this.mRoot;
-				result.mPart.AddRange(this.mPart.Slice(0, this.mPart.Count - 1));
+				result.mSegment.AddRange(this.mSegment.Slice(0, this.mSegment.Count - 1));
 			}
 			return result;
 		}
@@ -133,8 +131,8 @@ namespace KairosoftGameManager.Utility {
 		public String? Name(
 		) {
 			var result = null as String;
-			if (this.mType != StoragePathType.Nothing && !this.mPart.IsEmpty()) {
-				result = this.mPart[^1];
+			if (!this.mSegment.IsEmpty()) {
+				result = this.mSegment[^1];
 			}
 			return result;
 		}
@@ -142,13 +140,14 @@ namespace KairosoftGameManager.Utility {
 		public String? Stem(
 		) {
 			var result = null as String;
-			if (this.mType != StoragePathType.Nothing && !this.mPart.IsEmpty()) {
-				var position = this.mPart[^1].LastIndexOf('.');
+			if (!this.mSegment.IsEmpty()) {
+				var segment = this.mSegment[^1];
+				var position = segment.LastIndexOf('.');
 				if (position != -1) {
-					result = this.mPart[^1].Substring(0, position);
+					result = segment.Substring(0, position);
 				}
 				else {
-					result = this.mPart[^1];
+					result = segment;
 				}
 			}
 			return result;
@@ -157,10 +156,11 @@ namespace KairosoftGameManager.Utility {
 		public String? Extension(
 		) {
 			var result = null as String;
-			if (this.mType != StoragePathType.Nothing && !this.mPart.IsEmpty()) {
-				var position = this.mPart[^1].LastIndexOf('.');
+			if (!this.mSegment.IsEmpty()) {
+				var segment = this.mSegment[^1];
+				var position = segment.LastIndexOf('.');
 				if (position != -1) {
-					result = this.mPart[^1].Substring(position + 1);
+					result = segment.Substring(position + 1);
 				}
 			}
 			return result;
@@ -173,25 +173,23 @@ namespace KairosoftGameManager.Utility {
 		public StoragePath Join(
 			String other
 		) {
-			AssertTest(this.mType != StoragePathType.Nothing);
 			var result = new StoragePath();
 			result.mType = this.mType;
 			result.mRoot = this.mRoot;
-			result.mPart.AddRange(this.mPart);
-			result.mPart.Add(other);
+			result.mSegment.AddRange(this.mSegment);
+			result.mSegment.Add(other);
 			return result;
 		}
 
 		public StoragePath Push(
 			StoragePath other
 		) {
-			AssertTest(this.mType != StoragePathType.Nothing);
-			AssertTest(other.mType == StoragePathType.Relative);
+			AssertTest(other.mType != StoragePathType.Absolute);
 			var result = new StoragePath();
 			result.mType = this.mType;
 			result.mRoot = this.mRoot;
-			result.mPart.AddRange(this.mPart);
-			result.mPart.AddRange(other.mPart);
+			result.mSegment.AddRange(this.mSegment);
+			result.mSegment.AddRange(other.mSegment);
 			return result;
 		}
 
@@ -202,75 +200,83 @@ namespace KairosoftGameManager.Utility {
 		public void Parse(
 			String text
 		) {
-			this.mType = StoragePathType.Nothing;
+			this.mType = StoragePathType.Detached;
 			this.mRoot = null;
-			this.mPart = [];
-			if (!text.IsEmpty()) {
-				var position = 0;
-				if (text.Length >= 2 && text[1] == ':' && ConvertHelper.IsLetter(text[0])) {
-					this.mRoot = text.Substring(0, 2);
-					position += 2;
+			this.mSegment = [];
+			var position = 0;
+			if (text.Length >= 2 && text[1] == ':' && ConvertHelper.IsLetter(text[0])) {
+				this.mRoot = text.Substring(0, 2);
+				position += 2;
+			}
+			if (text.Length > position && ConvertHelper.IsPathDot(text[position])) {
+				var isRelative = false;
+				var isParent = false;
+				var offset = 1;
+				if (text.Length > position + offset && ConvertHelper.IsPathDot(text[position + offset])) {
+					isParent = true;
+					offset += 1;
 				}
-				if (text.Length > position && ConvertHelper.IsPathSeparator(text[position])) {
-					this.mType = StoragePathType.Absolute;
-					position += 1;
+				if (text.Length == position + offset) {
+					isRelative = true;
 				}
-				else {
+				else if (ConvertHelper.IsPathSeparator(text[position + offset])) {
+					isRelative = true;
+					offset += 1;
+				}
+				if (isRelative) {
 					this.mType = StoragePathType.Relative;
-				}
-				var location = position;
-				while (true) {
-					if (position == text.Length || ConvertHelper.IsPathSeparator(text[position])) {
-						var segment = text.Substring(location, position - location);
-						if (segment == "" || segment == ".") {
-						}
-						else if (segment == ".." && !this.mPart.IsEmpty() && this.mPart.Last() != "..") {
-							this.mPart.RemoveAt(this.mPart.Count - 1);
-						}
-						else {
-							this.mPart.Add(segment);
-						}
-						if (position == text.Length) {
-							break;
-						}
-						position += 1;
-						location = position;
-						continue;
+					if (!isParent) {
+						position += offset;
 					}
-					position += 1;
+				}
+			}
+			else if (text.Length > position && ConvertHelper.IsPathSeparator(text[position])) {
+				this.mType = StoragePathType.Absolute;
+				position += 1;
+			}
+			var location = position;
+			for (; position <= text.Length; position++) {
+				if (position == text.Length || ConvertHelper.IsPathSeparator(text[position])) {
+					var segment = text.Substring(location, position - location);
+					if (!segment.IsEmpty()) {
+						this.mSegment.Add(segment);
+					}
+					location = position + 1;
 				}
 			}
 			return;
 		}
 
 		public String Emit(
-			StoragePathStyle style = StoragePathStyle.Generic
+			StoragePathStyle style   = StoragePathStyle.Posix,
+			Boolean          rectify = false
 		) {
-			var text = "";
-			if (this.mType != StoragePathType.Nothing) {
-				var mappedStyle = style;
-				if (style == StoragePathStyle.Generic) {
-					mappedStyle = StoragePathStyle.Posix;
+			var text = new StringBuilder();
+			var dot = '.';
+			var separator = style == StoragePathStyle.Posix ? '/' : '\\';
+			if (this.mRoot != null) {
+				text.Append(this.mRoot);
+			}
+			if (this.mType == StoragePathType.Relative) {
+				text.Append(dot);
+				text.Append(separator);
+			}
+			if (this.mType == StoragePathType.Absolute) {
+				text.Append(separator);
+			}
+			for (var segmentIndex = 0; segmentIndex < this.mSegment.Count; segmentIndex++) {
+				var segment = this.mSegment[segmentIndex];
+				if (segmentIndex != 0) {
+					text.Append(separator);
 				}
-				if (style == StoragePathStyle.Native) {
-					mappedStyle = StoragePathStyle.Windows;
+				if (!rectify) {
+					text.Append(segment);
 				}
-				var separator = mappedStyle == StoragePathStyle.Posix ? '/' : '\\';
-				if (this.mRoot != null) {
-					text += this.mRoot!;
-				}
-				if (this.mType == StoragePathType.Relative) {
-					text += '.';
-				}
-				if (this.mPart.IsEmpty()) {
-					text += separator;
-				}
-				foreach (var segment in this.mPart) {
-					text += separator;
-					if (mappedStyle == StoragePathStyle.Posix) {
-						text += segment;
+				else {
+					if (style == StoragePathStyle.Posix) {
+						text.Append(segment);
 					}
-					if (mappedStyle == StoragePathStyle.Windows) {
+					if (style == StoragePathStyle.Windows) {
 						var segmentSize = segment.Length;
 						while (segmentSize != 0) {
 							if (segment[segmentSize - 1] == ' ') {
@@ -283,33 +289,31 @@ namespace KairosoftGameManager.Utility {
 							}
 							break;
 						}
-						text += segment.Substring(0, segmentSize);
+						text.Append(segment.Substring(0, segmentSize));
 					}
 				}
 			}
-			return text;
+			return text.ToString();
 		}
 
 		// ----------------
 
-		public String EmitGeneric(
+		public String EmitPosix(
+			Boolean rectify = false
 		) {
-			return this.Emit(StoragePathStyle.Generic);
+			return this.Emit(StoragePathStyle.Posix, rectify);
+		}
+
+		public String EmitWindows(
+			Boolean rectify = false
+		) {
+			return this.Emit(StoragePathStyle.Windows, rectify);
 		}
 
 		public String EmitNative(
 		) {
-			return this.Emit(StoragePathStyle.Native);
-		}
-
-		public String EmitPosix(
-		) {
-			return this.Emit(StoragePathStyle.Posix);
-		}
-
-		public String EmitWindows(
-		) {
-			return this.Emit(StoragePathStyle.Windows);
+			var mappedStyle = StoragePathStyle.Windows;
+			return this.Emit(mappedStyle, true);
 		}
 
 		#endregion

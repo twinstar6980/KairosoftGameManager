@@ -13,7 +13,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task<Boolean> Exist(
 			StoragePath target
 		) {
-			if (target.Type() == StoragePathType.Nothing) {
+			if (target.Type() == StoragePathType.Detached) {
 				return false;
 			}
 			var targetString = target.EmitNative();
@@ -138,7 +138,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task<Boolean> ExistLink(
 			StoragePath target
 		) {
-			if (target.Type() == StoragePathType.Nothing) {
+			if (target.Type() == StoragePathType.Detached) {
 				return false;
 			}
 			var targetString = target.EmitNative();
@@ -184,7 +184,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task<Boolean> ExistFile(
 			StoragePath target
 		) {
-			if (target.Type() == StoragePathType.Nothing) {
+			if (target.Type() == StoragePathType.Detached) {
 				return false;
 			}
 			var targetString = target.EmitNative();
@@ -281,7 +281,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task<Boolean> ExistDirectory(
 			StoragePath target
 		) {
-			if (target.Type() == StoragePathType.Nothing) {
+			if (target.Type() == StoragePathType.Detached) {
 				return false;
 			}
 			var targetString = target.EmitNative();
@@ -355,7 +355,7 @@ namespace KairosoftGameManager.Utility {
 				}
 				return;
 			}
-			await iterate(target, new (StoragePathType.Relative), 0);
+			await iterate(target, new (StoragePathType.Detached), 0);
 			return result;
 		}
 

@@ -3,7 +3,6 @@
 
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
-using Windows.ApplicationModel;
 using Microsoft.UI.Xaml.Media.Animation;
 
 namespace KairosoftGameManager.View {

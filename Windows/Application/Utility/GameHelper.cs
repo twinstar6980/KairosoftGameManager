@@ -102,9 +102,9 @@ namespace KairosoftGameManager.Utility {
 			GamePlatform platform
 		) {
 			return platform switch {
-				GamePlatform.WindowsIntel32 => new ("./GameAssembly.dll"),
-				GamePlatform.AndroidArm32   => new ("./lib/armeabi-v7a/libil2cpp.so"),
-				GamePlatform.AndroidArm64   => new ("./lib/arm64-v8a/libil2cpp.so"),
+				GamePlatform.WindowsIntel32 => new ("GameAssembly.dll"),
+				GamePlatform.AndroidArm32   => new ("lib/armeabi-v7a/libil2cpp.so"),
+				GamePlatform.AndroidArm64   => new ("lib/arm64-v8a/libil2cpp.so"),
 				_                           => throw new UnreachableException(),
 			};
 		}
@@ -113,9 +113,9 @@ namespace KairosoftGameManager.Utility {
 			GamePlatform platform
 		) {
 			return platform switch {
-				GamePlatform.WindowsIntel32 => new ("./KairoGames_Data/il2cpp_data/Metadata/global-metadata.dat"),
-				GamePlatform.AndroidArm32   => new ("./assets/bin/Data/Managed/Metadata/global-metadata.dat"),
-				GamePlatform.AndroidArm64   => new ("./assets/bin/Data/Managed/Metadata/global-metadata.dat"),
+				GamePlatform.WindowsIntel32 => new ("KairoGames_Data/il2cpp_data/Metadata/global-metadata.dat"),
+				GamePlatform.AndroidArm32   => new ("assets/bin/Data/Managed/Metadata/global-metadata.dat"),
+				GamePlatform.AndroidArm64   => new ("assets/bin/Data/Managed/Metadata/global-metadata.dat"),
 				_                           => throw new UnreachableException(),
 			};
 		}
@@ -454,7 +454,7 @@ namespace KairosoftGameManager.Utility {
 				onNotify($"Phase: load package file'.");
 				var packageMainPath = temporaryDirectory.Join("package").Join("main");
 				await StorageHelper.Copy(target, packageMainPath, false);
-				packageBundle = await ZipFile.OpenAsync(packageMainPath.Emit(), ZipArchiveMode.Update);
+				packageBundle = await ZipFile.OpenAsync(packageMainPath.EmitNative(), ZipArchiveMode.Update);
 				packagePartList = [];
 				if (packageType == GamePackageType.Zip) {
 					packagePartList.Add(new ("main", packageBundle));
@@ -468,8 +468,8 @@ namespace KairosoftGameManager.Utility {
 							continue;
 						}
 						var packagePartPath = temporaryDirectory.Join("package").Join(packagePartFile.Name);
-						await packagePartFile.ExtractToFileAsync(packagePartPath.Emit());
-						packagePartList.Add(new (packagePartFile.Name, await ZipFile.OpenAsync(packagePartPath.Emit(), ZipArchiveMode.Update)));
+						await packagePartFile.ExtractToFileAsync(packagePartPath.EmitNative());
+						packagePartList.Add(new (packagePartFile.Name, await ZipFile.OpenAsync(packagePartPath.EmitNative(), ZipArchiveMode.Update)));
 					}
 				}
 			}
@@ -487,14 +487,14 @@ namespace KairosoftGameManager.Utility {
 				AssertTest(packagePartList != null);
 				foreach (var packagePart in packagePartList) {
 					foreach (var necessaryFilePath in necessaryFilePathList) {
-						var necessaryFile = packagePart.Item2.GetEntry(necessaryFilePath.EmitGeneric()[2..]);
+						var necessaryFile = packagePart.Item2.GetEntry(necessaryFilePath.EmitPosix());
 						if (necessaryFile == null) {
 							continue;
 						}
 						if (!await StorageHelper.ExistDirectory(targetDirectory.Push(necessaryFilePath).Parent().AsNotNull())) {
 							await StorageHelper.CreateDirectory(targetDirectory.Push(necessaryFilePath).Parent().AsNotNull());
 						}
-						await necessaryFile.ExtractToFileAsync(targetDirectory.Push(necessaryFilePath).EmitGeneric());
+						await necessaryFile.ExtractToFileAsync(targetDirectory.Push(necessaryFilePath).EmitNative());
 					}
 				}
 			}
@@ -536,8 +536,8 @@ namespace KairosoftGameManager.Utility {
 					var packagePart = replaceTask.Item1;
 					var platform = replaceTask.Item2;
 					var filePath = GameHelper.GetProgramFilePath(platform);
-					packagePart.GetEntry(filePath.EmitGeneric()[2..]).AsNotNull().Delete();
-					await packagePart.CreateEntryFromFileAsync(targetDirectory.Push(filePath).EmitGeneric(), filePath.EmitGeneric()[2..]);
+					packagePart.GetEntry(filePath.EmitPosix()).AsNotNull().Delete();
+					await packagePart.CreateEntryFromFileAsync(targetDirectory.Push(filePath).EmitNative(), filePath.EmitPosix());
 				}
 				foreach (var packagePart in packagePartList) {
 					await packagePart.Item2.DisposeAsync();
@@ -593,7 +593,7 @@ namespace KairosoftGameManager.Utility {
 				foreach (var packagePart in packagePartList) {
 					var packagePartPath = temporaryDirectory.Join("package").Join(packagePart.Item1);
 					packageBundle.GetEntry(packagePart.Item1).AsNotNull().Delete();
-					await packageBundle.CreateEntryFromFileAsync(packagePartPath.EmitGeneric(), packagePart.Item1);
+					await packageBundle.CreateEntryFromFileAsync(packagePartPath.EmitNative(), packagePart.Item1);
 				}
 				await packageBundle.DisposeAsync();
 				var packageMainPath = temporaryDirectory.Join("package").Join("main");
@@ -807,7 +807,7 @@ namespace KairosoftGameManager.Utility {
 			configuration.Identifier = null;
 			configuration.Version = null;
 			configuration.Name = gameDirectory.Name().AsNotNull();
-			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon(gameDirectory.Join(GameHelper.ExecutableFile).EmitGeneric(), 0, 48).AsNotNull().ToBitmap());
+			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon(gameDirectory.Join(GameHelper.ExecutableFile).EmitNative(), 0, 48).AsNotNull().ToBitmap());
 			configuration.User = "0";
 			if (await StorageHelper.ExistDirectory(gameDirectory.Join(GameHelper.RecordBundleDirectory))) {
 				configuration.User = (await StorageHelper.ListDirectory(gameDirectory.Join(GameHelper.RecordBundleDirectory), 1, true, false, false, true)).FirstOrDefault((it) => new Regex(@"^\d+$").IsMatch(it.Name().AsNotNull()))?.Name().AsNotNull() ?? "0";
@@ -872,7 +872,7 @@ namespace KairosoftGameManager.Utility {
 			configuration.Identifier = gameIdentifier;
 			configuration.Version = gameManifest.Value["buildid"].AsNotNull().Value<String>();
 			configuration.Name = gameManifest.Value["name"].AsNotNull().Value<String>();
-			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon(gameDirectory.Join(GameHelper.ExecutableFile).EmitGeneric(), 0, 48).AsNotNull().ToBitmap());
+			configuration.Icon = await ConvertHelper.ParseBitmapFromGdiBitmap(System.Drawing.Icon.ExtractIcon(gameDirectory.Join(GameHelper.ExecutableFile).EmitNative(), 0, 48).AsNotNull().ToBitmap());
 			configuration.User = gameManifest.Value["LastOwner"].AsNotNull().Value<String>();
 			var gameState = await GameHelper.CheckGameState(gameDirectory, configuration.Version, configuration.User);
 			configuration.Program = gameState.Item1;
