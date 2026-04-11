@@ -184,7 +184,7 @@ namespace KairosoftGameManager.Utility {
 		public StoragePath Push(
 			StoragePath other
 		) {
-			AssertTest(other.mType != StoragePathType.Absolute);
+			AssertTest(other.mType == StoragePathType.Detached);
 			var result = new StoragePath();
 			result.mType = this.mType;
 			result.mRoot = this.mRoot;
@@ -204,39 +204,60 @@ namespace KairosoftGameManager.Utility {
 			this.mRoot = null;
 			this.mSegment = [];
 			var position = 0;
-			if (text.Length >= 2 && text[1] == ':' && ConvertHelper.IsLetter(text[0])) {
-				this.mRoot = text.Substring(0, 2);
+			if (text.Length >= 2 && ConvertHelper.IsLetter(text[0]) && ConvertHelper.IsPathVolumeSeparator(text[1])) {
 				position += 2;
-			}
-			if (text.Length > position && ConvertHelper.IsPathDot(text[position])) {
-				var isRelative = false;
-				var isParent = false;
-				var offset = 1;
-				if (text.Length > position + offset && ConvertHelper.IsPathDot(text[position + offset])) {
-					isParent = true;
-					offset += 1;
+				if (position < text.Length && ConvertHelper.IsPathDirectorySeparator(text[position])) {
+					this.mType = StoragePathType.Absolute;
+					this.mRoot = text.Substring(0, position);
+					position += 1;
 				}
-				if (text.Length == position + offset) {
-					isRelative = true;
-				}
-				else if (ConvertHelper.IsPathSeparator(text[position + offset])) {
-					isRelative = true;
-					offset += 1;
-				}
-				if (isRelative) {
+				else {
 					this.mType = StoragePathType.Relative;
-					if (!isParent) {
-						position += offset;
+					this.mRoot = text.Substring(0, position);
+				}
+			}
+			else if (text.Length >= 2 && ConvertHelper.IsPathDirectorySeparator(text[0]) && ConvertHelper.IsPathDirectorySeparator(text[1])) {
+				position += 2;
+				for (; position < text.Length; position++) {
+					if (ConvertHelper.IsPathDirectorySeparator(text[position])) {
+						break;
 					}
 				}
-			}
-			else if (text.Length > position && ConvertHelper.IsPathSeparator(text[position])) {
 				this.mType = StoragePathType.Absolute;
+				this.mRoot = "//" + text.Substring(2, position - 2);
+				if (position < text.Length && ConvertHelper.IsPathDirectorySeparator(text[position])) {
+					position += 1;
+				}
+			}
+			else if (text.Length >= 1 && ConvertHelper.IsPathDirectorySeparator(text[0])) {
 				position += 1;
+				this.mType = StoragePathType.Absolute;
+				this.mRoot = "";
+			}
+			else if (text.Length >= 2 && ConvertHelper.IsPathDot(text[0]) && ConvertHelper.IsPathDot(text[1])) {
+				position += 2;
+				if (position == text.Length || ConvertHelper.IsPathDirectorySeparator(text[position])) {
+					this.mType = StoragePathType.Relative;
+					this.mRoot = "";
+				}
+				position = 0;
+			}
+			else if (text.Length >= 1 && ConvertHelper.IsPathDot(text[0])) {
+				position += 1;
+				if (position == text.Length || ConvertHelper.IsPathDirectorySeparator(text[position])) {
+					this.mType = StoragePathType.Relative;
+					this.mRoot = "";
+					if (position < text.Length) {
+						position += 1;
+					}
+				}
+				else {
+					position = 0;
+				}
 			}
 			var location = position;
 			for (; position <= text.Length; position++) {
-				if (position == text.Length || ConvertHelper.IsPathSeparator(text[position])) {
+				if (position == text.Length || ConvertHelper.IsPathDirectorySeparator(text[position])) {
 					var segment = text.Substring(location, position - location);
 					if (!segment.IsEmpty()) {
 						this.mSegment.Add(segment);
@@ -252,22 +273,21 @@ namespace KairosoftGameManager.Utility {
 			Boolean          rectify = false
 		) {
 			var text = new StringBuilder();
-			var dot = '.';
-			var separator = style == StoragePathStyle.Posix ? '/' : '\\';
-			if (this.mRoot != null) {
-				text.Append(this.mRoot);
-			}
-			if (this.mType == StoragePathType.Relative) {
-				text.Append(dot);
-				text.Append(separator);
-			}
-			if (this.mType == StoragePathType.Absolute) {
-				text.Append(separator);
+			var pathDot = '.';
+			var pathDirectorySeparator = style == StoragePathStyle.Posix ? '/' : '\\';
+			if (this.mType != StoragePathType.Detached) {
+				for (var index = 0; index < this.mRoot.AsNotNull().Length; index++) {
+					text.Append(!ConvertHelper.IsPathDirectorySeparator(this.mRoot.AsNotNull()[index]) ? this.mRoot.AsNotNull()[index] : pathDirectorySeparator);
+				}
+				if (this.mType == StoragePathType.Relative) {
+					text.Append(pathDot);
+				}
+				text.Append(pathDirectorySeparator);
 			}
 			for (var segmentIndex = 0; segmentIndex < this.mSegment.Count; segmentIndex++) {
 				var segment = this.mSegment[segmentIndex];
 				if (segmentIndex != 0) {
-					text.Append(separator);
+					text.Append(pathDirectorySeparator);
 				}
 				if (!rectify) {
 					text.Append(segment);

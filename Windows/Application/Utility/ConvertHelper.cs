@@ -159,23 +159,31 @@ namespace KairosoftGameManager.Utility {
 
 		#region character
 
+		public static Boolean IsLetter(
+			Character value
+		) {
+			var code = (value | 0x20).CastPrimitive<Character>();
+			return 'a' <= code && code <= 'z';
+		}
+
+		// ----------------
+
 		public static Boolean IsPathDot(
 			Character value
 		) {
 			return value == '.';
 		}
 
-		public static Boolean IsPathSeparator(
+		public static Boolean IsPathDirectorySeparator(
 			Character value
 		) {
 			return value == '/' || value == '\\';
 		}
 
-		public static Boolean IsLetter(
+		public static Boolean IsPathVolumeSeparator(
 			Character value
 		) {
-			var code = (value | 0x20).CastPrimitive<Character>();
-			return 'a' <= code && code <= 'z';
+			return value == ':';
 		}
 
 		#endregion
