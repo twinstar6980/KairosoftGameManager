@@ -1,5 +1,4 @@
 #pragma warning disable 0,
-// ReSharper disable
 
 using KairosoftGameManager;
 using Windows.ApplicationModel;
@@ -397,7 +396,6 @@ namespace KairosoftGameManager.Utility {
 			String? name
 		) {
 			AssertTest(type == "LoadFile" || type == "LoadDirectory" || type == "SaveFile");
-			var target = null as StoragePath;
 			var locationPath = null as StoragePath;
 			var locationTag = location == null ? null : !location.StartsWith('@') ? null : location[1..];
 			if (location != null) {
@@ -413,63 +411,69 @@ namespace KairosoftGameManager.Utility {
 			}
 			locationPath ??= new ("C:/");
 			name ??= "";
+			var target = null as StoragePath;
 			await Task.Run(() => {
 				unsafe {
-					Win32.PInvoke.CoInitialize(null);
-					using var comFinalizer = new Finalizer(async () => {
-						Win32.PInvoke.CoUninitialize();
-					});
-					Win32.PInvoke.CoCreateInstance<Win32.UI.Shell.IFileDialog>(
-						type switch {
-							"LoadFile"      => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
-							"LoadDirectory" => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
-							"SaveFile"      => typeof(Win32.UI.Shell.FileSaveDialog).GUID,
-							_               => throw new UnreachableException(),
-						},
-						null,
-						Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
-						out var dialog
-					).ThrowOnFailure();
-					using var dialogFinalizer = new Finalizer(async () => {
-						dialog->Release();
-					});
-					dialog->GetOptions(out var option).ThrowOnFailure();
-					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM;
-					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_NOVALIDATE;
-					if (type == "LoadDirectory") {
-						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
-					}
-					dialog->SetOptions(option).ThrowOnFailure();
-					Win32.PInvoke.SHCreateItemFromParsingName(
-						locationPath.EmitNative(),
-						null,
-						typeof(Win32.UI.Shell.IShellItem).GUID,
-						out var locationItem
-					).ThrowOnFailure();
-					using var locationItemFinalizer = new Finalizer(async () => {
-						((Win32.UI.Shell.IShellItem*)locationItem)->Release();
-					});
-					dialog->SetFolder((Win32.UI.Shell.IShellItem*)locationItem).ThrowOnFailure();
-					if (type == "SaveFile") {
-						dialog->SetFileName(name).ThrowOnFailure();
-					}
-					var dialogResult = dialog->Show(new (WindowHelper.GetHandle(host)));
-					if (dialogResult.Failed && dialogResult != unchecked((IntegerS32)0x800704C7)) {
+					do {
+						Win32.PInvoke.CoInitialize(null);
+						using var comFinalizer = new Finalizer(async () => {
+							Win32.PInvoke.CoUninitialize();
+						});
+						Win32.PInvoke.CoCreateInstance<Win32.UI.Shell.IFileDialog>(
+							type switch {
+								"LoadFile"      => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
+								"LoadDirectory" => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
+								"SaveFile"      => typeof(Win32.UI.Shell.FileSaveDialog).GUID,
+								_               => throw new UnreachableException(),
+							},
+							null,
+							Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
+							out var dialog
+						).ThrowOnFailure();
+						using var dialogFinalizer = new Finalizer(async () => {
+							dialog->Release();
+						});
+						dialog->GetOptions(out var option).ThrowOnFailure();
+						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_NODEREFERENCELINKS;
+						if (type == "LoadDirectory") {
+							option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
+						}
+						dialog->SetOptions(option).ThrowOnFailure();
+						Win32.PInvoke.SHCreateItemFromParsingName(
+							locationPath.EmitNative(),
+							null,
+							typeof(Win32.UI.Shell.IShellItem).GUID,
+							out var locationItem
+						).ThrowOnFailure();
+						using var locationItemFinalizer = new Finalizer(async () => {
+							((Win32.UI.Shell.IShellItem*)locationItem)->Release();
+						});
+						dialog->SetFolder((Win32.UI.Shell.IShellItem*)locationItem).ThrowOnFailure();
+						if (type == "SaveFile") {
+							dialog->SetFileName(name).ThrowOnFailure();
+						}
+						var dialogResult = dialog->Show(new (WindowHelper.GetHandle(host)));
+						if (dialogResult == Win32.PInvoke.HRESULT_FROM_WIN32(Win32.Foundation.WIN32_ERROR.ERROR_CANCELLED)) {
+							break;
+						}
 						dialogResult.ThrowOnFailure();
-					}
-					if (dialogResult.Succeeded) {
 						var targetItem = default(Win32.UI.Shell.IShellItem*);
 						dialog->GetResult(&targetItem).ThrowOnFailure();
 						var targetItemPointer = &targetItem;
 						using var targetItemFinalizer = new Finalizer(async () => {
 							(*targetItemPointer)->Release();
 						});
-						targetItem->GetDisplayName(Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, out var targetPath).ThrowOnFailure();
+						var queryResult = targetItem->GetDisplayName(Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, out var targetPath);
+						if (queryResult == Win32.PInvoke.HRESULT_FROM_WIN32(Win32.Foundation.WIN32_ERROR.ERROR_INVALID_PARAMETER)) {
+							break;
+						}
+						queryResult.ThrowOnFailure();
 						using var targetPathFinalizer = new Finalizer(async () => {
 							Win32.PInvoke.CoTaskMemFree(targetPath.Value);
 						});
-						target = targetPath == null ? null : new StoragePath(targetPath.ToString());
+						target = new (targetPath.ToString());
 					}
+					while (false);
 				}
 			});
 			if (locationTag != null && target != null) {

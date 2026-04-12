@@ -1,5 +1,6 @@
 ﻿
 // Error
+HRESULT_FROM_WIN32
 WIN32_ERROR
 
 // FileSystem

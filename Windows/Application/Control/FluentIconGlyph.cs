@@ -1,5 +1,4 @@
 #pragma warning disable 0,
-// ReSharper disable InconsistentNaming IdentifierTypo UnusedMember.Global
 
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
@@ -9,6 +8,8 @@ namespace KairosoftGameManager.Control {
 	public static class FluentIconGlyph {
 
 		#region constant
+
+		// ReSharper disable InconsistentNaming IdentifierTypo UnusedMember.Global
 
 		public const String GlobalNavButton                          = "\xE700";
 		public const String Wifi                                     = "\xE701";
@@ -1413,6 +1414,8 @@ namespace KairosoftGameManager.Control {
 		public const String MicrophoneSolidBold                      = "\xF8B1";
 		public const String SpeechSolidBold                          = "\xF8B2";
 		public const String ClickedOutLoudSolidBold                  = "\xF8B3";
+
+		// ReSharper restore InconsistentNaming IdentifierTypo UnusedMember.Global
 
 		#endregion
 

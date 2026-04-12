@@ -1,5 +1,6 @@
-#pragma warning disable 0, CA1050,
-// ReSharper disable CheckNamespace InconsistentNaming RedundantUsingDirective.Global UnusedMember.Global OperatorIsCanBeUsed ParameterOnlyUsedForPreconditionCheck.Global
+#pragma warning disable 0,
+
+// ReSharper disable RedundantUsingDirective.Global
 
 global using System;
 global using System.Collections;
@@ -46,8 +47,11 @@ global using FloaterS64 = System.Double;
 global using static CommonUtility;
 using Windows.ApplicationModel;
 
+// ReSharper restore RedundantUsingDirective.Global
+
 // ----------------
 
+// ReSharper disable once CheckNamespace
 public static class ApplicationInformation {
 
 	public static readonly String Identifier = Package.Current.Id.Name;
@@ -129,13 +133,13 @@ public static class CommonUtility {
 		this Object self
 	) {
 		var selfValue = self;
-		if (self.GetType() == typeof(IntegerUN)) {
+		if (self is IntegerUN) {
 			selfValue = (IntegerU64)self.As<IntegerUN>();
 		}
-		if (self.GetType() == typeof(IntegerSN)) {
+		if (self is IntegerSN) {
 			selfValue = (IntegerS64)self.As<IntegerSN>();
 		}
-		if (self.GetType() == typeof(Character)) {
+		if (self is Character) {
 			selfValue = (IntegerU16)self.As<Character>();
 		}
 		var intermediateType = typeof(TTarget);

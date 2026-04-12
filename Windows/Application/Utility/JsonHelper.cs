@@ -1,5 +1,4 @@
 #pragma warning disable 0,
-// ReSharper disable
 
 using KairosoftGameManager;
 using System.Text.Json;
@@ -111,7 +110,7 @@ namespace KairosoftGameManager.Utility {
 					JsonTokenType.String      => reader.GetString().AsNotNull(),
 					JsonTokenType.StartArray  => JsonSerializer.Deserialize<List<Object>>(ref reader, options).AsNotNull(),
 					JsonTokenType.StartObject => JsonSerializer.Deserialize<Dictionary<String, Object>>(ref reader, options).AsNotNull(),
-					_                         => throw new (),
+					_                         => throw new UnreachableException(),
 				};
 			}
 

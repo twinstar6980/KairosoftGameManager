@@ -1,5 +1,4 @@
 #pragma warning disable 0,
-// ReSharper disable
 
 using KairosoftGameManager;
 using Microsoft.UI.Windowing;
