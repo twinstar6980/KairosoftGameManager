@@ -414,48 +414,52 @@ namespace KairosoftGameManager.Utility {
 			var target = null as StoragePath;
 			await Task.Run(() => {
 				unsafe {
-					do {
-						Win32.PInvoke.CoInitialize(null);
-						using var comFinalizer = new Finalizer(async () => {
-							Win32.PInvoke.CoUninitialize();
-						});
-						Win32.PInvoke.CoCreateInstance<Win32.UI.Shell.IFileDialog>(
-							type switch {
-								"LoadFile"      => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
-								"LoadDirectory" => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
-								"SaveFile"      => typeof(Win32.UI.Shell.FileSaveDialog).GUID,
-								_               => throw new UnreachableException(),
-							},
-							null,
-							Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
-							out var dialog
-						).ThrowOnFailure();
-						using var dialogFinalizer = new Finalizer(async () => {
-							dialog->Release();
-						});
-						dialog->GetOptions(out var option).ThrowOnFailure();
-						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_NODEREFERENCELINKS;
-						if (type == "LoadDirectory") {
-							option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
-						}
-						dialog->SetOptions(option).ThrowOnFailure();
-						Win32.PInvoke.SHCreateItemFromParsingName(
-							locationPath.EmitNative(),
-							null,
-							typeof(Win32.UI.Shell.IShellItem).GUID,
-							out var locationItem
-						).ThrowOnFailure();
-						using var locationItemFinalizer = new Finalizer(async () => {
-							((Win32.UI.Shell.IShellItem*)locationItem)->Release();
-						});
-						dialog->SetFolder((Win32.UI.Shell.IShellItem*)locationItem).ThrowOnFailure();
-						if (type == "SaveFile") {
-							dialog->SetFileName(name).ThrowOnFailure();
-						}
-						var dialogResult = dialog->Show(new (WindowHelper.GetHandle(host)));
-						if (dialogResult == Win32.PInvoke.HRESULT_FROM_WIN32(Win32.Foundation.WIN32_ERROR.ERROR_CANCELLED)) {
-							break;
-						}
+					Win32.PInvoke.CoCreateInstance<Win32.UI.Shell.IFileDialog>(
+						type switch {
+							"LoadFile"      => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
+							"LoadDirectory" => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
+							"SaveFile"      => typeof(Win32.UI.Shell.FileSaveDialog).GUID,
+							_               => throw new UnreachableException(),
+						},
+						null,
+						Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
+						out var dialog
+					).ThrowOnFailure();
+					using var dialogFinalizer = new Finalizer(async () => {
+						dialog->Release();
+					});
+					var option = (Win32.UI.Shell.FILEOPENDIALOGOPTIONS)0;
+					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_NOCHANGEDIR;
+					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_NODEREFERENCELINKS;
+					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_FORCESHOWHIDDEN;
+					if (type == "LoadFile" || type == "LoadDirectory") {
+						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
+						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_FILEMUSTEXIST;
+					}
+					if (type == "LoadDirectory") {
+						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
+					}
+					if (type == "SaveFile") {
+						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
+						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_OVERWRITEPROMPT;
+						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_NOREADONLYRETURN;
+					}
+					dialog->SetOptions(option).ThrowOnFailure();
+					Win32.PInvoke.SHCreateItemFromParsingName(
+						locationPath.EmitNative(),
+						null,
+						typeof(Win32.UI.Shell.IShellItem).GUID,
+						out var locationItem
+					).ThrowOnFailure();
+					using var locationItemFinalizer = new Finalizer(async () => {
+						((Win32.UI.Shell.IShellItem*)locationItem)->Release();
+					});
+					dialog->SetFolder((Win32.UI.Shell.IShellItem*)locationItem).ThrowOnFailure();
+					if (type == "SaveFile") {
+						dialog->SetFileName(name).ThrowOnFailure();
+					}
+					var dialogResult = dialog->Show(new (WindowHelper.GetHandle(host)));
+					if (dialogResult != Win32.PInvoke.HRESULT_FROM_WIN32(Win32.Foundation.WIN32_ERROR.ERROR_CANCELLED)) {
 						dialogResult.ThrowOnFailure();
 						var targetItem = default(Win32.UI.Shell.IShellItem*);
 						dialog->GetResult(&targetItem).ThrowOnFailure();
@@ -463,17 +467,12 @@ namespace KairosoftGameManager.Utility {
 						using var targetItemFinalizer = new Finalizer(async () => {
 							(*targetItemPointer)->Release();
 						});
-						var queryResult = targetItem->GetDisplayName(Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, out var targetPath);
-						if (queryResult == Win32.PInvoke.HRESULT_FROM_WIN32(Win32.Foundation.WIN32_ERROR.ERROR_INVALID_PARAMETER)) {
-							break;
-						}
-						queryResult.ThrowOnFailure();
+						targetItem->GetDisplayName(Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, out var targetPath).ThrowOnFailure();
 						using var targetPathFinalizer = new Finalizer(async () => {
 							Win32.PInvoke.CoTaskMemFree(targetPath.Value);
 						});
 						target = new (targetPath.ToString());
 					}
-					while (false);
 				}
 			});
 			if (locationTag != null && target != null) {
