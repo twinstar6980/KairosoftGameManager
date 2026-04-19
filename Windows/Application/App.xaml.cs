@@ -2,7 +2,6 @@
 
 using KairosoftGameManager;
 using KairosoftGameManager.Utility;
-using Windows.ApplicationModel;
 using Microsoft.UI.Xaml.Media;
 
 namespace KairosoftGameManager {
@@ -17,13 +16,13 @@ namespace KairosoftGameManager {
 
 		#region life
 
-		public StoragePath PackageDirectory { get; }
+		public StoragePath PackageDirectory { get; private set; }
 
-		public StoragePath ProgramFile { get; }
+		public StoragePath ProgramFile { get; private set; }
 
-		public StoragePath SharedDirectory { get; }
+		public StoragePath SharedDirectory { get; private set; }
 
-		public StoragePath CacheDirectory { get; }
+		public StoragePath CacheDirectory { get; private set; }
 
 		public SettingProvider Setting { get; }
 
@@ -43,10 +42,10 @@ namespace KairosoftGameManager {
 			// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 			AssertTest(App.Instance == null);
 			App.Instance = this;
-			this.PackageDirectory = StorageHelper.QueryApplicationPackageDirectory();
-			this.ProgramFile = this.PackageDirectory.Join("Application.exe");
-			this.SharedDirectory = StorageHelper.QueryApplicationPackageSharedDirectory().Join(ApplicationInformation.Identifier);
-			this.CacheDirectory = this.SharedDirectory.Join("cache");
+			this.PackageDirectory = null!;
+			this.ProgramFile = null!;
+			this.SharedDirectory = null!;
+			this.CacheDirectory = null!;
 			this.Setting = new ();
 			this.MainWindow = null!;
 			this.InitializeComponent();
@@ -59,6 +58,10 @@ namespace KairosoftGameManager {
 			LaunchActivatedEventArgs args
 		) {
 			try {
+				this.PackageDirectory = await StorageHelper.Query(StorageQueryType.ApplicationPackage);
+				this.ProgramFile = this.PackageDirectory.Join("Application.exe");
+				this.SharedDirectory = await StorageHelper.Query(StorageQueryType.ApplicationPackagedShared);
+				this.CacheDirectory = await StorageHelper.Query(StorageQueryType.ApplicationPackagedCache);
 				await ApplicationExceptionManager.Instance.Initialize(this);
 				await ApplicationExceptionManager.Instance.Listen(async (exception) => {
 					await this.HandleException(exception, this.MainWindow);

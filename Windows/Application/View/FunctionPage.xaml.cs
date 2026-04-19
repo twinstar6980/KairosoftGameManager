@@ -176,7 +176,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<MenuFlyoutItem>();
-			var value = await StorageHelper.Pick($"Load{senders.Tag}", App.Instance.MainWindow, "@Function.Program.Target", null);
+			var value = await MiscellaneousHelper.PickStorageItem(Enum.Parse<StoragePickType>($"Load{senders.Tag}"), "Function.Program.Target", null);
 			if (value != null) {
 				this.ArgumentOfProgramOfTarget = value;
 				this.NotifyPropertyChanged([
@@ -273,7 +273,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadDirectory(App.Instance.MainWindow, "@Function.Record.TargetDirectory");
+			var value = await MiscellaneousHelper.PickStorageItem(StoragePickType.LoadDirectory, "Function.Record.TargetDirectory", null);
 			if (value != null) {
 				this.ArgumentOfRecordOfTargetDirectory = value;
 				this.NotifyPropertyChanged([
@@ -316,8 +316,8 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<Button>();
 			var value = this.Type switch {
-				GameFunctionType.ExportRecord => await StorageHelper.PickSaveFile(App.Instance.MainWindow, "@Function.Record.ArchiveFile", $"game.{GameHelper.RecordArchiveFileExtension}"),
-				GameFunctionType.ImportRecord => await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@Function.Record.ArchiveFile"),
+				GameFunctionType.ExportRecord => await MiscellaneousHelper.PickStorageItem(StoragePickType.SaveFile, "Function.Record.ArchiveFile", $"game.{GameHelper.RecordArchiveFileExtension}"),
+				GameFunctionType.ImportRecord => await MiscellaneousHelper.PickStorageItem(StoragePickType.LoadFile, "Function.Record.ArchiveFile", null),
 				_                             => throw new UnreachableException(),
 			};
 			if (value != null) {

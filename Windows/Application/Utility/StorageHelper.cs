@@ -5,6 +5,23 @@ using Windows.ApplicationModel;
 
 namespace KairosoftGameManager.Utility {
 
+	public enum StorageQueryType {
+		UserHome,
+		ApplicationShared,
+		ApplicationCache,
+		ApplicationPackage,
+		ApplicationPackagedShared,
+		ApplicationPackagedCache,
+	}
+
+	public enum StoragePickType {
+		LoadFile,
+		LoadDirectory,
+		SaveFile,
+	}
+
+	// ----------------
+
 	public static class StorageHelper {
 
 		#region basic
@@ -12,7 +29,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task<Boolean> Exist(
 			StoragePath target
 		) {
-			if (target.Type() == StoragePathType.Detached) {
+			if (target.Type() != StoragePathType.Absolute) {
 				return false;
 			}
 			var targetString = target.EmitNative();
@@ -137,7 +154,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task<Boolean> ExistLink(
 			StoragePath target
 		) {
-			if (target.Type() == StoragePathType.Detached) {
+			if (target.Type() != StoragePathType.Absolute) {
 				return false;
 			}
 			var targetString = target.EmitNative();
@@ -183,7 +200,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task<Boolean> ExistFile(
 			StoragePath target
 		) {
-			if (target.Type() == StoragePathType.Detached) {
+			if (target.Type() != StoragePathType.Absolute) {
 				return false;
 			}
 			var targetString = target.EmitNative();
@@ -280,7 +297,7 @@ namespace KairosoftGameManager.Utility {
 		public static async Task<Boolean> ExistDirectory(
 			StoragePath target
 		) {
-			if (target.Type() == StoragePathType.Detached) {
+			if (target.Type() != StoragePathType.Absolute) {
 				return false;
 			}
 			var targetString = target.EmitNative();
@@ -362,20 +379,39 @@ namespace KairosoftGameManager.Utility {
 
 		#region shell
 
-		public static async Task<StoragePath> Temporary(
+		public static async Task<StoragePath> Query(
+			StorageQueryType type
 		) {
-			var parent = App.Instance.CacheDirectory;
-			var name = DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
-			var result = parent.Join(name);
-			var suffix = 0;
-			while (await StorageHelper.Exist(result)) {
-				suffix += 1;
-				result = parent.Join($"{name}.{suffix}");
+			var path = null as StoragePath;
+			switch (type) {
+				case StorageQueryType.UserHome: {
+					path = new ($"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}");
+					break;
+				}
+				case StorageQueryType.ApplicationShared: {
+					path = new ($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\{ApplicationInformation.Identifier}");
+					break;
+				}
+				case StorageQueryType.ApplicationCache: {
+					path = new ($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\{ApplicationInformation.Identifier}\\cache");
+					break;
+				}
+				case StorageQueryType.ApplicationPackage: {
+					path = new ($"{Package.Current.InstalledPath}");
+					break;
+				}
+				case StorageQueryType.ApplicationPackagedShared: {
+					path = new ($"{Windows.Storage.ApplicationData.Current.LocalFolder.Path}");
+					break;
+				}
+				case StorageQueryType.ApplicationPackagedCache: {
+					path = new ($"{Windows.Storage.ApplicationData.Current.LocalFolder.Path}\\cache");
+					break;
+				}
+				default: throw new UnreachableException();
 			}
-			return result;
+			return path;
 		}
-
-		// ----------------
 
 		public static async Task Reveal(
 			StoragePath target
@@ -387,39 +423,27 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		// ----------------
-
 		public static async Task<StoragePath?> Pick(
-			String  type,
-			Window  host,
-			String? location,
-			String? name
+			StoragePickType type,
+			StoragePath?    location,
+			String?         name,
+			Window          host
 		) {
-			AssertTest(type == "LoadFile" || type == "LoadDirectory" || type == "SaveFile");
-			var locationPath = null as StoragePath;
-			var locationTag = location == null ? null : !location.StartsWith('@') ? null : location[1..];
-			if (location != null) {
-				if (locationTag != null) {
-					locationPath = App.Instance.Setting.Data.StoragePickerHistoryLocation.GetValueOrDefault(locationTag);
-				}
-				else {
-					locationPath = new (location);
-				}
+			if (location == null || !await StorageHelper.ExistDirectory(location)) {
+				location = await StorageHelper.Query(StorageQueryType.UserHome);
 			}
-			if (locationPath != null && !await StorageHelper.ExistDirectory(locationPath)) {
-				locationPath = null;
+			if (name == null) {
+				name = "";
 			}
-			locationPath ??= new ("C:/");
-			name ??= "";
 			var target = null as StoragePath;
 			await Task.Run(() => {
 				unsafe {
 					Win32.PInvoke.CoCreateInstance<Win32.UI.Shell.IFileDialog>(
 						type switch {
-							"LoadFile"      => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
-							"LoadDirectory" => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
-							"SaveFile"      => typeof(Win32.UI.Shell.FileSaveDialog).GUID,
-							_               => throw new UnreachableException(),
+							StoragePickType.LoadFile      => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
+							StoragePickType.LoadDirectory => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
+							StoragePickType.SaveFile      => typeof(Win32.UI.Shell.FileSaveDialog).GUID,
+							_                             => throw new UnreachableException(),
 						},
 						null,
 						Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
@@ -432,21 +456,21 @@ namespace KairosoftGameManager.Utility {
 					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_NOCHANGEDIR;
 					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_NODEREFERENCELINKS;
 					option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_FORCESHOWHIDDEN;
-					if (type == "LoadFile" || type == "LoadDirectory") {
+					if (type == StoragePickType.LoadFile || type == StoragePickType.LoadDirectory) {
 						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
 						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_FILEMUSTEXIST;
 					}
-					if (type == "LoadDirectory") {
+					if (type == StoragePickType.LoadDirectory) {
 						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
 					}
-					if (type == "SaveFile") {
+					if (type == StoragePickType.SaveFile) {
 						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
 						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_OVERWRITEPROMPT;
 						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_NOREADONLYRETURN;
 					}
 					dialog->SetOptions(option).ThrowOnFailure();
 					Win32.PInvoke.SHCreateItemFromParsingName(
-						locationPath.EmitNative(),
+						location.EmitNative(),
 						null,
 						typeof(Win32.UI.Shell.IShellItem).GUID,
 						out var locationItem
@@ -455,7 +479,7 @@ namespace KairosoftGameManager.Utility {
 						((Win32.UI.Shell.IShellItem*)locationItem)->Release();
 					});
 					dialog->SetFolder((Win32.UI.Shell.IShellItem*)locationItem).ThrowOnFailure();
-					if (type == "SaveFile") {
+					if (type == StoragePickType.SaveFile) {
 						dialog->SetFileName(name).ThrowOnFailure();
 					}
 					var dialogResult = dialog->Show(new (WindowHelper.GetHandle(host)));
@@ -475,41 +499,23 @@ namespace KairosoftGameManager.Utility {
 					}
 				}
 			});
-			if (locationTag != null && target != null) {
-				App.Instance.Setting.Data.StoragePickerHistoryLocation[locationTag] = type switch {
-					"LoadFile"      => target.Parent().AsNotNull(),
-					"LoadDirectory" => target,
-					"SaveFile"      => target.Parent().AsNotNull(),
-					_               => throw new UnreachableException(),
-				};
-				await App.Instance.Setting.Save(apply: false);
-			}
 			return target;
 		}
 
-		public static async Task<StoragePath?> PickLoadFile(
-			Window  host,
-			String? location
-		) {
-			return await StorageHelper.Pick("LoadFile", host, location, null);
-		}
-
-		public static async Task<StoragePath?> PickLoadDirectory(
-			Window  host,
-			String? location
-		) {
-			return await StorageHelper.Pick("LoadDirectory", host, location, null);
-		}
-
-		public static async Task<StoragePath?> PickSaveFile(
-			Window  host,
-			String? location,
-			String? name
-		) {
-			return await StorageHelper.Pick("SaveFile", host, location, name);
-		}
-
 		// ----------------
+
+		public static async Task<StoragePath> Temporary(
+		) {
+			var parent = App.Instance.CacheDirectory;
+			var name = DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
+			var result = parent.Join(name);
+			var suffix = 0;
+			while (await StorageHelper.Exist(result)) {
+				suffix += 1;
+				result = parent.Join($"{name}.{suffix}");
+			}
+			return result;
+		}
 
 		public static async Task Trash(
 			StoragePath target
@@ -545,7 +551,7 @@ namespace KairosoftGameManager.Utility {
 
 		// ----------------
 
-		public static StoragePath GetLongPath(
+		public static StoragePath ResolveLongPath(
 			String source
 		) {
 			var destinationLength = Win32.PInvoke.GetLongPathName(source, []);
@@ -553,23 +559,6 @@ namespace KairosoftGameManager.Utility {
 			var destinationLengthCheck = Win32.PInvoke.GetLongPathName(source, destination.AsSpan());
 			AssertTest(destinationLengthCheck == destinationLength - 1);
 			return new (new String(destination.AsSpan(0, destinationLength.CastPrimitive<Size>() - 1)));
-		}
-
-		// ----------------
-
-		public static StoragePath QueryApplicationPackageDirectory(
-		) {
-			return new (Package.Current.InstalledPath);
-		}
-
-		public static StoragePath QueryApplicationPackageSharedDirectory(
-		) {
-			return new (Windows.Storage.ApplicationData.Current.LocalFolder.Path);
-		}
-
-		public static StoragePath QueryApplicationUnpackageSharedDirectory(
-		) {
-			return new (Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 		}
 
 		#endregion

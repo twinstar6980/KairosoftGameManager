@@ -6,9 +6,18 @@ namespace KairosoftGameManager.Utility {
 
 	public static class ProcessHelper {
 
+		#region workspace
+
+		public static StoragePath GetWorkspace(
+		) {
+			return new (Environment.CurrentDirectory);
+		}
+
+		#endregion
+
 		#region environment
 
-		public static String? QueryEnvironment(
+		public static String? GetEnvironment(
 			String name
 		) {
 			return Environment.GetEnvironmentVariable(name);
@@ -31,9 +40,13 @@ namespace KairosoftGameManager.Utility {
 		public static async Task<Tuple<Size, String, String>?> RunProcess(
 			StoragePath                 program,
 			List<String>                argument,
+			StoragePath?                workspace,
 			Dictionary<String, String>? environment,
 			Boolean                     waitForExit
 		) {
+			if (workspace == null) {
+				workspace = ProcessHelper.GetWorkspace();
+			}
 			if (environment == null) {
 				environment = ProcessHelper.ListEnvironment();
 			}
@@ -43,6 +56,7 @@ namespace KairosoftGameManager.Utility {
 			foreach (var argumentItem in argument) {
 				process.StartInfo.ArgumentList.Add(argumentItem);
 			}
+			process.StartInfo.WorkingDirectory = workspace.EmitNative();
 			process.StartInfo.Environment.Clear();
 			foreach (var environmentItem in environment) {
 				process.StartInfo.Environment.Add(environmentItem.Key, environmentItem.Value);
@@ -70,12 +84,12 @@ namespace KairosoftGameManager.Utility {
 		) {
 			var result = null as StoragePath;
 			var itemDelimiter = ';';
-			var pathEnvironment = ProcessHelper.QueryEnvironment("PATH");
+			var pathEnvironment = ProcessHelper.GetEnvironment("PATH");
 			AssertTest(pathEnvironment != null);
 			var pathList = pathEnvironment.Split(itemDelimiter).Select((it) => new StoragePath(it)).ToList();
 			var pathExtensionList = new List<String>([""]);
 			if (allowExtension) {
-				var pathExtensionEnvironment = ProcessHelper.QueryEnvironment("PATHEXT");
+				var pathExtensionEnvironment = ProcessHelper.GetEnvironment("PATHEXT");
 				AssertTest(pathExtensionEnvironment != null);
 				pathExtensionList.AddRange(pathExtensionEnvironment.Split(itemDelimiter).Select((it) => it.ToLower()));
 			}

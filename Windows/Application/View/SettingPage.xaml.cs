@@ -131,7 +131,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadDirectory(App.Instance.MainWindow, "@RepositoryDirectory");
+			var value = await MiscellaneousHelper.PickStorageItem(StoragePickType.LoadDirectory, "RepositoryDirectory", null);
 			if (value != null && !App.Instance.Setting.Data.RepositoryDirectory.Contains(value)) {
 				App.Instance.Setting.Data.RepositoryDirectory.Add(value);
 				this.NotifyPropertyChanged([
@@ -187,7 +187,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@ExternalToolOfIl2cppdumperPath");
+			var value = await MiscellaneousHelper.PickStorageItem(StoragePickType.LoadFile, "ExternalToolOfIl2cppdumperPath", null);
 			if (value != null) {
 				App.Instance.Setting.Data.ExternalTool.Il2cppdumperPath = value;
 				this.NotifyPropertyChanged([
@@ -224,7 +224,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@ExternalToolOfZipalignPath");
+			var value = await MiscellaneousHelper.PickStorageItem(StoragePickType.LoadFile, "ExternalToolOfZipalignPath", null);
 			if (value != null) {
 				App.Instance.Setting.Data.ExternalTool.ZipalignPath = value;
 				this.NotifyPropertyChanged([
@@ -261,7 +261,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@ExternalToolOfApksignerPath");
+			var value = await MiscellaneousHelper.PickStorageItem(StoragePickType.LoadFile, "ExternalToolOfApksignerPath", null);
 			if (value != null) {
 				App.Instance.Setting.Data.ExternalTool.ApksignerPath = value;
 				this.NotifyPropertyChanged([
@@ -298,7 +298,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@ExternalToolOfApkKeystoreFile");
+			var value = await MiscellaneousHelper.PickStorageItem(StoragePickType.LoadFile, "ExternalToolOfApkKeystoreFile", null);
 			if (value != null) {
 				App.Instance.Setting.Data.ExternalTool.ApkKeystoreFile = value;
 				this.NotifyPropertyChanged([

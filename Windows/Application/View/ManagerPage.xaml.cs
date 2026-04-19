@@ -179,7 +179,7 @@ namespace KairosoftGameManager.View {
 						break;
 					}
 					case "LaunchGame": {
-						await ProcessHelper.RunProcess(game.Path.Join(GameHelper.ExecutableFile), [], null, false);
+						await ProcessHelper.RunProcess(game.Path.Join(GameHelper.ExecutableFile), [], null, null, false);
 						break;
 					}
 					case "ModifyProgram": {
@@ -297,7 +297,7 @@ namespace KairosoftGameManager.View {
 							break;
 						}
 						var shouldEncrypt = game.Record == GameRecordState.Original;
-						var archiveFile = await StorageHelper.PickSaveFile(App.Instance.MainWindow, "@RecordArchiveFile", $"{game.Name}.{GameHelper.RecordArchiveFileExtension}");
+						var archiveFile = await MiscellaneousHelper.PickStorageItem(StoragePickType.SaveFile, "RecordArchiveFile", $"{game.Name}.{GameHelper.RecordArchiveFileExtension}");
 						if (archiveFile == null) {
 							cancelled = true;
 							break;
@@ -371,7 +371,7 @@ namespace KairosoftGameManager.View {
 								temporaryStateMap.Add(action, new Tuple<Boolean>(shouldEncrypt));
 							}
 						}
-						var archiveFile = await StorageHelper.PickLoadFile(App.Instance.MainWindow, "@RecordArchiveFile");
+						var archiveFile = await MiscellaneousHelper.PickStorageItem(StoragePickType.LoadFile, "RecordArchiveFile", null);
 						if (archiveFile == null) {
 							cancelled = true;
 							break;

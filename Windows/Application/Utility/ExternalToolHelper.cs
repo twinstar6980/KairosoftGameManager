@@ -57,6 +57,7 @@ namespace KairosoftGameManager.Utility {
 					dumpDirectory.EmitNative(),
 				],
 				null,
+				null,
 				true
 			)).AsNotNull();
 			AssertTest(processResult.Item2.ReplaceLineEndings("\n").EndsWith("Done!\nPress any key to exit...\n"));
@@ -155,6 +156,7 @@ namespace KairosoftGameManager.Utility {
 					$"{alignedFile.EmitNative()}",
 				],
 				null,
+				null,
 				true
 			)).AsNotNull();
 			if (processResult.Item1 != 0) {
@@ -183,6 +185,7 @@ namespace KairosoftGameManager.Utility {
 					"--ks-pass", $"pass:{setting.ApkKeystorePassword}",
 					$"{apkFile.EmitNative()}",
 				],
+				null,
 				null,
 				true
 			)).AsNotNull();
