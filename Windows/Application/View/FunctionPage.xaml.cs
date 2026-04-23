@@ -176,7 +176,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<MenuFlyoutItem>();
-			var value = await MiscellaneousHelper.PickStorageItem(Enum.Parse<StoragePickType>($"Load{senders.Tag}"), "Function.Program.Target", null);
+			var value = (await MiscellaneousHelper.PickStorageItem("Function.Program.Target", Enum.Parse<StoragePickType>($"Load{senders.Tag}"), false, null, null)).FirstOrDefault();
 			if (value != null) {
 				this.ArgumentOfProgramOfTarget = value;
 				this.NotifyPropertyChanged([
@@ -273,7 +273,7 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<Button>();
-			var value = await MiscellaneousHelper.PickStorageItem(StoragePickType.LoadDirectory, "Function.Record.TargetDirectory", null);
+			var value = (await MiscellaneousHelper.PickStorageItem("Function.Record.TargetDirectory", StoragePickType.LoadDirectory, false, null, null)).FirstOrDefault();
 			if (value != null) {
 				this.ArgumentOfRecordOfTargetDirectory = value;
 				this.NotifyPropertyChanged([
@@ -316,8 +316,8 @@ namespace KairosoftGameManager.View {
 		) {
 			var senders = sender.As<Button>();
 			var value = this.Type switch {
-				GameFunctionType.ExportRecord => await MiscellaneousHelper.PickStorageItem(StoragePickType.SaveFile, "Function.Record.ArchiveFile", $"game.{GameHelper.RecordArchiveFileExtension}"),
-				GameFunctionType.ImportRecord => await MiscellaneousHelper.PickStorageItem(StoragePickType.LoadFile, "Function.Record.ArchiveFile", null),
+				GameFunctionType.ExportRecord => (await MiscellaneousHelper.PickStorageItem("Function.Record.ArchiveFile", StoragePickType.SaveFile, false, null, $"game.{GameHelper.RecordArchiveFileExtension}")).FirstOrDefault(),
+				GameFunctionType.ImportRecord => (await MiscellaneousHelper.PickStorageItem("Function.Record.ArchiveFile", StoragePickType.LoadFile, false, null, null)).FirstOrDefault(),
 				_                             => throw new UnreachableException(),
 			};
 			if (value != null) {

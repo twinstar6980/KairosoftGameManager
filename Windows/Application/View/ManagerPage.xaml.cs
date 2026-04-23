@@ -297,7 +297,7 @@ namespace KairosoftGameManager.View {
 							break;
 						}
 						var shouldEncrypt = game.Record == GameRecordState.Original;
-						var archiveFile = await MiscellaneousHelper.PickStorageItem(StoragePickType.SaveFile, "RecordArchiveFile", $"{game.Name}.{GameHelper.RecordArchiveFileExtension}");
+						var archiveFile = (await MiscellaneousHelper.PickStorageItem("RecordArchiveFile", StoragePickType.SaveFile, false, null, $"{game.Name}.{GameHelper.RecordArchiveFileExtension}")).FirstOrDefault();
 						if (archiveFile == null) {
 							cancelled = true;
 							break;
@@ -371,7 +371,7 @@ namespace KairosoftGameManager.View {
 								temporaryStateMap.Add(action, new Tuple<Boolean>(shouldEncrypt));
 							}
 						}
-						var archiveFile = await MiscellaneousHelper.PickStorageItem(StoragePickType.LoadFile, "RecordArchiveFile", null);
+						var archiveFile = (await MiscellaneousHelper.PickStorageItem("RecordArchiveFile", StoragePickType.LoadFile, false, null, null)).FirstOrDefault();
 						if (archiveFile == null) {
 							cancelled = true;
 							break;

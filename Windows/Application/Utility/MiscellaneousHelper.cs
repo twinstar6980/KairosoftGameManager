@@ -8,18 +8,22 @@ namespace KairosoftGameManager.Utility {
 
 		#region storage
 
-		public static async Task<StoragePath?> PickStorageItem(
+		public static async Task<List<StoragePath>> PickStorageItem(
+			String          tag,
 			StoragePickType type,
-			String          locationTag,
+			Boolean         multiply,
+			StoragePath?    location,
 			String?         name
 		) {
-			var location = App.Instance.Setting.Data.StoragePickerHistoryLocation.GetValueOrDefault(locationTag);
-			var target = await StorageHelper.Pick(type, location, name, App.Instance.MainWindow);
-			if (target != null) {
-				App.Instance.Setting.Data.StoragePickerHistoryLocation[locationTag] = type switch {
-					StoragePickType.LoadFile      => target.Parent().AsNotNull(),
-					StoragePickType.LoadDirectory => target,
-					StoragePickType.SaveFile      => target.Parent().AsNotNull(),
+			if (location == null) {
+				location = App.Instance.Setting.Data.StoragePickerHistoryLocation.GetValueOrDefault(tag);
+			}
+			var target = await StorageHelper.Pick(type, multiply, location, name, App.Instance.MainWindow);
+			if (!target.IsEmpty()) {
+				App.Instance.Setting.Data.StoragePickerHistoryLocation[tag] = type switch {
+					StoragePickType.LoadFile      => target.First().Parent().AsNotNull(),
+					StoragePickType.LoadDirectory => target.First(),
+					StoragePickType.SaveFile      => target.First().Parent().AsNotNull(),
 					_                             => throw new UnreachableException(),
 				};
 				await App.Instance.Setting.Save(apply: false);

@@ -423,8 +423,9 @@ namespace KairosoftGameManager.Utility {
 			return;
 		}
 
-		public static async Task<StoragePath?> Pick(
+		public static async Task<List<StoragePath>> Pick(
 			StoragePickType type,
+			Boolean         multiply,
 			StoragePath?    location,
 			String?         name,
 			Window          host
@@ -435,20 +436,18 @@ namespace KairosoftGameManager.Utility {
 			if (name == null) {
 				name = "";
 			}
-			var target = null as StoragePath;
+			var target = new List<StoragePath>();
 			await Task.Run(() => {
 				unsafe {
-					Win32.PInvoke.CoCreateInstance<Win32.UI.Shell.IFileDialog>(
-						type switch {
-							StoragePickType.LoadFile      => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
-							StoragePickType.LoadDirectory => typeof(Win32.UI.Shell.FileOpenDialog).GUID,
-							StoragePickType.SaveFile      => typeof(Win32.UI.Shell.FileSaveDialog).GUID,
-							_                             => throw new UnreachableException(),
-						},
-						null,
-						Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER,
-						out var dialog
-					).ThrowOnFailure();
+					var dialog = default(Win32.UI.Shell.IFileDialog*);
+					if (type == StoragePickType.LoadFile || type == StoragePickType.LoadDirectory) {
+						Win32.PInvoke.CoCreateInstance<Win32.UI.Shell.IFileOpenDialog>(typeof(Win32.UI.Shell.FileOpenDialog).GUID, null, Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER, out var dialogPointer).ThrowOnFailure();
+						dialog = (Win32.UI.Shell.IFileDialog*)dialogPointer;
+					}
+					if (type == StoragePickType.SaveFile) {
+						Win32.PInvoke.CoCreateInstance<Win32.UI.Shell.IFileSaveDialog>(typeof(Win32.UI.Shell.FileSaveDialog).GUID, null, Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER, out var dialogPointer).ThrowOnFailure();
+						dialog = (Win32.UI.Shell.IFileDialog*)dialogPointer;
+					}
 					using var dialogFinalizer = new Finalizer(async () => {
 						dialog->Release();
 					});
@@ -459,6 +458,9 @@ namespace KairosoftGameManager.Utility {
 					if (type == StoragePickType.LoadFile || type == StoragePickType.LoadDirectory) {
 						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
 						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_FILEMUSTEXIST;
+						if (multiply) {
+							option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_ALLOWMULTISELECT;
+						}
 					}
 					if (type == StoragePickType.LoadDirectory) {
 						option |= Win32.UI.Shell.FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
@@ -485,17 +487,37 @@ namespace KairosoftGameManager.Utility {
 					var dialogResult = dialog->Show(new (WindowHelper.GetHandle(host)));
 					if (dialogResult != Win32.PInvoke.HRESULT_FROM_WIN32(Win32.Foundation.WIN32_ERROR.ERROR_CANCELLED)) {
 						dialogResult.ThrowOnFailure();
-						var targetItem = default(Win32.UI.Shell.IShellItem*);
-						dialog->GetResult(&targetItem).ThrowOnFailure();
-						var targetItemPointer = &targetItem;
-						using var targetItemFinalizer = new Finalizer(async () => {
-							(*targetItemPointer)->Release();
-						});
-						targetItem->GetDisplayName(Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, out var targetPath).ThrowOnFailure();
-						using var targetPathFinalizer = new Finalizer(async () => {
-							Win32.PInvoke.CoTaskMemFree(targetPath.Value);
-						});
-						target = new (targetPath.ToString());
+						if (type == StoragePickType.LoadFile || type == StoragePickType.LoadDirectory) {
+							var targetList = default(Win32.UI.Shell.IShellItemArray*);
+							((Win32.UI.Shell.IFileOpenDialog*)dialog)->GetResults(&targetList).ThrowOnFailure();
+							var targetListPointer = &targetList;
+							using var targetListFinalizer = new Finalizer(async () => {
+								(*targetListPointer)->Release();
+							});
+							targetList->GetCount(out var targetCount).ThrowOnFailure();
+							for (var targetIndex = 0; targetIndex < targetCount; targetIndex++) {
+								var targetItem = default(Win32.UI.Shell.IShellItem*);
+								targetList->GetItemAt(targetIndex.CastPrimitive<IntegerU32>(), &targetItem).ThrowOnFailure();
+								targetItem->GetDisplayName(Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, out var targetPath).ThrowOnFailure();
+								using var targetPathFinalizer = new Finalizer(async () => {
+									Win32.PInvoke.CoTaskMemFree(targetPath.Value);
+								});
+								target.Add(new (targetPath.ToString()));
+							}
+						}
+						if (type == StoragePickType.SaveFile) {
+							var targetItem = default(Win32.UI.Shell.IShellItem*);
+							dialog->GetResult(&targetItem).ThrowOnFailure();
+							var targetItemPointer = &targetItem;
+							using var targetItemFinalizer = new Finalizer(async () => {
+								(*targetItemPointer)->Release();
+							});
+							targetItem->GetDisplayName(Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, out var targetPath).ThrowOnFailure();
+							using var targetPathFinalizer = new Finalizer(async () => {
+								Win32.PInvoke.CoTaskMemFree(targetPath.Value);
+							});
+							target.Add(new (targetPath.ToString()));
+						}
 					}
 				}
 			});
