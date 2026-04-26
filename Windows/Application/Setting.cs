@@ -71,10 +71,9 @@ namespace KairosoftGameManager {
 
 		#region storage
 
-		public StoragePath File {
-			get {
-				return App.Instance.SharedDirectory.Join("setting.json");
-			}
+		public async Task<StoragePath> File(
+		) {
+			return (await StorageHelper.Query(StorageQueryType.ApplicationShared)).Join("setting.json");
 		}
 
 		// ----------------
@@ -82,7 +81,9 @@ namespace KairosoftGameManager {
 		public async Task Load(
 			StoragePath? file = null
 		) {
-			file ??= this.File;
+			if (file == null) {
+				file = await this.File();
+			}
 			this.Data = (await JsonHelper.DeserializeFile<SettingData>(file)).SelfAlso((it) => AssertTest(it.Version == ApplicationInformation.VersionMainly));
 			return;
 		}
@@ -91,7 +92,9 @@ namespace KairosoftGameManager {
 			StoragePath? file  = null,
 			Boolean      apply = true
 		) {
-			file ??= this.File;
+			if (file == null) {
+				file = await this.File();
+			}
 			if (apply) {
 				await this.Apply();
 			}

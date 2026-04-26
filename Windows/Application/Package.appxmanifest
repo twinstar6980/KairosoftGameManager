@@ -6,13 +6,16 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-  IgnorableNamespaces="mp uap rescap com desktop">
-  <Identity Name="com.twinstar.kairosoft-game-manager" Publisher="CN=None" Version="12.5.0.0" />
+  xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"
+  IgnorableNamespaces="mp uap rescap com desktop desktop6">
+  <Identity Name="com.twinstar.kairosoft-game-manager" Publisher="CN=None" Version="12.6.0.0" />
   <mp:PhoneIdentity PhoneProductId="321CA1D4-53F5-4040-A8EE-79D02B7AD5B4" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Kairosoft Game Manager</DisplayName>
     <PublisherDisplayName>None</PublisherDisplayName>
     <Logo>Asset\Logo\StoreLogo.png</Logo>
+    <desktop6:FileSystemWriteVirtualization>disabled</desktop6:FileSystemWriteVirtualization>
+    <desktop6:RegistryWriteVirtualization>disabled</desktop6:RegistryWriteVirtualization>
   </Properties>
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
@@ -27,5 +30,6 @@
   </Applications>
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
+    <rescap:Capability Name="unvirtualizedResources" />
   </Capabilities>
 </Package>

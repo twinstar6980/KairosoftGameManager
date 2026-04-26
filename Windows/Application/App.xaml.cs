@@ -20,10 +20,6 @@ namespace KairosoftGameManager {
 
 		public StoragePath ProgramFile { get; private set; }
 
-		public StoragePath SharedDirectory { get; private set; }
-
-		public StoragePath CacheDirectory { get; private set; }
-
 		public SettingProvider Setting { get; }
 
 		public View.MainWindow MainWindow { get; private set; }
@@ -44,8 +40,6 @@ namespace KairosoftGameManager {
 			App.Instance = this;
 			this.PackageDirectory = null!;
 			this.ProgramFile = null!;
-			this.SharedDirectory = null!;
-			this.CacheDirectory = null!;
 			this.Setting = new ();
 			this.MainWindow = null!;
 			this.InitializeComponent();
@@ -60,8 +54,6 @@ namespace KairosoftGameManager {
 			try {
 				this.PackageDirectory = await StorageHelper.Query(StorageQueryType.ApplicationPackage);
 				this.ProgramFile = this.PackageDirectory.Join("Application.exe");
-				this.SharedDirectory = await StorageHelper.Query(StorageQueryType.ApplicationPackagedShared);
-				this.CacheDirectory = await StorageHelper.Query(StorageQueryType.ApplicationPackagedCache);
 				await ApplicationExceptionManager.Instance.Initialize(this);
 				await ApplicationExceptionManager.Instance.Listen(async (exception) => {
 					await this.HandleException(exception, this.MainWindow);
@@ -130,7 +122,7 @@ namespace KairosoftGameManager {
 					}
 					return;
 				};
-				WindowHelper.SetIcon(window, $"{this.PackageDirectory}/Asset/Logo.ico");
+				WindowHelper.SetIcon(window, App.Instance.PackageDirectory.Join("Asset").Join("Logo.ico").EmitNative());
 				WindowHelper.SetTitle(window, ApplicationInformation.Name);
 				WindowHelper.SetTitleBar(window, true, null, false);
 				WindowHelper.Activate(window);

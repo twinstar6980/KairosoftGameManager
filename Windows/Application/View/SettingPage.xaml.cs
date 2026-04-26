@@ -96,7 +96,8 @@ namespace KairosoftGameManager.View {
 			RoutedEventArgs args
 		) {
 			var senders = sender.As<SettingsCard>();
-			await StorageHelper.Reveal(App.Instance.Setting.File.Parent().AsNotNull());
+			var target = await App.Instance.Setting.File();
+			await StorageHelper.Reveal(target);
 			return;
 		}
 
