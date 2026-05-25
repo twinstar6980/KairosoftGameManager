@@ -17,6 +17,7 @@
 /**/*.xml                                    text eol=lf
 /**/*.plist                                  text eol=lf
 /**/*.properties                             text eol=lf
+/**/*.desktop                                text eol=lf
 
 # General - Media
 /**/*.ico                                    binary
@@ -31,17 +32,13 @@
 # Language - C/C++
 /**/*.h                                      text eol=lf
 /**/*.hpp                                    text eol=lf
-/**/*.inl                                    text eol=lf
 /**/*.c                                      text eol=lf
 /**/*.cc                                     text eol=lf
 /**/*.cpp                                    text eol=lf
 /**/*.cppm                                   text eol=lf
 
-# Language - JavaScript/TypeScript
-/**/*.js                                     text eol=lf
-/**/*.jsx                                    text eol=lf
+# Language - TypeScript
 /**/*.ts                                     text eol=lf
-/**/*.tsx                                    text eol=lf
 
 # Language - Dart
 /**/*.dart                                   text eol=lf

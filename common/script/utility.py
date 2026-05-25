@@ -10,15 +10,6 @@ import typing
 
 # ----------------
 
-def fs_find(
-	pattern: str,
-) -> list[str]:
-	return glob.glob(pattern)
-
-def fs_temporary(
-) -> tempfile.TemporaryDirectory[str]:
-	return tempfile.TemporaryDirectory()
-
 def fs_copy(
 	target: str,
 	placement: str,
@@ -74,6 +65,15 @@ def fs_create_directory(
 ) -> None:
 	os.makedirs(target, exist_ok=True)
 	return
+
+def fs_temporary(
+) -> tempfile.TemporaryDirectory[str]:
+	return tempfile.TemporaryDirectory()
+
+def fs_find(
+	pattern: str,
+) -> list[str]:
+	return glob.glob(pattern)
 
 # ----------------
 
@@ -403,6 +403,30 @@ def unpack_windows_msix(
 			f'{temporary}/package',
 			f'{destination}',
 			follow_link=True,
+		)
+	return
+
+# ----------------
+
+def pack_linux_appimage(
+	source: str,
+	destination: str,
+) -> None:
+	with fs_temporary() as temporary:
+		fs_copy(
+			f'{source}',
+			f'{temporary}/package.AppDir',
+			follow_link=True,
+		)
+		sh_execute_command(temporary, [
+			'appimagetool',
+			'--no-appstream',
+			f'{temporary}/package.AppDir',
+			f'{temporary}/package.AppImage',
+		])
+		fs_copy(
+			f'{temporary}/package.AppImage',
+			f'{destination}',
 		)
 	return
 

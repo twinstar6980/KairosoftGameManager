@@ -8,7 +8,7 @@
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"
   IgnorableNamespaces="mp uap rescap com desktop desktop6">
-  <Identity Name="com.twinstar.kairosoft-game-manager" Publisher="CN=None" Version="12.6.0.0" />
+  <Identity Name="com.twinstar.kairosoft-game-manager" Publisher="CN=None" Version="12.7.0.0" />
   <mp:PhoneIdentity PhoneProductId="321CA1D4-53F5-4040-A8EE-79D02B7AD5B4" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Kairosoft Game Manager</DisplayName>
